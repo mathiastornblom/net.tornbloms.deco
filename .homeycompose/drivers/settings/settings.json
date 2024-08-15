@@ -1,0 +1,96 @@
+[
+   {
+      "type": "text",
+      "id": "host",
+      "label": {
+         "en": "Host"
+      },
+      "value": "http://192.168.0.1"
+   },
+   {
+      "type": "text",
+      "id": "username",
+      "label": {
+         "en": "Username"
+      }
+   },
+   {
+      "type": "password",
+      "id": "password",
+      "label": {
+         "en": "Password"
+      }
+   },
+   {
+      "type": "number",
+      "id": "interval_seconds",
+      "label": {
+         "en": "Seconds between updates"
+      },
+      "value": 60,
+      "min": 1
+   },
+   {
+      "type": "number",
+      "id": "consider_home",
+      "label": {
+         "en": "Seconds to wait till marking a device tracker as not home after not being seen."
+      },
+      "value": 180,
+      "min": 0
+   },
+   {
+      "type": "number",
+      "id": "timeout_seconds",
+      "label": {
+         "en": "Timeout seconds"
+      },
+      "value": 30,
+      "min": 5
+   },
+   {
+      "type": "number",
+      "id": "timeout_error_retries",
+      "label": {
+         "en": "Timeout error retry count"
+      },
+      "value": 1,
+      "min": 0
+   },
+   {
+      "type": "checkbox",
+      "id": "verify_ssl",
+      "label": {
+         "en": "Verify SSL certificate is valid"
+      },
+      "value": true
+   },
+   {
+      "type": "text",
+      "id": "client_prefix",
+      "label": {
+         "en": "Client name prefix"
+      }
+   },
+   {
+      "type": "text",
+      "id": "client_postfix",
+      "label": {
+         "en": "Client name postfix"
+      }
+   },
+   {
+      "type": "text",
+      "id": "deco_prefix",
+      "label": {
+         "en": "Deco name prefix"
+      }
+   },
+   {
+      "type": "text",
+      "id": "deco_postfix",
+      "label": {
+         "en": "Deco name postfix"
+      }
+   }
+]

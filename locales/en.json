@@ -1,1 +1,31 @@
-{}
+{
+   "settings": {
+      "host": "Host",
+      "username": "Username",
+      "password": "Password",
+      "interval_seconds": "Seconds between updates",
+      "consider_home": "Seconds to wait till marking a device tracker as not home after not being seen.",
+      "timeout_seconds": "Timeout seconds",
+      "timeout_error_retries": "Timeout error retry count",
+      "verify_ssl": "Verify SSL certificate is valid",
+      "client_prefix": "Client name prefix",
+      "client_postfix": "Client name postfix",
+      "deco_prefix": "Deco name prefix",
+      "deco_postfix": "Deco name postfix"
+   },
+   "flow": {
+      "reboot_deco": {
+         "title": "Reboot Deco",
+         "description": "Reboot a TP-Link Deco device."
+      }
+   },
+   "errors": {
+      "invalid_auth": "Invalid authentication",
+      "invalid_host": "Unable to connect to host.",
+      "timeout_connect": "Timeout establishing connection",
+      "unknown": "Unexpected error"
+   },
+   "abort": {
+      "reauth_successful": "Reauth successful"
+   }
+}
