@@ -1,20 +1,16 @@
 {
   "id": "net.tornbloms.deco",
   "version": "1.0.0",
-  "compatibility": ">=12.0.0",
+  "compatibility": ">=5.0.0",
   "sdk": 3,
-  "platforms": [
-    "local"
-  ],
+  "platforms": ["local"],
   "name": {
     "en": "TP-Link Deco"
   },
   "description": {
     "en": "Superior Mesh WiFi, Everywhere"
   },
-  "category": [
-    "internet"
-  ],
+  "category": ["internet"],
   "permissions": [],
   "images": {
     "small": "/assets/images/small.png",
@@ -26,10 +22,7 @@
     "email": "mathias@tornbloms.net"
   },
   "tags": {
-    "en": [
-      "TP_link",
-      "Deco"
-    ]
+    "en": ["TP_link", "Deco"]
   },
   "contributors": {
     "developers": [

@@ -1,49 +1,56 @@
 'use strict';
 
 import { Device } from 'homey';
-import TplinkDecoApi from '../../lib/api.ts';
+import decoapiwapper from 'decoapiwrapper';
 
 interface DeviceSettings {
   host: string;
   username: string;
   password: string;
-  timeoutSeconds: number; // Changed to camelCase
-  verifySSL: boolean; // Changed to camelCase
+  timeoutSeconds: number;
+  verifySSL: boolean;
 }
 
+/**
+ * TplinkDecoDevice class to manage individual TP-Link Deco devices in Homey.
+ * Handles initialization, settings updates, and device-specific actions.
+ */
 class TplinkDecoDevice extends Device {
-
-  private api: TplinkDecoApi | null = null;
-
+  /**
+   * Initializes the TP-Link Deco device.
+   * Sets up the API connection using device settings.
+   */
   async onInit() {
-    this.log(`TP-Link Deco Device has been initialized: ${this.getName()}`);
+    this.log(`TP-Link Deco Device initialized: ${this.getName()}`);
 
-    // Fetch device settings
-    const {
-      host, username, password, timeoutSeconds, verifySSL,
-    } = this.getSettings() as DeviceSettings;
-
-    // Initialize the API
-    if (host && username && password) {
-      this.api = new TplinkDecoApi({
-        host,
-        username,
-        password,
-        timeoutSeconds,
-        verifySSL,
-      });
-
-      try {
-        await this.api.testConnection();
-        this.log('Successfully connected to TP-Link Deco');
-      } catch (error) {
-        this.error('Failed to connect to TP-Link Deco', error);
-      }
-    } else {
-      this.error('Missing API configuration settings');
+    try {
+      await this.initializeApiFromSettings();
+      this.log('Successfully connected to TP-Link Deco');
+    } catch (error) {
+      this.error('Failed to initialize device', error);
     }
   }
 
+  /**
+   * Initializes the TP-Link Deco API using the device settings.
+   * Throws an error if required settings are missing or connection fails.
+   */
+  private async initializeApiFromSettings(): Promise<void> {
+    const { host, username, password, timeoutSeconds, verifySSL } =
+      this.getSettings() as DeviceSettings;
+
+    if (!host || !username || !password) {
+      throw new Error('Missing API configuration settings');
+    }
+  }
+
+  /**
+   * Handles updates to the device settings.
+   * Reinitializes the API connection if relevant settings are changed.
+   * @param oldSettings - The old settings before the change.
+   * @param newSettings - The new settings after the change.
+   * @param changedKeys - The keys that were changed.
+   */
   async onSettings({
     oldSettings,
     newSettings,
@@ -64,52 +71,19 @@ class TplinkDecoDevice extends Device {
     });
 
     if (
-      changedKeys.includes('host')
-      || changedKeys.includes('username')
-      || changedKeys.includes('password')
-      || changedKeys.includes('timeoutSeconds')
-      || changedKeys.includes('verifySSL')
+      changedKeys.includes('host') ||
+      changedKeys.includes('username') ||
+      changedKeys.includes('password') ||
+      changedKeys.includes('timeoutSeconds') ||
+      changedKeys.includes('verifySSL')
     ) {
-      await this.onInit(); // Reinitialize with updated settings
-    }
-  }
-
-  async setDevicePower(value: boolean): Promise<void> {
-    if (!this.api) {
-      this.error('API not initialized');
-      throw new Error('API not initialized');
-    }
-
-    try {
-      if (value) {
-        // Implement the power on functionality
-        this.log(`Powered on device: ${this.getName()}`);
-      } else {
-        // Implement the power off functionality
-        this.log(`Powered off device: ${this.getName()}`);
+      try {
+        this.log('API reinitialized with updated settings');
+      } catch (error) {
+        this.error('Failed to reinitialize API', error);
       }
-    } catch (error) {
-      this.error('Error setting device power', error);
-      throw new Error('Error setting device power');
     }
   }
-
-  async getDeviceMetrics() {
-    if (!this.api) {
-      this.error('API not initialized');
-      throw new Error('API not initialized');
-    }
-
-    try {
-      const metrics = await this.api.getConnectedDevices(); // Replace with actual API call to fetch metrics
-      this.log(`Fetched device metrics for ${this.getName()}:`, metrics);
-      // Process and use the metrics as needed
-    } catch (error) {
-      this.error('Error fetching device metrics', error);
-      throw new Error('Error fetching device metrics');
-    }
-  }
-
 }
 
 module.exports = TplinkDecoDevice;

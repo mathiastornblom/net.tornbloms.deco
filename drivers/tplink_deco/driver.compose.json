@@ -1,9 +1,10 @@
 {
   "id": "tplink_deco",
   "name": {
-    "en": "TP-Link Deco"
+    "en": "TP-Link Deco",
+    "sv": "TP-Link Deco"
   },
-  "class": "networkrouter",
+  "class": "other",
   "capabilities": [
     "measure_down_kilobytes_per_s",
     "measure_up_kilobytes_per_s"
@@ -12,29 +13,41 @@
   "connectivity": ["lan"],
   "pair": [
     {
-      "id": "tplink_deco_login",
-      "template": "tplink_deco_login",
+      "id": "login_credentials",
+      "template": "login_credentials",
       "options": {
-        "logo": "logo.png",
-        "title": {
-          "en": "Log in with your credentials"
+        "logo": "{{driverAssetsPath}}/logo.svg",
+        "usernameLabel": {
+          "en": "Hostname / IP",
+          "se": "Hostnamn / IP"
         },
-        "hostLabel": { "en": "Host" },
-        "hostlaceholder": { "en": "192.168.68.1" },
-        "usernameLabel": { "en": "E-mail address" },
-        "usernamePlaceholder": { "en": "john@doe.com" },
-        "passwordLabel": { "en": "Password" },
-        "passwordPlaceholder": { "en": "Password" }
+        "usernamePlaceholder": "192.168.1.1",
+        "passwordLabel": {
+          "en": "Password",
+          "se": "Lösenord"
+        },
+        "passwordPlaceholder": {
+          "en": "Password",
+          "se": "Lösenord"
+        }
       }
     },
     {
       "id": "list_devices",
       "template": "list_devices",
-      "navigation": { "next": "add_devices" }
+      "navigation": {
+        "next": "add_devices"
+      }
     },
     {
       "id": "add_devices",
       "template": "add_devices"
+    }
+  ],
+  "repair": [
+    {
+      "id": "login_credentials",
+      "template": "login_credentials"
     }
   ],
   "images": {
