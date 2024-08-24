@@ -4,6 +4,7 @@ import { Driver } from 'homey';
 import decoapiwapper from 'decoapiwrapper';
 
 class TplinkDecoDriver extends Driver {
+  private api: decoapiwapper | null = null;
   /**
    * Called when the driver is initialized.
    * Checks if API settings are available; if not, waits for user input.
@@ -12,15 +13,22 @@ class TplinkDecoDriver extends Driver {
     this.log('TP-Link Deco Driver has been initialized');
 
     // Fetch driver settings
-    const host = this.homey.settings.get('host');
-    const username = this.homey.settings.get('username');
+    const hostname = this.homey.settings.get('hostname');
     const password = this.homey.settings.get('password');
 
     // Check if the API settings are available
-    if (!host || !username || !password) {
-      this.log(
-        'API configuration settings are missing. Waiting for user input.',
-      );
+    if (hostname && password) {
+      this.api = new decoapiwapper(hostname);
+
+      // Test API connection
+      try {
+        await this.api.authenticate(password);
+        this.log('Successfully connected to TP-Link Deco');
+      } catch (error) {
+        this.error('Failed to connect to TP-Link Deco', error);
+      }
+    } else {
+      this.error('Missing API configuration settings');
     }
   }
 
@@ -41,16 +49,6 @@ class TplinkDecoDriver extends Driver {
     session.setHandler('showView', async function (viewId: string) {
       console.log('View: ' + viewId);
     });
-
-    session.setHandler(
-      'router_ip_confirmed',
-      async (routerIPFromView: string) => {
-        this.log('pair: router_ip_confirmed');
-        host = routerIPFromView;
-        this.log(host);
-        return true;
-      },
-    );
 
     session.setHandler(
       'login',

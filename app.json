@@ -87,41 +87,33 @@
         "en": "TP-Link Deco",
         "sv": "TP-Link Deco"
       },
-      "class": "other",
-      "capabilities": [
-        "measure_down_kilobytes_per_s",
-        "measure_up_kilobytes_per_s"
-      ],
-      "platforms": [
-        "local"
-      ],
-      "connectivity": [
-        "lan"
-      ],
+      "images": {
+        "small": "/drivers/tplink_deco/assets/images/small.png",
+        "large": "/drivers/tplink_deco/assets/images/large.png",
+        "xlarge": "/drivers/tplink_deco/assets/images/xlarge.png"
+      },
       "pair": [
-        {
-          "id": "router_ip"
-        },
         {
           "id": "login_credentials",
           "template": "login_credentials",
           "options": {
-            "logo": "/drivers/tplink_deco/assets/logo.svg",
+            "logo": "/assets/logo.png",
+            "title": {
+              "en": "Add your ip or hostname and password",
+              "sv": "Ange hostnamn eller IP samr lösenord"
+            },
             "usernameLabel": {
-              "en": "Username",
-              "se": "Användarnamn"
+              "en": "Hostname / IP",
+              "sv": "Hostnamn / IP"
             },
-            "usernamePlaceholder": {
-              "en": "admin",
-              "se": "admin"
-            },
+            "usernamePlaceholder": "192.168.1.1",
             "passwordLabel": {
               "en": "Password",
-              "se": "Lösenord"
+              "sv": "Lösenord"
             },
             "passwordPlaceholder": {
               "en": "Password",
-              "se": "Lösenord"
+              "sv": "Lösenord"
             }
           }
         },
@@ -135,6 +127,10 @@
         {
           "id": "add_devices",
           "template": "add_devices"
+        },
+        {
+          "id": "done",
+          "template": "done"
         }
       ],
       "repair": [
@@ -143,11 +139,49 @@
           "template": "login_credentials"
         }
       ],
-      "images": {
-        "small": "/drivers/tplink_deco/assets/images/small.png",
-        "large": "/drivers/tplink_deco/assets/images/large.png",
-        "xlarge": "/drivers/tplink_deco/assets/images/xlarge.png"
-      }
+      "class": "other",
+      "capabilities": [
+        "measure_down_kilobytes_per_s",
+        "measure_up_kilobytes_per_s"
+      ],
+      "platforms": [
+        "local"
+      ],
+      "connectivity": [
+        "lan"
+      ],
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Login details"
+          },
+          "children": [
+            {
+              "id": "hostname",
+              "type": "label",
+              "label": {
+                "en": "Hostname/IP"
+              },
+              "value": "192.168.68.1",
+              "hint": {
+                "en": "The hostname or th IP of the router."
+              }
+            },
+            {
+              "id": "password",
+              "type": "password",
+              "label": {
+                "en": "Password"
+              },
+              "value": "Secret",
+              "hint": {
+                "en": "The TP-Link password of the owner."
+              }
+            }
+          ]
+        }
+      ]
     }
   ],
   "capabilities": {

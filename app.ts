@@ -1,33 +1,24 @@
 'use strict';
 
 import Homey from 'homey';
-import TplinkDecoApi from './lib/api';
+import decoapiwapper from 'decoapiwrapper';
 
 class TplinkDecoApp extends Homey.App {
-  private api: TplinkDecoApi | null = null;
+  private api: decoapiwapper | null = null;
 
   async onInit(): Promise<void> {
     this.log('TP-Link Deco app has been initialized');
 
     // // Initialize the API
-    const host = this.homey.settings.get('host');
-    const username = this.homey.settings.get('username');
+    const hostname = this.homey.settings.get('hostname');
     const password = this.homey.settings.get('password');
-    const timeoutSeconds = this.homey.settings.get('timeout_seconds') || 30;
-    const verifySSL = this.homey.settings.get('verify_ssl') || true;
 
-    if (host && username && password) {
-      this.api = new TplinkDecoApi({
-        host,
-        username,
-        password,
-        timeoutSeconds,
-        verifySSL,
-      });
+    if (hostname && password) {
+      this.api = new decoapiwapper(hostname);
 
       // Test API connection
       try {
-        await this.api.testConnection();
+        await this.api.authenticate(password);
         this.log('Successfully connected to TP-Link Deco');
       } catch (error) {
         this.error('Failed to connect to TP-Link Deco', error);
@@ -39,20 +30,6 @@ class TplinkDecoApp extends Homey.App {
 
   async onUninit() {
     this.log('TP-Link Deco app has been uninitialized');
-  }
-
-  // Example of a method to reboot a Deco device
-  async rebootDeco(deviceId: string) {
-    if (!this.api) {
-      throw new Error('API not initialized');
-    }
-
-    try {
-      await this.api.rebootDevice(deviceId);
-      this.log(`Deco device with ID ${deviceId} has been rebooted`);
-    } catch (error) {
-      this.error(`Failed to reboot Deco device with ID ${deviceId}`, error);
-    }
   }
 }
 

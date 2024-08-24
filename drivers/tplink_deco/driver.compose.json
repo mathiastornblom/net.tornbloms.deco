@@ -4,31 +4,33 @@
     "en": "TP-Link Deco",
     "sv": "TP-Link Deco"
   },
-  "class": "other",
-  "capabilities": [
-    "measure_down_kilobytes_per_s",
-    "measure_up_kilobytes_per_s"
-  ],
-  "platforms": ["local"],
-  "connectivity": ["lan"],
+  "images": {
+    "small": "{{driverAssetsPath}}/images/small.png",
+    "large": "{{driverAssetsPath}}/images/large.png",
+    "xlarge": "{{driverAssetsPath}}/images/xlarge.png"
+  },
   "pair": [
     {
       "id": "login_credentials",
       "template": "login_credentials",
       "options": {
-        "logo": "{{driverAssetsPath}}/logo.svg",
+        "logo": "/assets/logo.png",
+        "title": {
+          "en": "Add your ip or hostname and password",
+          "sv": "Ange hostnamn eller IP samr lösenord"
+        },
         "usernameLabel": {
           "en": "Hostname / IP",
-          "se": "Hostnamn / IP"
+          "sv": "Hostnamn / IP"
         },
         "usernamePlaceholder": "192.168.1.1",
         "passwordLabel": {
           "en": "Password",
-          "se": "Lösenord"
+          "sv": "Lösenord"
         },
         "passwordPlaceholder": {
           "en": "Password",
-          "se": "Lösenord"
+          "sv": "Lösenord"
         }
       }
     },
@@ -42,6 +44,10 @@
     {
       "id": "add_devices",
       "template": "add_devices"
+    },
+    {
+      "id": "done",
+      "template": "done"
     }
   ],
   "repair": [
@@ -50,9 +56,11 @@
       "template": "login_credentials"
     }
   ],
-  "images": {
-    "small": "{{driverAssetsPath}}/images/small.png",
-    "large": "{{driverAssetsPath}}/images/large.png",
-    "xlarge": "{{driverAssetsPath}}/images/xlarge.png"
-  }
+  "class": "other",
+  "capabilities": [
+    "measure_down_kilobytes_per_s",
+    "measure_up_kilobytes_per_s"
+  ],
+  "platforms": ["local"],
+  "connectivity": ["lan"]
 }

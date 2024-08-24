@@ -1,0 +1,22 @@
+[
+  {
+    "type": "group",
+    "label": { "en": "Login details" },
+    "children": [
+      {
+        "id": "hostname",
+        "type": "label",
+        "label": { "en": "Hostname/IP" },
+        "value": "192.168.68.1",
+        "hint": { "en": "The hostname or th IP of the router." }
+      },
+      {
+        "id": "password",
+        "type": "password",
+        "label": { "en": "Password" },
+        "value": "Secret",
+        "hint": { "en": "The TP-Link password of the owner." }
+      }
+    ]
+  }
+]
