@@ -4,5 +4,8 @@
   },
   "1.0.1": {
     "en": "Getting close to first relese, need to fix some bugs."
+  },
+  "1.0.2": {
+    "en": "Nothing decoapiwrapper was missing"
   }
 }
