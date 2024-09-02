@@ -1,0 +1,51 @@
+{
+  "type": "boolean",
+  "uiComponent": "sensor",
+  "uiQuickAction": false,
+  "title": {
+    "en": "WAN Disconnected",
+    "nl": "WAN losgekoppeld",
+    "da": "WAN afbrudt",
+    "de": "WAN getrennt",
+    "es": "WAN desconectado",
+    "fr": "WAN déconnecté",
+    "it": "WAN disconnesso",
+    "no": "WAN frakoblet",
+    "sv": "WAN frånkopplad",
+    "pl": "WAN odłączony",
+    "ru": "WAN отключен",
+    "ko": "WAN 연결 끊김"
+  },
+  "getable": true,
+  "setable": false,
+  "insights": true,
+  "insightsTitleTrue": {
+    "en": "WAN disconnected",
+    "nl": "WAN losgekoppeld",
+    "da": "WAN afbrudt",
+    "de": "WAN getrennt",
+    "es": "WAN desconectado",
+    "fr": "WAN déconnecté",
+    "it": "WAN disconnesso",
+    "no": "WAN frakoblet",
+    "sv": "WAN frånkopplad",
+    "pl": "WAN odłączony",
+    "ru": "WAN отключен",
+    "ko": "WAN 연결 끊김"
+  },
+  "insightsTitleFalse": {
+    "en": "WAN connected",
+    "nl": "WAN verbonden",
+    "da": "WAN tilsluttet",
+    "de": "WAN verbunden",
+    "es": "WAN conectado",
+    "fr": "WAN connecté",
+    "it": "WAN connesso",
+    "no": "WAN tilkoblet",
+    "sv": "WAN ansluten",
+    "pl": "WAN połączony",
+    "ru": "WAN подключен",
+    "ko": "WAN 연결됨"
+  },
+  "icon": "./assets/capabilities/alarm_wan.svg"
+}

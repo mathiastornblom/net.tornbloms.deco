@@ -1,0 +1,20 @@
+{
+  "type": "string",
+  "title": {
+    "en": "Online Duration",
+    "nl": "Online Duur",
+    "da": "Online Varighed",
+    "de": "Online-Dauer",
+    "es": "Duración en Línea",
+    "fr": "Durée en Ligne",
+    "it": "Durata Online",
+    "no": "Online Varighet",
+    "sv": "Online Varaktighet",
+    "pl": "Czas Online",
+    "ru": "Время в сети",
+    "ko": "온라인 지속 시간"
+  },
+  "getable": true,
+  "setable": false,
+  "icon": "./assets/capabilities/uptime.svg"
+}

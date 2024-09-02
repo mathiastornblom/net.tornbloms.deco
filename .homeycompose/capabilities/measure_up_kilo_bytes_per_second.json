@@ -1,0 +1,51 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Upload Speed",
+    "nl": "Upload Snelheid",
+    "da": "Uploadhastighed",
+    "de": "Upload-Geschwindigkeit",
+    "es": "Velocidad de subida",
+    "fr": "Vitesse de téléchargement",
+    "it": "Velocità di upload",
+    "no": "Opplastingshastighet",
+    "sv": "Uppladdningshastighet",
+    "pl": "Prędkość przesyłania",
+    "ru": "Скорость загрузки",
+    "ko": "업로드 속도"
+  },
+  "units": {
+    "en": "KB/s",
+    "nl": "KB/s",
+    "da": "KB/s",
+    "de": "KB/s",
+    "es": "KB/s",
+    "fr": "KB/s",
+    "it": "KB/s",
+    "no": "KB/s",
+    "sv": "KB/s",
+    "pl": "KB/s",
+    "ru": "KB/s",
+    "ko": "KB/s"
+  },
+  "getable": true,
+  "setable": false,
+  "desc": {
+    "en": "Kilo Bytes per Second (KB/s)",
+    "nl": "Kilobytes per seconde (KB/s)",
+    "da": "Kilobytes pr. sekund (KB/s)",
+    "de": "Kilobytes pro Sekunde (KB/s)",
+    "es": "Kilobytes por segundo (KB/s)",
+    "fr": "Kilooctets par seconde (KB/s)",
+    "it": "Kilobyte al secondo (KB/s)",
+    "no": "Kilobyte per sekund (KB/s)",
+    "sv": "Kilobyte per sekund (KB/s)",
+    "pl": "Kilobajty na sekundę (KB/s)",
+    "ru": "Килобайты в секунду (KB/s)",
+    "ko": "킬로바이트/초 (KB/s)"
+  },
+  "insights": true,
+  "chartType": "spline",
+  "uiComponent": "sensor",
+  "icon": "/assets/capabilities/cloud-up-arrow-svgrepo-com.svg"
+}

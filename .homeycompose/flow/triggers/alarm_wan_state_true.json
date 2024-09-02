@@ -1,0 +1,43 @@
+{
+  "title": {
+    "en": "WAN status online",
+    "nl": "WAN status online",
+    "da": "WAN-status online",
+    "de": "WAN-Status online",
+    "es": "Estado WAN en línea",
+    "fr": "État WAN en ligne",
+    "it": "Stato WAN online",
+    "no": "WAN-status online",
+    "sv": "WAN-status online",
+    "pl": "Status WAN online",
+    "ru": "WAN статус онлайн",
+    "ko": "WAN 상태 온라인"
+  },
+  "args": [
+    {
+      "name": "device",
+      "type": "device",
+      "filter": "driver_id=tplink_deco"
+    }
+  ],
+  "tokens": [
+    {
+      "type": "boolean",
+      "name": "wan_state",
+      "title": {
+        "en": "WAN State",
+        "nl": "WAN-status",
+        "da": "WAN-tilstand",
+        "de": "WAN-Status",
+        "es": "Estado de WAN",
+        "fr": "État WAN",
+        "it": "Stato WAN",
+        "no": "WAN-tilstand",
+        "sv": "WAN-status",
+        "pl": "Stan WAN",
+        "ru": "WAN состояние",
+        "ko": "WAN 상태"
+      }
+    }
+  ]
+}

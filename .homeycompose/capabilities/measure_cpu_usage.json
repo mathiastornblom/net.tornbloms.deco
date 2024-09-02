@@ -1,0 +1,51 @@
+{
+  "type": "number",
+  "title": {
+    "en": "CPU Usage",
+    "nl": "CPU-gebruik",
+    "da": "CPU-brug",
+    "de": "CPU-Auslastung",
+    "es": "Uso de CPU",
+    "fr": "Utilisation du CPU",
+    "it": "Utilizzo della CPU",
+    "no": "CPU-bruk",
+    "sv": "CPU-användning",
+    "pl": "Zużycie CPU",
+    "ru": "Использование ЦП",
+    "ko": "CPU 사용량"
+  },
+  "units": {
+    "en": "%",
+    "nl": "%",
+    "da": "%",
+    "de": "%",
+    "es": "%",
+    "fr": "%",
+    "it": "%",
+    "no": "%",
+    "sv": "%",
+    "pl": "%",
+    "ru": "%",
+    "ko": "%"
+  },
+  "getable": true,
+  "setable": false,
+  "desc": {
+    "en": "Current CPU usage",
+    "nl": "Huidig CPU-gebruik",
+    "da": "Nuværende CPU-brug",
+    "de": "Aktuelle CPU-Auslastung",
+    "es": "Uso actual de la CPU",
+    "fr": "Utilisation actuelle du CPU",
+    "it": "Utilizzo attuale della CPU",
+    "no": "Nåværende CPU-bruk",
+    "sv": "Nuvarande CPU-användning",
+    "pl": "Bieżące zużycie CPU",
+    "ru": "Текущее использование ЦП",
+    "ko": "현재 CPU 사용량"
+  },
+  "insights": true,
+  "chartType": "spline",
+  "uiComponent": "sensor",
+  "icon": "/assets/capabilities/cpu-icon.svg"
+}

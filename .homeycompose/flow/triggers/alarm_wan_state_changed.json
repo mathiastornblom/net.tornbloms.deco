@@ -1,0 +1,44 @@
+{
+  "title": {
+    "en": "WAN status changed",
+    "nl": "WAN-status gewijzigd",
+    "da": "WAN-status ændret",
+    "de": "WAN-Status geändert",
+    "es": "Estado de WAN cambiado",
+    "fr": "Statut de WAN changé",
+    "it": "Stato WAN cambiato",
+    "no": "WAN-status endret",
+    "sv": "WAN-status ändrad",
+    "pl": "Status WAN zmieniony",
+    "ru": "Состояние WAN изменено",
+    "ko": "WAN 상태 변경됨"
+  },
+  "highlight": true,
+  "args": [
+    {
+      "name": "device",
+      "type": "device",
+      "filter": "driver_id=tplink_deco"
+    }
+  ],
+  "tokens": [
+    {
+      "type": "boolean",
+      "name": "wan_state",
+      "title": {
+        "en": "WAN State",
+        "nl": "WAN-status",
+        "da": "WAN-tilstand",
+        "de": "WAN-Zustand",
+        "es": "Estado de WAN",
+        "fr": "État de WAN",
+        "it": "Stato WAN",
+        "no": "WAN-tilstand",
+        "sv": "WAN-tillstånd",
+        "pl": "Stan WAN",
+        "ru": "Состояние WAN",
+        "ko": "WAN 상태"
+      }
+    }
+  ]
+}

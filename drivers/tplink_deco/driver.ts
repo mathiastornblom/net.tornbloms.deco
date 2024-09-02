@@ -1,7 +1,8 @@
 'use strict';
-
-import { Driver } from 'homey';
+import crypto from 'crypto';
+import Homey, { Driver } from 'homey';
 import decoapiwapper from 'decoapiwrapper';
+import { DeviceListResponse } from 'decoapiwrapper';
 
 class TplinkDecoDriver extends Driver {
   private api: decoapiwapper | null = null;
@@ -11,25 +12,6 @@ class TplinkDecoDriver extends Driver {
    */
   async onInit() {
     this.log('TP-Link Deco Driver has been initialized');
-
-    // Fetch driver settings
-    const hostname = this.homey.settings.get('hostname');
-    const password = this.homey.settings.get('password');
-
-    // Check if the API settings are available
-    if (hostname && password) {
-      this.api = new decoapiwapper(hostname);
-
-      // Test API connection
-      try {
-        await this.api.authenticate(password);
-        this.log('Successfully connected to TP-Link Deco');
-      } catch (error) {
-        this.error('Failed to connect to TP-Link Deco', error);
-      }
-    } else {
-      this.error('Missing API configuration settings');
-    }
   }
 
   /**
@@ -39,11 +21,9 @@ class TplinkDecoDriver extends Driver {
   async onPair(session: any): Promise<void> {
     this.log('Starting pairing process');
 
-    let host = '';
-    let username = '';
+    let hostname = '';
+    let username = 'admin';
     let password = '';
-    let timeoutSeconds = 30;
-    let verifySSL = true;
 
     // Received when a view has changed
     session.setHandler('showView', async function (viewId: string) {
@@ -54,30 +34,103 @@ class TplinkDecoDriver extends Driver {
       'login',
       async (data: { username: string; password: string }) => {
         this.log('pair: login');
-        username = data.username.trim();
-        this.log('hostname: ', username);
+        hostname = data.username;
+        this.log('hostname: ', hostname);
         password = data.password;
         this.log('password: ', password);
         this.log('creating client');
+        try {
+          this.api = new decoapiwapper(hostname);
+          const result = await this.api.authenticate(password);
+          if (result) {
+            this.log('Successfully connected to TP-Link Deco');
+          } else {
+            this.log('Failed to connect to TP-Link Deco');
+          }
+          return result;
+        } catch (error) {
+          this.error('Failed to connect to TP-Link Deco', error);
+        }
       },
     );
 
     session.setHandler('list_devices', async () => {
       this.log('pair: list_devices');
-      const devices = [
-        {
-          name: host,
-          data: {
-            id: host,
-            username: username,
-            password: password,
-            ip: host,
+      if (!this.api) {
+        this.error('No API instance available');
+        return [];
+      }
+      const deviceList = (await this.api.deviceList()) as DeviceListResponse;
+      if (
+        deviceList.error_code === 0 &&
+        deviceList.result.device_list.length > 0
+      ) {
+        const device = deviceList.result.device_list[0];
+        const devices = [
+          {
+            name: device.device_model,
+            data: {
+              id: device.mac,
+              hostname: hostname,
+              username: username,
+              password: password,
+              ip: hostname,
+            },
+            settings: {
+              hostname,
+              username,
+              password,
+              timeoutSeconds: 10,
+            },
           },
-        },
-      ];
-      this.log(devices);
-      return devices;
+        ];
+        this.log(devices);
+        return devices;
+      } else {
+        this.error('Failed to retrieve device information');
+      }
     });
+  }
+  async onRepair(session: any): Promise<void> {
+    this.log('Repair process initiated');
+    let hostname = '';
+    let password = '';
+
+    // Kontrollera att session är korrekt
+    if (!session) {
+      this.error('No session provided for repair');
+      return;
+    }
+
+    this.log('Setting up session handler for repair');
+    // Logga session för att verifiera dess innehåll
+    this.log('Session data before setHandler:', JSON.stringify(session));
+
+    session.setHandler(
+      'repair',
+      async (data: { username: string; password: string }) => {
+        this.log('pair: repairing');
+        hostname = data.username;
+        this.log('hostname: ', hostname);
+        password = data.password;
+        this.log('password: ', password);
+        this.log('repairing client');
+        try {
+          this.api = new decoapiwapper(hostname);
+          const result = await this.api.authenticate(password);
+          if (result) {
+            this.log('Successfully connected to TP-Link Deco');
+            return { success: true };
+          } else {
+            this.log('Failed to connect to TP-Link Deco');
+            return { success: false, error: 'Authentication failed' };
+          }
+        } catch (error) {
+          this.error('Failed to connect to TP-Link Deco', error);
+          return { success: false, error: error || 'Unknown error' };
+        }
+      },
+    );
   }
 }
 

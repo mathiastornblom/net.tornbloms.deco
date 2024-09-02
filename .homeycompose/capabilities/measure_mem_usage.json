@@ -1,0 +1,51 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Memory Usage",
+    "nl": "Geheugengebruik",
+    "da": "Hukommelsesbrug",
+    "de": "Speichernutzung",
+    "es": "Uso de memoria",
+    "fr": "Utilisation de la mémoire",
+    "it": "Utilizzo della memoria",
+    "no": "Minnebruk",
+    "sv": "Minnesanvändning",
+    "pl": "Użycie pamięci",
+    "ru": "Использование памяти",
+    "ko": "메모리 사용량"
+  },
+  "units": {
+    "en": "%",
+    "nl": "%",
+    "da": "%",
+    "de": "%",
+    "es": "%",
+    "fr": "%",
+    "it": "%",
+    "no": "%",
+    "sv": "%",
+    "pl": "%",
+    "ru": "%",
+    "ko": "%"
+  },
+  "getable": true,
+  "setable": false,
+  "desc": {
+    "en": "Current memory usage",
+    "nl": "Huidig geheugengebruik",
+    "da": "Nuværende hukommelsesbrug",
+    "de": "Aktuelle Speichernutzung",
+    "es": "Uso de memoria actual",
+    "fr": "Utilisation actuelle de la mémoire",
+    "it": "Utilizzo attuale della memoria",
+    "no": "Nåværende minnebruk",
+    "sv": "Nuvarande minnesanvändning",
+    "pl": "Aktualne użycie pamięci",
+    "ru": "Текущее использование памяти",
+    "ko": "현재 메모리 사용량"
+  },
+  "insights": true,
+  "chartType": "spline",
+  "uiComponent": "sensor",
+  "icon": "/assets/capabilities/ram-memory-icon.svg"
+}

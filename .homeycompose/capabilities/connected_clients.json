@@ -1,0 +1,35 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Connected Clients",
+    "nl": "Verbonden Clients",
+    "da": "Forbundne Klienter",
+    "de": "Verbundene Clients",
+    "es": "Clientes Conectados",
+    "fr": "Clients Connectés",
+    "it": "Client Connessi",
+    "no": "Tilkoblede Klienter",
+    "sv": "Anslutna Klienter",
+    "pl": "Połączone Klienci",
+    "ru": "Подключенные Клиенты",
+    "ko": "연결된 클라이언트"
+  },
+  "units": {
+    "en": "pcs",
+    "nl": "stuks",
+    "da": "stk",
+    "de": "Stk",
+    "es": "pzs",
+    "fr": "pcs",
+    "it": "pcs",
+    "no": "stk",
+    "sv": "st",
+    "pl": "szt",
+    "ru": "шт",
+    "ko": "개"
+  },
+  "getable": true,
+  "setable": false,
+  "insights": true,
+  "icon": "./assets/capabilities/connected_clients.svg"
+}

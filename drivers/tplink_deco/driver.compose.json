@@ -2,7 +2,17 @@
   "id": "tplink_deco",
   "name": {
     "en": "TP-Link Deco",
-    "sv": "TP-Link Deco"
+    "sv": "TP-Link Deco",
+    "nl": "TP-Link Deco",
+    "da": "TP-Link Deco",
+    "de": "TP-Link Deco",
+    "es": "TP-Link Deco",
+    "fr": "TP-Link Deco",
+    "it": "TP-Link Deco",
+    "no": "TP-Link Deco",
+    "pl": "TP-Link Deco",
+    "ru": "TP-Link Deco",
+    "ko": "TP-Link Deco"
   },
   "images": {
     "small": "{{driverAssetsPath}}/images/small.png",
@@ -17,20 +27,60 @@
         "logo": "/assets/logo.png",
         "title": {
           "en": "Add your ip or hostname and password",
-          "sv": "Ange hostnamn eller IP samr lösenord"
+          "sv": "Ange hostnamn eller IP samt lösenord",
+          "nl": "Voeg je IP of hostnaam en wachtwoord toe",
+          "da": "Tilføj din IP eller værtsnavn og adgangskode",
+          "de": "Füge deine IP oder Hostname und Passwort hinzu",
+          "es": "Añade tu IP o hostname y contraseña",
+          "fr": "Ajoutez votre IP ou nom d'hôte et mot de passe",
+          "it": "Aggiungi il tuo IP o nome host e password",
+          "no": "Legg til IP eller vertsnavn og passord",
+          "pl": "Dodaj swój IP lub nazwę hosta i hasło",
+          "ru": "Добавьте ваш IP или имя хоста и пароль",
+          "ko": "IP 또는 호스트 이름과 비밀번호를 입력하세요"
         },
         "usernameLabel": {
           "en": "Hostname / IP",
-          "sv": "Hostnamn / IP"
+          "sv": "Hostnamn / IP",
+          "nl": "Hostnaam / IP",
+          "da": "Værtsnavn / IP",
+          "de": "Hostname / IP",
+          "es": "Nombre de host / IP",
+          "fr": "Nom d'hôte / IP",
+          "it": "Nome host / IP",
+          "no": "Vertsnavn / IP",
+          "pl": "Nazwa hosta / IP",
+          "ru": "Имя хоста / IP",
+          "ko": "호스트 이름 / IP"
         },
         "usernamePlaceholder": "192.168.1.1",
         "passwordLabel": {
           "en": "Password",
-          "sv": "Lösenord"
+          "sv": "Lösenord",
+          "nl": "Wachtwoord",
+          "da": "Adgangskode",
+          "de": "Passwort",
+          "es": "Contraseña",
+          "fr": "Mot de passe",
+          "it": "Password",
+          "no": "Passord",
+          "pl": "Hasło",
+          "ru": "Пароль",
+          "ko": "비밀번호"
         },
         "passwordPlaceholder": {
           "en": "Password",
-          "sv": "Lösenord"
+          "sv": "Lösenord",
+          "nl": "Wachtwoord",
+          "da": "Adgangskode",
+          "de": "Passwort",
+          "es": "Contraseña",
+          "fr": "Mot de passe",
+          "it": "Password",
+          "no": "Passord",
+          "pl": "Hasło",
+          "ru": "Пароль",
+          "ko": "비밀번호"
         }
       }
     },
@@ -50,17 +100,22 @@
       "template": "done"
     }
   ],
-  "repair": [
-    {
-      "id": "login_credentials",
-      "template": "login_credentials"
-    }
-  ],
   "class": "other",
   "capabilities": [
-    "measure_down_kilobytes_per_s",
-    "measure_up_kilobytes_per_s"
+    "measure_down_kilo_bytes_per_second",
+    "measure_up_kilo_bytes_per_second",
+    "measure_cpu_usage",
+    "measure_mem_usage",
+    "alarm_wan_state",
+    "wan_ipv4_ipaddr",
+    "lan_ipv4_ipaddr",
+    "connected_clients",
+    "reboot"
   ],
-  "platforms": ["local"],
-  "connectivity": ["lan"]
+  "platforms": [
+    "local"
+  ],
+  "connectivity": [
+    "lan"
+  ]
 }

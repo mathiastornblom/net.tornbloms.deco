@@ -1,0 +1,194 @@
+{
+  "title": {
+    "en": "A client became...",
+    "nl": "Een klant werd...",
+    "da": "En klient blev...",
+    "de": "Ein Kunde wurde...",
+    "es": "Un cliente se convirtió en...",
+    "fr": "Un client est devenu...",
+    "it": "Un cliente è diventato...",
+    "no": "En klient ble...",
+    "sv": "En klient blev...",
+    "pl": "Klient stał się...",
+    "ru": "Клиент стал...",
+    "ko": "클라이언트가 되었습니다..."
+  },
+  "titleFormatted": {
+    "en": "[[client]] became [[status]]",
+    "nl": "[[client]] werd [[status]]",
+    "da": "[[client]] blev [[status]]",
+    "de": "[[client]] wurde [[status]]",
+    "es": "[[client]] se convirtió en [[status]]",
+    "fr": "[[client]] est devenu [[status]]",
+    "it": "[[client]] è diventato [[status]]",
+    "no": "[[client]] ble [[status]]",
+    "sv": "[[client]] blev [[status]]",
+    "pl": "[[client]] stał się [[status]]",
+    "ru": "[[client]] стал [[status]]",
+    "ko": "[[client]]가 [[status]]가 되었습니다"
+  },
+  "highlight": true,
+  "tokens": [
+    {
+      "type": "string",
+      "name": "name",
+      "title": {
+        "en": "name",
+        "nl": "naam",
+        "da": "navn",
+        "de": "Name",
+        "es": "nombre",
+        "fr": "nom",
+        "it": "nome",
+        "no": "navn",
+        "sv": "namn",
+        "pl": "imię",
+        "ru": "имя",
+        "ko": "이름"
+      },
+      "example": {
+        "en": "PC",
+        "nl": "PC",
+        "da": "PC",
+        "de": "PC",
+        "es": "PC",
+        "fr": "PC",
+        "it": "PC",
+        "no": "PC",
+        "sv": "PC",
+        "pl": "PC",
+        "ru": "ПК",
+        "ko": "PC"
+      }
+    },
+    {
+      "type": "string",
+      "name": "ipaddr",
+      "title": {
+        "en": "ip address",
+        "nl": "ip adres",
+        "da": "ip adresse",
+        "de": "IP-Adresse",
+        "es": "dirección IP",
+        "fr": "adresse IP",
+        "it": "indirizzo IP",
+        "no": "IP-adresse",
+        "sv": "IP-adress",
+        "pl": "adres IP",
+        "ru": "IP-адрес",
+        "ko": "IP 주소"
+      },
+      "example": {
+        "en": "192.168.0.2",
+        "nl": "192.168.0.2",
+        "da": "192.168.0.2",
+        "de": "192.168.0.2",
+        "es": "192.168.0.2",
+        "fr": "192.168.0.2",
+        "it": "192.168.0.2",
+        "no": "192.168.0.2",
+        "sv": "192.168.0.2",
+        "pl": "192.168.0.2",
+        "ru": "192.168.0.2",
+        "ko": "192.168.0.2"
+      }
+    },
+    {
+      "type": "string",
+      "name": "mac",
+      "title": {
+        "en": "mac address",
+        "nl": "mac adres",
+        "da": "mac adresse",
+        "de": "MAC-Adresse",
+        "es": "dirección MAC",
+        "fr": "adresse MAC",
+        "it": "indirizzo MAC",
+        "no": "MAC-adresse",
+        "sv": "MAC-adress",
+        "pl": "adres MAC",
+        "ru": "MAC-адрес",
+        "ko": "MAC 주소"
+      },
+      "example": {
+        "en": "A1:B2:C3:D4:E5:F6",
+        "nl": "A1:B2:C3:D4:E5:F6",
+        "da": "A1:B2:C3:D4:E5:F6",
+        "de": "A1:B2:C3:D4:E5:F6",
+        "es": "A1:B2:C3:D4:E5:F6",
+        "fr": "A1:B2:C3:D4:E5:F6",
+        "it": "A1:B2:C3:D4:E5:F6",
+        "no": "A1:B2:C3:D4:E5:F6",
+        "sv": "A1:B2:C3:D4:E5:F6",
+        "pl": "A1:B2:C3:D4:E5:F6",
+        "ru": "A1:B2:C3:D4:E5:F6",
+        "ko": "A1:B2:C3:D4:E5:F6"
+      }
+    }
+  ],
+  "args": [
+    {
+      "name": "device",
+      "type": "device",
+      "filter": "driver_id=tplink_deco"
+    },
+    {
+      "name": "client",
+      "type": "autocomplete",
+      "placeholder": {
+        "en": "client",
+        "nl": "klant",
+        "da": "klient",
+        "de": "Kunde",
+        "es": "cliente",
+        "fr": "client",
+        "it": "cliente",
+        "no": "klient",
+        "sv": "klient",
+        "pl": "klient",
+        "ru": "клиент",
+        "ko": "클라이언트"
+      }
+    },
+    {
+      "name": "status",
+      "type": "dropdown",
+      "values": [
+        {
+          "id": "online",
+          "title": {
+            "en": "online",
+            "nl": "online",
+            "da": "på nettet",
+            "de": "online",
+            "es": "en línea",
+            "fr": "en ligne",
+            "it": "online",
+            "no": "på nett",
+            "sv": "online",
+            "pl": "online",
+            "ru": "в сети",
+            "ko": "온라인"
+          }
+        },
+        {
+          "id": "offline",
+          "title": {
+            "en": "offline",
+            "nl": "offline",
+            "da": "offline",
+            "de": "offline",
+            "es": "fuera de línea",
+            "fr": "hors ligne",
+            "it": "offline",
+            "no": "frakoblet",
+            "sv": "offline",
+            "pl": "offline",
+            "ru": "офлайн",
+            "ko": "오프라인"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "type": "string",
+  "title": {
+    "en": "WAN IP Address",
+    "nl": "WAN IP-adres",
+    "da": "WAN IP-adresse",
+    "de": "WAN-IP-Adresse",
+    "es": "Dirección IP de WAN",
+    "fr": "Adresse IP WAN",
+    "it": "Indirizzo IP WAN",
+    "no": "WAN IP-adresse",
+    "sv": "WAN IP-adress",
+    "pl": "Adres IP WAN",
+    "ru": "WAN IP-адрес",
+    "ko": "WAN IP 주소"
+  },
+  "getable": true,
+  "setable": false,
+  "icon": "./assets/capabilities/wan_ip_address.svg"
+}

@@ -1,0 +1,51 @@
+{
+  "type": "boolean",
+  "title": {
+    "en": "Reboot",
+    "nl": "Herstart",
+    "da": "Genstart",
+    "de": "Neustart",
+    "es": "Reiniciar",
+    "fr": "Redémarrer",
+    "it": "Riavviare",
+    "no": "Omstart",
+    "sv": "Starta om",
+    "pl": "Restart",
+    "ru": "Перезагрузка",
+    "ko": "재부팅"
+  },
+  "insightsTitleTrue": {
+    "en": "Router restarted",
+    "nl": "Router herstart",
+    "da": "Router genstartet",
+    "de": "Router neu gestartet",
+    "es": "Enrutador reiniciado",
+    "fr": "Routeur redémarré",
+    "it": "Router riavviato",
+    "no": "Router startet på nytt",
+    "sv": "Router omstartad",
+    "pl": "Router uruchomiony ponownie",
+    "ru": "Маршрутизатор перезагружен",
+    "ko": "라우터가 재부팅되었습니다"
+  },
+  "insightsTitleFalse": {
+    "en": "Router UP",
+    "nl": "Router AAN",
+    "da": "Router OPPE",
+    "de": "Router AKTIV",
+    "es": "Enrutador ENCENDIDO",
+    "fr": "Routeur ACTIF",
+    "it": "Router ATTIVO",
+    "no": "Router OPPE",
+    "sv": "Router UPPE",
+    "pl": "Router WŁĄCZONY",
+    "ru": "Маршрутизатор ВКЛЮЧЕН",
+    "ko": "라우터 작동 중"
+  },
+  "uiQuickAction": false,
+  "uiComponent": "button",
+  "getable": true,
+  "setable": true,
+  "insights": true,
+  "icon": "./assets/capabilities/reboot.svg"
+}

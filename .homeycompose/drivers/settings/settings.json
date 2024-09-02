@@ -1,96 +1,228 @@
 [
-   {
-      "type": "text",
-      "id": "host",
-      "label": {
-         "en": "Host"
-      },
-      "value": "http://192.168.0.1"
-   },
-   {
-      "type": "text",
-      "id": "username",
-      "label": {
-         "en": "Username"
-      }
-   },
-   {
-      "type": "password",
-      "id": "password",
-      "label": {
-         "en": "Password"
-      }
-   },
-   {
-      "type": "number",
-      "id": "interval_seconds",
-      "label": {
-         "en": "Seconds between updates"
-      },
-      "value": 60,
-      "min": 1
-   },
-   {
-      "type": "number",
-      "id": "consider_home",
-      "label": {
-         "en": "Seconds to wait till marking a device tracker as not home after not being seen."
-      },
-      "value": 180,
-      "min": 0
-   },
-   {
-      "type": "number",
-      "id": "timeout_seconds",
-      "label": {
-         "en": "Timeout seconds"
-      },
-      "value": 30,
-      "min": 5
-   },
-   {
-      "type": "number",
-      "id": "timeout_error_retries",
-      "label": {
-         "en": "Timeout error retry count"
-      },
-      "value": 1,
-      "min": 0
-   },
-   {
-      "type": "checkbox",
-      "id": "verify_ssl",
-      "label": {
-         "en": "Verify SSL certificate is valid"
-      },
-      "value": true
-   },
-   {
-      "type": "text",
-      "id": "client_prefix",
-      "label": {
-         "en": "Client name prefix"
-      }
-   },
-   {
-      "type": "text",
-      "id": "client_postfix",
-      "label": {
-         "en": "Client name postfix"
-      }
-   },
-   {
-      "type": "text",
-      "id": "deco_prefix",
-      "label": {
-         "en": "Deco name prefix"
-      }
-   },
-   {
-      "type": "text",
-      "id": "deco_postfix",
-      "label": {
-         "en": "Deco name postfix"
-      }
-   }
+  {
+    "type": "text",
+    "id": "host",
+    "label": {
+      "en": "Host",
+      "nl": "Gastheer",
+      "da": "Vært",
+      "de": "Host",
+      "es": "Anfitrión",
+      "fr": "Hôte",
+      "it": "Host",
+      "no": "Vert",
+      "sv": "Värd",
+      "pl": "Gospodarz",
+      "ru": "Хост",
+      "ko": "호스트"
+    },
+    "value": "http://192.168.0.1"
+  },
+  {
+    "type": "text",
+    "id": "username",
+    "label": {
+      "en": "Username",
+      "nl": "Gebruikersnaam",
+      "da": "Brugernavn",
+      "de": "Benutzername",
+      "es": "Nombre de usuario",
+      "fr": "Nom d'utilisateur",
+      "it": "Nome utente",
+      "no": "Brukernavn",
+      "sv": "Användarnamn",
+      "pl": "Nazwa użytkownika",
+      "ru": "Имя пользователя",
+      "ko": "사용자 이름"
+    }
+  },
+  {
+    "type": "password",
+    "id": "password",
+    "label": {
+      "en": "Password",
+      "nl": "Wachtwoord",
+      "da": "Adgangskode",
+      "de": "Passwort",
+      "es": "Contraseña",
+      "fr": "Mot de passe",
+      "it": "Password",
+      "no": "Passord",
+      "sv": "Lösenord",
+      "pl": "Hasło",
+      "ru": "Пароль",
+      "ko": "비밀번호"
+    }
+  },
+  {
+    "type": "number",
+    "id": "interval_seconds",
+    "label": {
+      "en": "Seconds between updates",
+      "nl": "Seconden tussen updates",
+      "da": "Sekunder mellem opdateringer",
+      "de": "Sekunden zwischen Updates",
+      "es": "Segundos entre actualizaciones",
+      "fr": "Secondes entre les mises à jour",
+      "it": "Secondi tra gli aggiornamenti",
+      "no": "Sekunder mellom oppdateringer",
+      "sv": "Sekunder mellan uppdateringar",
+      "pl": "Sekundy między aktualizacjami",
+      "ru": "Секунды между обновлениями",
+      "ko": "업데이트 간격 (초)"
+    },
+    "value": 60,
+    "min": 1
+  },
+  {
+    "type": "number",
+    "id": "consider_home",
+    "label": {
+      "en": "Seconds to wait till marking a device tracker as not home after not being seen.",
+      "nl": "Seconden wachten voordat je een apparaattracker als niet-thuis markeert nadat deze niet meer wordt gezien.",
+      "da": "Sekunder at vente, indtil markering af enhedstracker som ikke hjemme efter ikke at være set.",
+      "de": "Sekunden warten, bis ein Gerät als nicht zu Hause markiert wird, nachdem es nicht gesehen wurde.",
+      "es": "Segundos de espera hasta marcar un rastreador de dispositivo como no en casa después de no haber sido visto.",
+      "fr": "Secondes d'attente avant de marquer un traqueur de dispositif comme non à la maison après ne pas avoir été vu.",
+      "it": "Secondi di attesa per contrassegnare un tracker come non a casa dopo non essere stato visto.",
+      "no": "Sekunder å vente før man markerer en enhetssporer som ikke hjemme etter å ikke ha blitt sett.",
+      "sv": "Sekunder att vänta innan man markerar en spårarenhet som inte hemma efter att den inte har setts.",
+      "pl": "Sekundy czekania, aż śledzenie urządzenia zostanie oznaczone jako nieobecne po niewidzieniu.",
+      "ru": "Секунды ожидания до пометки устройства как не дома после того, как оно не было замечено.",
+      "ko": "디바이스 추적기를 집에 있지 않음으로 표시하기까지 기다리는 시간 (초)."
+    },
+    "value": 180,
+    "min": 0
+  },
+  {
+    "type": "number",
+    "id": "timeout_seconds",
+    "label": {
+      "en": "Timeout seconds",
+      "nl": "Timeout seconden",
+      "da": "Timeout sekunder",
+      "de": "Timeout Sekunden",
+      "es": "Segundos de tiempo de espera",
+      "fr": "Secondes de délai d'attente",
+      "it": "Timeout secondi",
+      "no": "Timeout sekunder",
+      "sv": "Timeout sekunder",
+      "pl": "Sekundy limitu czasu",
+      "ru": "Таймаут в секундах",
+      "ko": "타임아웃 시간 (초)"
+    },
+    "value": 30,
+    "min": 5
+  },
+  {
+    "type": "number",
+    "id": "timeout_error_retries",
+    "label": {
+      "en": "Timeout error retry count",
+      "nl": "Herhalingen bij timeouterror",
+      "da": "Timeout fejl gentag antal",
+      "de": "Timeout Fehler Wiederholungsanzahl",
+      "es": "Reintentos de error de tiempo de espera",
+      "fr": "Compte de réessai d'erreur de délai d'attente",
+      "it": "Conteggio tentativi di errore di timeout",
+      "no": "Timeout feil antall forsøk",
+      "sv": "Timeout fel antal försök",
+      "pl": "Liczba ponownych prób błędu limitu czasu",
+      "ru": "Количество повторных попыток при ошибке таймаута",
+      "ko": "타임아웃 오류 재시도 횟수"
+    },
+    "value": 1,
+    "min": 0
+  },
+  {
+    "type": "checkbox",
+    "id": "verify_ssl",
+    "label": {
+      "en": "Verify SSL certificate is valid",
+      "nl": "Controleer of het SSL-certificaat geldig is",
+      "da": "Bekræft at SSL-certifikat er gyldigt",
+      "de": "Überprüfen Sie, ob das SSL-Zertifikat gültig ist",
+      "es": "Verificar que el certificado SSL es válido",
+      "fr": "Vérifier que le certificat SSL est valide",
+      "it": "Verificare che il certificato SSL sia valido",
+      "no": "Verifiser at SSL-sertifikatet er gyldig",
+      "sv": "Verifiera att SSL-certifikatet är giltigt",
+      "pl": "Zweryfikuj, czy certyfikat SSL jest ważny",
+      "ru": "Проверьте, что SSL-сертификат действителен",
+      "ko": "SSL 인증서가 유효한지 확인하세요"
+    },
+    "value": true
+  },
+  {
+    "type": "text",
+    "id": "client_prefix",
+    "label": {
+      "en": "Client name prefix",
+      "nl": "Voorvoegsel clientnaam",
+      "da": "Klientnavn præfiks",
+      "de": "Clientname Präfix",
+      "es": "Prefijo del nombre del cliente",
+      "fr": "Préfixe du nom du client",
+      "it": "Prefisso del nome del cliente",
+      "no": "Klientnavn prefiks",
+      "sv": "Klientnamn prefix",
+      "pl": "Prefiks nazwy klienta",
+      "ru": "Префикс имени клиента",
+      "ko": "클라이언트 이름 접두사"
+    }
+  },
+  {
+    "type": "text",
+    "id": "client_postfix",
+    "label": {
+      "en": "Client name postfix",
+      "nl": "Postfix clientnaam",
+      "da": "Klientnavn postfix",
+      "de": "Clientname Postfix",
+      "es": "Postfijo del nombre del cliente",
+      "fr": "Postfixe du nom du client",
+      "it": "Postfisso del nome del cliente",
+      "no": "Klientnavn postfix",
+      "sv": "Klientnamn postfix",
+      "pl": "Postfiks nazwy klienta",
+      "ru": "Постфикс имени клиента",
+      "ko": "클라이언트 이름 접미사"
+    }
+  },
+  {
+    "type": "text",
+    "id": "deco_prefix",
+    "label": {
+      "en": "Deco name prefix",
+      "nl": "Voorvoegsel deconaam",
+      "da": "Deco navn præfiks",
+      "de": "Deconame Präfix",
+      "es": "Prefijo del nombre Deco",
+      "fr": "Préfixe du nom Deco",
+      "it": "Prefisso del nome Deco",
+      "no": "Deco navn prefiks",
+      "sv": "Deco namn prefix",
+      "pl": "Prefiks nazwy Deco",
+      "ru": "Префикс имени Deco",
+      "ko": "Deco 이름 접두사"
+    }
+  },
+  {
+    "type": "text",
+    "id": "deco_postfix",
+    "label": {
+      "en": "Deco name postfix",
+      "nl": "Postfix deconaam",
+      "da": "Deco navn postfix",
+      "de": "Deconame Postfix",
+      "es": "Postfijo del nombre Deco",
+      "fr": "Postfixe du nom Deco",
+      "it": "Postfisso del nome Deco",
+      "no": "Deco navn postfix",
+      "sv": "Deco namn postfix",
+      "pl": "Postfiks nazwy Deco",
+      "ru": "Постфикс имени Deco",
+      "ko": "Deco 이름 접미사"
+    }
+  }
 ]

@@ -1,16 +1,42 @@
 {
   "id": "net.tornbloms.deco",
   "version": "1.0.0",
-  "compatibility": ">=5.0.0",
+  "compatibility": ">=12.0.0",
   "sdk": 3,
-  "platforms": ["local"],
+  "platforms": [
+    "local"
+  ],
   "name": {
-    "en": "TP-Link Deco"
+    "en": "TP-Link Deco",
+    "nl": "TP-Link Deco",
+    "da": "TP-Link Deco",
+    "de": "TP-Link Deco",
+    "es": "TP-Link Deco",
+    "fr": "TP-Link Deco",
+    "it": "TP-Link Deco",
+    "no": "TP-Link Deco",
+    "sv": "TP-Link Deco",
+    "pl": "TP-Link Deco",
+    "ru": "TP-Link Deco",
+    "ko": "TP-Link Deco"
   },
   "description": {
-    "en": "Superior Mesh WiFi, Everywhere"
+    "en": "Superior Mesh WiFi, Everywhere",
+    "nl": "Superieur Mesh WiFi, overal",
+    "da": "Overlegen Mesh WiFi, overalt",
+    "de": "Überlegenes Mesh WiFi, überall",
+    "es": "WiFi de malla superior, en todas partes",
+    "fr": "WiFi Mesh supérieur, partout",
+    "it": "WiFi Mesh superiore, ovunque",
+    "no": "Overlegen Mesh WiFi, overalt",
+    "sv": "Överlägsen Mesh WiFi, överallt",
+    "pl": "Najlepsze Mesh WiFi, wszędzie",
+    "ru": "Превосходный Mesh WiFi, повсюду",
+    "ko": "최고의 Mesh WiFi, 어디서든"
   },
-  "category": ["internet"],
+  "category": [
+    "internet"
+  ],
   "permissions": [],
   "images": {
     "small": "/assets/images/small.png",
@@ -22,7 +48,54 @@
     "email": "mathias@tornbloms.net"
   },
   "tags": {
-    "en": ["TP_link", "Deco"]
+    "en": [
+      "TP_link",
+      "Deco"
+    ],
+    "nl": [
+      "TP_link",
+      "Deco"
+    ],
+    "da": [
+      "TP_link",
+      "Deco"
+    ],
+    "de": [
+      "TP_link",
+      "Deco"
+    ],
+    "es": [
+      "TP_link",
+      "Deco"
+    ],
+    "fr": [
+      "TP_link",
+      "Deco"
+    ],
+    "it": [
+      "TP_link",
+      "Deco"
+    ],
+    "no": [
+      "TP_link",
+      "Deco"
+    ],
+    "sv": [
+      "TP_link",
+      "Deco"
+    ],
+    "pl": [
+      "TP_link",
+      "Deco"
+    ],
+    "ru": [
+      "TP_link",
+      "Deco"
+    ],
+    "ko": [
+      "TP_link",
+      "Deco"
+    ]
   },
   "contributors": {
     "developers": [

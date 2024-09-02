@@ -1,0 +1,25 @@
+{
+  "id": "reboot",
+  "title": {
+    "en": "Reboot",
+    "nl": "Opnieuw opstarten",
+    "da": "Genstart",
+    "de": "Neustart",
+    "es": "Reiniciar",
+    "fr": "Redémarrer",
+    "it": "Riavvia",
+    "no": "Omstart",
+    "sv": "Starta om",
+    "pl": "Restart",
+    "ru": "Перезагрузить",
+    "ko": "재부팅"
+  },
+  "args": [
+    {
+      "name": "device",
+      "type": "device",
+      "filter": "driver_id=tplink_deco"
+    }
+  ],
+  "action": "reboot"
+}

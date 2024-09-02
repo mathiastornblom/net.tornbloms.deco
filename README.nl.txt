@@ -1,0 +1,5 @@
+In de huidige verbonden wereld is een stabiel en veilig thuisnetwerk de ruggengraat van je digitale leven. Met de TP-Link Deco App kun je moeiteloos je TP-Link Deco-routers integreren met Homey, waardoor je de controle en het overzicht hebt die je nodig hebt om je netwerk gemakkelijk te beheren.
+
+De dagen van het jongleren met meerdere apps of complexe instellingen zijn voorbij. Met de TP-Link Deco App kun je de status van je netwerk monitoren en verbonden apparaten beheren, allemaal vanuit de intuïtieve Homey-omgeving. Of je nu een slim huis vol verbonden apparaten beheert of simpelweg je netwerk veilig houdt, de TP-Link Deco App biedt je een krachtige, gebruiksvriendelijke oplossing.
+
+Blijf in controle, blijf veilig, en geniet van de naadloze connectiviteit die de TP-Link Deco App naar je Homey slimme huis brengt. Beheer je netwerk zoals nooit tevoren en houd je digitale leven soepel draaiende. Met TP-Link Deco en Homey ben je altijd de baas over je verbinding. Blijf verbonden, blijf vol vertrouwen met TP-Link Deco Control.

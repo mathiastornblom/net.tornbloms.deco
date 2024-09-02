@@ -1,21 +1,370 @@
 [
   {
     "type": "group",
-    "label": { "en": "Login details" },
+    "label": {
+      "en": "Login details",
+      "nl": "Logingegevens",
+      "da": "Loginoplysninger",
+      "de": "Anmeldedaten",
+      "es": "Detalles de inicio de sesión",
+      "fr": "Détails de connexion",
+      "it": "Dettagli di accesso",
+      "no": "Innloggingsdetaljer",
+      "sv": "Inloggningsdetaljer",
+      "pl": "Szczegóły logowania",
+      "ru": "Данные для входа",
+      "ko": "로그인 정보"
+    },
     "children": [
       {
         "id": "hostname",
         "type": "label",
-        "label": { "en": "Hostname/IP" },
+        "label": {
+          "en": "Hostname/IP",
+          "nl": "Hostnaam/IP",
+          "da": "Værtsnavn/IP",
+          "de": "Hostname/IP",
+          "es": "Nombre de host/IP",
+          "fr": "Nom d'hôte/IP",
+          "it": "Nome host/IP",
+          "no": "Vertsnavn/IP",
+          "sv": "Värdnamn/IP",
+          "pl": "Nazwa hosta/IP",
+          "ru": "Имя хоста/IP",
+          "ko": "호스트네임/IP"
+        },
         "value": "192.168.68.1",
-        "hint": { "en": "The hostname or th IP of the router." }
+        "required": true,
+        "hint": {
+          "en": "The hostname or the IP of the router.",
+          "nl": "De hostnaam of IP van de router.",
+          "da": "Værtsnavnet eller IP-adressen på routeren.",
+          "de": "Der Hostname oder die IP des Routers.",
+          "es": "El nombre del host o la IP del router.",
+          "fr": "Le nom d'hôte ou l'IP du routeur.",
+          "it": "Il nome host o l'IP del router.",
+          "no": "Vertsnavnet eller IP-adressen til ruteren.",
+          "sv": "Värdnamnet eller IP-adressen till routern.",
+          "pl": "Nazwa hosta lub IP routera.",
+          "ru": "Имя хоста или IP адрес роутера.",
+          "ko": "라우터의 호스트네임 또는 IP."
+        }
       },
       {
         "id": "password",
         "type": "password",
-        "label": { "en": "Password" },
+        "label": {
+          "en": "Password",
+          "nl": "Wachtwoord",
+          "da": "Adgangskode",
+          "de": "Passwort",
+          "es": "Contraseña",
+          "fr": "Mot de passe",
+          "it": "Password",
+          "no": "Passord",
+          "sv": "Lösenord",
+          "pl": "Hasło",
+          "ru": "Пароль",
+          "ko": "비밀번호"
+        },
         "value": "Secret",
-        "hint": { "en": "The TP-Link password of the owner." }
+        "required": true,
+        "hint": {
+          "en": "The TP-Link password of the owner.",
+          "nl": "Het TP-Link wachtwoord van de eigenaar.",
+          "da": "Ejernes TP-Link-adgangskode.",
+          "de": "Das TP-Link Passwort des Besitzers.",
+          "es": "La contraseña de TP-Link del propietario.",
+          "fr": "Le mot de passe TP-Link du propriétaire.",
+          "it": "La password TP-Link del proprietario.",
+          "no": "TP-Link-passordet til eieren.",
+          "sv": "Ägarens TP-Link-lösenord.",
+          "pl": "Hasło TP-Link właściciela.",
+          "ru": "Пароль TP-Link владельца.",
+          "ko": "소유자의 TP-Link 비밀번호."
+        }
+      }
+    ]
+  },
+  {
+    "type": "group",
+    "label": {
+      "en": "Timers",
+      "nl": "Timers",
+      "da": "Timere",
+      "de": "Timer",
+      "es": "Temporizadores",
+      "fr": "Minuteries",
+      "it": "Timer",
+      "no": "Tidsmålere",
+      "sv": "Timers",
+      "pl": "Timery",
+      "ru": "Таймеры",
+      "ko": "타이머"
+    },
+    "children": [
+      {
+        "id": "timeoutSeconds",
+        "type": "number",
+        "label": {
+          "en": "Query router every",
+          "nl": "Vraag router elke",
+          "da": "Spørg routeren hver",
+          "de": "Abfrage Router alle",
+          "es": "Consultar el router cada",
+          "fr": "Interroger le routeur toutes les",
+          "it": "Interroga il router ogni",
+          "no": "Spørr ruter hver",
+          "sv": "Fråga routern varje",
+          "pl": "Zapytaj router co",
+          "ru": "Запрос роутера каждые",
+          "ko": "라우터를 쿼리할 간격"
+        },
+        "value": 10,
+        "min": 1,
+        "max": 3600,
+        "step": 1,
+        "required": true,
+        "default": 10,
+        "units": {
+          "en": "seconds",
+          "nl": "seconden",
+          "da": "sekunder",
+          "de": "Sekunden",
+          "es": "segundos",
+          "fr": "secondes",
+          "it": "secondi",
+          "no": "sekunder",
+          "sv": "sekunder",
+          "pl": "sekund",
+          "ru": "секунд",
+          "ko": "초"
+        },
+        "hint": {
+          "en": "Value in seconds, dont set too low as it might cause stability issues on your network",
+          "nl": "Waarde in seconden, stel niet te laag in, omdat dit stabiliteitsproblemen op uw netwerk kan veroorzaken",
+          "da": "Værdi i sekunder, sæt ikke værdien for lavt, da det kan forårsage stabilitetsproblemer på dit netværk",
+          "de": "Wert in Sekunden, nicht zu niedrig einstellen, da dies zu Stabilitätsproblemen im Netzwerk führen könnte",
+          "es": "Valor en segundos, no lo configures demasiado bajo ya que podría causar problemas de estabilidad en tu red",
+          "fr": "Valeur en secondes, ne la définissez pas trop basse car cela pourrait provoquer des problèmes de stabilité sur votre réseau",
+          "it": "Valore in secondi, non impostare troppo basso poiché potrebbe causare problemi di stabilità sulla tua rete",
+          "no": "Verdi i sekunder, ikke sett for lavt da det kan forårsake stabilitetsproblemer i nettverket ditt",
+          "sv": "Värde i sekunder, ställ inte för lågt eftersom det kan orsaka stabilitetsproblem i ditt nätverk",
+          "pl": "Wartość w sekundach, nie ustawiaj zbyt nisko, ponieważ może to powodować problemy ze stabilnością sieci",
+          "ru": "Значение в секундах, не устанавливайте слишком низкое значение, так как это может вызвать проблемы со стабильностью в вашей сети",
+          "ko": "초 단위 값, 너무 낮게 설정하면 네트워크에 안정성 문제가 발생할 수 있습니다"
+        }
+      }
+    ]
+  },
+  {
+    "type": "group",
+    "label": {
+      "en": "Device Settings",
+      "nl": "Apparaatinstellingen",
+      "da": "Enhedsindstillinger",
+      "de": "Geräteeinstellungen",
+      "es": "Configuración del dispositivo",
+      "fr": "Paramètres de l'appareil",
+      "it": "Impostazioni del dispositivo",
+      "no": "Enhetsinnstillinger",
+      "sv": "Enhetsinställningar",
+      "pl": "Ustawienia urządzenia",
+      "ru": "Настройки устройства",
+      "ko": "장치 설정"
+    },
+    "children": [
+      {
+        "id": "device_model",
+        "type": "label",
+        "label": {
+          "en": "Device model:",
+          "nl": "Model van het apparaat:",
+          "da": "Enhedsmodel:",
+          "de": "Gerätemodell:",
+          "es": "Modelo del dispositivo:",
+          "fr": "Modèle de l'appareil :",
+          "it": "Modello del dispositivo:",
+          "no": "Enhetsmodell:",
+          "sv": "Enhetsmodell:",
+          "pl": "Model urządzenia:",
+          "ru": "Модель устройства:",
+          "ko": "장치 모델:"
+        },
+        "hint": {
+          "en": "Model name of the device",
+          "nl": "Modelnaam van het apparaat",
+          "da": "Enhedens modelnavn",
+          "de": "Modellname des Geräts",
+          "es": "Nombre del modelo del dispositivo",
+          "fr": "Nom du modèle de l'appareil",
+          "it": "Nome del modello del dispositivo",
+          "no": "Modellnavn på enheten",
+          "sv": "Modellnamn på enheten",
+          "pl": "Nazwa modelu urządzenia",
+          "ru": "Название модели устройства",
+          "ko": "장치 모델 이름"
+        }
+      },
+      {
+        "id": "hardware_ver",
+        "type": "label",
+        "label": {
+          "en": "Hardware version:",
+          "nl": "Hardwareversie:",
+          "da": "Hardwareversion:",
+          "de": "Hardwareversion:",
+          "es": "Versión de hardware:",
+          "fr": "Version matérielle :",
+          "it": "Versione hardware:",
+          "no": "Maskinvareversjon:",
+          "sv": "Hårdvaruversion:",
+          "pl": "Wersja sprzętu:",
+          "ru": "Версия оборудования:",
+          "ko": "하드웨어 버전:"
+        },
+        "hint": {
+          "en": "Hardware version of the device",
+          "nl": "Hardwareversie van het apparaat",
+          "da": "Hardwareversion af enheden",
+          "de": "Hardwareversion des Geräts",
+          "es": "Versión de hardware del dispositivo",
+          "fr": "Version matérielle de l'appareil",
+          "it": "Versione hardware del dispositivo",
+          "no": "Maskinvareversjon av enheten",
+          "sv": "Hårdvaruversion av enheten",
+          "pl": "Wersja sprzętu urządzenia",
+          "ru": "Версия оборудования устройства",
+          "ko": "장치의 하드웨어 버전"
+        }
+      },
+      {
+        "id": "software_ver",
+        "type": "label",
+        "label": {
+          "en": "Firmware version:",
+          "nl": "Firmwareversie:",
+          "da": "Firmwareversion:",
+          "de": "Firmware-Version:",
+          "es": "Versión de firmware:",
+          "fr": "Version du firmware :",
+          "it": "Versione del firmware:",
+          "no": "Firmwareversjon:",
+          "sv": "Firmware-version:",
+          "pl": "Wersja oprogramowania:",
+          "ru": "Версия прошивки:",
+          "ko": "펌웨어 버전:"
+        },
+        "hint": {
+          "en": "Firmware version of the device",
+          "nl": "Firmwareversie van het apparaat",
+          "da": "Firmwareversion af enheden",
+          "de": "Firmwareversion des Geräts",
+          "es": "Versión del firmware del dispositivo",
+          "fr": "Version du firmware de l'appareil",
+          "it": "Versione del firmware del dispositivo",
+          "no": "Firmwareversjon av enheten",
+          "sv": "Firmware-version av enheten",
+          "pl": "Wersja oprogramowania sprzętowego urządzenia",
+          "ru": "Версия прошивки устройства",
+          "ko": "장치의 펌웨어 버전"
+        }
+      },
+      {
+        "id": "hw_id",
+        "type": "label",
+        "label": {
+          "en": "Hardware id:",
+          "nl": "Hardware-id:",
+          "da": "Hardware-id:",
+          "de": "Hardware-ID:",
+          "es": "ID de hardware:",
+          "fr": "Identifiant matériel :",
+          "it": "ID hardware:",
+          "no": "Maskinvare-ID:",
+          "sv": "Maskinvaru-id:",
+          "pl": "Identyfikator sprzętu:",
+          "ru": "Идентификатор оборудования:",
+          "ko": "하드웨어 ID:"
+        },
+        "hint": {
+          "en": "Id of the device",
+          "nl": "Id van het apparaat",
+          "da": "Id på enheden",
+          "de": "ID des Geräts",
+          "es": "ID del dispositivo",
+          "fr": "Id de l'appareil",
+          "it": "Id del dispositivo",
+          "no": "ID på enheten",
+          "sv": "Id för enheten",
+          "pl": "Identyfikator urządzenia",
+          "ru": "Идентификатор устройства",
+          "ko": "장치 ID"
+        }
+      },
+      {
+        "id": "mac",
+        "type": "label",
+        "label": {
+          "en": "Mac address:",
+          "nl": "Mac-adres:",
+          "da": "Mac-adresse:",
+          "de": "Mac-Adresse:",
+          "es": "Dirección MAC:",
+          "fr": "Adresse Mac :",
+          "it": "Indirizzo Mac:",
+          "no": "Mac-adresse:",
+          "sv": "Mac-adress:",
+          "pl": "Adres Mac:",
+          "ru": "Адрес Mac:",
+          "ko": "맥 주소:"
+        },
+        "hint": {
+          "en": "Mac address of the device",
+          "nl": "Mac-adres van het apparaat",
+          "da": "Mac-adresse på enheden",
+          "de": "Mac-Adresse des Geräts",
+          "es": "Dirección MAC del dispositivo",
+          "fr": "Adresse Mac de l'appareil",
+          "it": "Indirizzo Mac del dispositivo",
+          "no": "Mac-adressen til enheten",
+          "sv": "MAC-adress för enheten",
+          "pl": "Adres Mac urządzenia",
+          "ru": "Mac адрес устройства",
+          "ko": "장치의 맥 주소"
+        }
+      },
+      {
+        "id": "role",
+        "type": "label",
+        "label": {
+          "en": "Role:",
+          "nl": "Rol:",
+          "da": "Rolle:",
+          "de": "Rolle:",
+          "es": "Papel:",
+          "fr": "Rôle :",
+          "it": "Ruolo:",
+          "no": "Rolle:",
+          "sv": "Roll:",
+          "pl": "Rola:",
+          "ru": "Роль:",
+          "ko": "역할:"
+        },
+        "hint": {
+          "en": "Role of the device",
+          "nl": "Rol van het apparaat",
+          "da": "Enhedens rolle",
+          "de": "Rolle des Geräts",
+          "es": "Rol del dispositivo",
+          "fr": "Rôle de l'appareil",
+          "it": "Ruolo del dispositivo",
+          "no": "Enhetens rolle",
+          "sv": "Enhetens roll",
+          "pl": "Rola urządzenia",
+          "ru": "Роль устройства",
+          "ko": "장치의 역할"
+        }
       }
     ]
   }

@@ -1,0 +1,52 @@
+{
+  "id": "cpu_usage",
+  "title": {
+    "en": "CPU Usage",
+    "nl": "CPU-gebruik",
+    "da": "CPU-brug",
+    "de": "CPU-Auslastung",
+    "es": "Uso de CPU",
+    "fr": "Utilisation du CPU",
+    "it": "Utilizzo della CPU",
+    "no": "CPU-bruk",
+    "sv": "CPU-användning",
+    "pl": "Zużycie CPU",
+    "ru": "Использование ЦП",
+    "ko": "CPU 사용량"
+  },
+  "titleFormatted": {
+    "en": "CPU Usage is [[cpu_usage]]",
+    "nl": "CPU-gebruik is [[cpu_usage]]",
+    "da": "CPU-brug er [[cpu_usage]]",
+    "de": "CPU-Auslastung ist [[cpu_usage]]",
+    "es": "El uso de CPU es [[cpu_usage]]",
+    "fr": "L'utilisation du CPU est [[cpu_usage]]",
+    "it": "L'utilizzo della CPU è [[cpu_usage]]",
+    "no": "CPU-bruk er [[cpu_usage]]",
+    "sv": "CPU-användningen är [[cpu_usage]]",
+    "pl": "Zużycie CPU wynosi [[cpu_usage]]",
+    "ru": "Использование ЦП составляет [[cpu_usage]]",
+    "ko": "CPU 사용량은 [[cpu_usage]]입니다"
+  },
+  "hint": {
+    "en": "The CPU usage of the router.",
+    "nl": "Het CPU-gebruik van de router.",
+    "da": "CPU-brug af routeren.",
+    "de": "Die CPU-Auslastung des Routers.",
+    "es": "El uso de CPU del router.",
+    "fr": "L'utilisation du CPU du routeur.",
+    "it": "L'utilizzo della CPU del router.",
+    "no": "CPU-bruken til ruteren.",
+    "sv": "CPU-användningen för routern.",
+    "pl": "Zużycie CPU routera.",
+    "ru": "Использование ЦП маршрутизатора.",
+    "ko": "라우터의 CPU 사용량."
+  },
+  "args": [
+    {
+      "name": "cpu_usage",
+      "type": "number",
+      "filter": "driver_id=tplink_deco"
+    }
+  ]
+}

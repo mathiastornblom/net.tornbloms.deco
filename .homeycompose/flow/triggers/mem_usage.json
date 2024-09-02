@@ -1,0 +1,52 @@
+{
+  "id": "mem_usage",
+  "title": {
+    "en": "Memory Usage",
+    "nl": "Geheugengebruik",
+    "da": "Hukommelsesforbrug",
+    "de": "Speichernutzung",
+    "es": "Uso de Memoria",
+    "fr": "Utilisation de la Mémoire",
+    "it": "Utilizzo della Memoria",
+    "no": "Minnestatus",
+    "sv": "Minnesanvändning",
+    "pl": "Zużycie Pamięci",
+    "ru": "Использование Памяти",
+    "ko": "메모리 사용량"
+  },
+  "titleFormatted": {
+    "en": "Memory Usage is [[mem_usage]]",
+    "nl": "Geheugengebruik is [[mem_usage]]",
+    "da": "Hukommelsesforbruget er [[mem_usage]]",
+    "de": "Speichernutzung ist [[mem_usage]]",
+    "es": "El uso de memoria es [[mem_usage]]",
+    "fr": "L'utilisation de la mémoire est [[mem_usage]]",
+    "it": "L'utilizzo della memoria è [[mem_usage]]",
+    "no": "Minnestatus er [[mem_usage]]",
+    "sv": "Minnesanvändningen är [[mem_usage]]",
+    "pl": "Zużycie pamięci wynosi [[mem_usage]]",
+    "ru": "Использование памяти составляет [[mem_usage]]",
+    "ko": "메모리 사용량은 [[mem_usage]]입니다"
+  },
+  "hint": {
+    "en": "The memory usage of the router.",
+    "nl": "Het geheugengebruik van de router.",
+    "da": "Routerens hukommelsesforbrug.",
+    "de": "Der Speicherverbrauch des Routers.",
+    "es": "El uso de memoria del enrutador.",
+    "fr": "L'utilisation de la mémoire du routeur.",
+    "it": "L'utilizzo della memoria del router.",
+    "no": "Minnestatus for ruteren.",
+    "sv": "Minnesanvändningen av routern.",
+    "pl": "Zużycie pamięci przez router.",
+    "ru": "Использование памяти роутера.",
+    "ko": "라우터의 메모리 사용량."
+  },
+  "args": [
+    {
+      "name": "mem_usage",
+      "type": "number",
+      "filter": "driver_id=tplink_deco"
+    }
+  ]
+}
