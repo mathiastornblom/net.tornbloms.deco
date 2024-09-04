@@ -1,0 +1,4 @@
+env.json
+.vscode
+.env
+.DS_Store

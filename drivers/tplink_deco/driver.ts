@@ -1,8 +1,8 @@
 'use strict';
 import crypto from 'crypto';
-import Homey, { Driver } from 'homey';
-import decoapiwapper from 'decoapiwrapper';
-import { DeviceListResponse } from 'decoapiwrapper';
+import { Driver } from 'homey';
+import decoapiwapper from '../../lib/client';
+import { DeviceListResponse } from '../../lib/client';
 
 class TplinkDecoDriver extends Driver {
   private api: decoapiwapper | null = null;
@@ -26,7 +26,7 @@ class TplinkDecoDriver extends Driver {
     let password = '';
 
     // Received when a view has changed
-    session.setHandler('showView', async function (viewId: string) {
+    session.setHandler('showView', async (viewId: string) => {
       console.log('View: ' + viewId);
     });
 
@@ -41,15 +41,18 @@ class TplinkDecoDriver extends Driver {
         this.log('creating client');
         try {
           this.api = new decoapiwapper(hostname);
-          const result = await this.api.authenticate(password);
+          const result = (await this.api.authenticate(password)) as boolean;
+          this.log('result: ', result);
           if (result) {
             this.log('Successfully connected to TP-Link Deco');
+            return true;
           } else {
             this.log('Failed to connect to TP-Link Deco');
+            return false;
           }
-          return result;
         } catch (error) {
           this.error('Failed to connect to TP-Link Deco', error);
+          return false;
         }
       },
     );
@@ -60,34 +63,38 @@ class TplinkDecoDriver extends Driver {
         this.error('No API instance available');
         return [];
       }
-      const deviceList = (await this.api.deviceList()) as DeviceListResponse;
-      if (
-        deviceList.error_code === 0 &&
-        deviceList.result.device_list.length > 0
-      ) {
-        const device = deviceList.result.device_list[0];
-        const devices = [
-          {
-            name: device.device_model,
-            data: {
-              id: device.mac,
-              hostname: hostname,
-              username: username,
-              password: password,
-              ip: hostname,
+      try {
+        const deviceList = (await this.api.deviceList()) as DeviceListResponse;
+        if (
+          deviceList.error_code === 0 &&
+          deviceList.result.device_list.length > 0
+        ) {
+          const device = deviceList.result.device_list[0];
+          const devices = [
+            {
+              name: device.custom_nickname || device.device_model,
+              data: {
+                id: device.mac,
+                hostname: hostname,
+                username: username,
+                password: password,
+                ip: hostname,
+              },
+              settings: {
+                hostname,
+                username,
+                password,
+                timeoutSeconds: 10,
+              },
             },
-            settings: {
-              hostname,
-              username,
-              password,
-              timeoutSeconds: 10,
-            },
-          },
-        ];
-        this.log(devices);
-        return devices;
-      } else {
-        this.error('Failed to retrieve device information');
+          ];
+          this.log(devices);
+          return devices;
+        } else {
+          this.error('Failed to retrieve device information');
+        }
+      } catch (error) {
+        this.error('Failed to retrieve device information', error);
       }
     });
   }

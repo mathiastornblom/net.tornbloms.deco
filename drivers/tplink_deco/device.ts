@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import Homey, { Device } from 'homey';
-import decoapiwapper from 'decoapiwrapper';
+import decoapiwapper from '../../lib/client';
 import {
   DeviceListResponse,
   PerformanceResponse,
@@ -8,7 +8,7 @@ import {
   ClientListResponse,
   InternetResponse,
   ErrorResponse,
-} from 'decoapiwrapper';
+} from '../../lib/client';
 
 interface DeviceSettings {
   hostname: string;
@@ -199,7 +199,16 @@ class TplinkDecoDevice extends Device {
       this.registerCapabilityListener('reboot', async (value) => {
         if (Boolean(value)) {
           this.log(`Reboot triggered: ${Boolean(value)}`);
-          await api.reboot();
+          const settings = this.getSettings();
+          this.log(`mac: ${settings.mac}`);
+          const rebooted = await api.reboot(settings.mac).catch(this.error);
+          if (rebooted) {
+            setTimeout(async () => {
+              await this.setCapabilityValue('reboot', false).catch(this.error);
+            }, 60000); // 60 seconds
+          } else {
+            this.error('Failed to reboot');
+          }
         }
       });
 
@@ -245,11 +254,12 @@ class TplinkDecoDevice extends Device {
         },
       );
 
-      // this.clientStateFlow.registerRunListener(async (args, state) => {
-      //   return (
-      //     args.status === state.status && args.client.mac === state.client.mac
-      //   );
-      // });
+      clientStateFlow.registerRunListener(async (args, state) => {
+        this.log('clientStateFlow.registerRunListener', { args, state });
+        return (
+          args.status === state.status && args.client.mac === state.client.mac
+        );
+      });
       clientStateFlow.registerArgumentAutocompleteListener(
         'client',
         async (query) => {
@@ -382,9 +392,9 @@ class TplinkDecoDevice extends Device {
         // Trigger flow cards if CPU or memory usage has changed
         if (resultCpuUsage !== this.savedCpuUsage) {
           const cardTriggerCpuUsage =
-            this.homey.flow.getTriggerCard('cpu_usage');
+            this.homey.flow.getDeviceTriggerCard('cpu_usage');
           cardTriggerCpuUsage
-            .trigger({ device: hostname, cpu_usage: resultCpuUsage })
+            .trigger(this, { device: hostname, cpu_usage: resultCpuUsage })
             .catch((err) => {
               this.error(`Failed to trigger: ${cardTriggerCpuUsage.id} `, err);
             });
@@ -394,9 +404,9 @@ class TplinkDecoDevice extends Device {
 
         if (resultMemUsage !== this.savedMemUsage) {
           const cardTriggerMemUsage =
-            this.homey.flow.getTriggerCard('mem_usage');
+            this.homey.flow.getDeviceTriggerCard('mem_usage');
           cardTriggerMemUsage
-            .trigger({ device: hostname, mem_usage: resultMemUsage })
+            .trigger(this, { device: hostname, mem_usage: resultMemUsage })
             .catch((err) => {
               this.error(`Failed to trigger: ${cardTriggerMemUsage.id} `, err);
             });

@@ -1,0 +1,8 @@
+{
+  "type": "mdns-sd",
+  "mdns-sd": {
+    "name": "tplinkdeco.ne",
+    "protocol": "tcp"
+  },
+  "id": "{{name}}"
+}
