@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import Homey, { Device } from 'homey';
-import decoapiwapper from '../../lib/client';
+import decoapiwrapper from 'decoapiwrapper';
 import {
   DeviceListResponse,
   PerformanceResponse,
@@ -8,7 +8,7 @@ import {
   ClientListResponse,
   InternetResponse,
   ErrorResponse,
-} from '../../lib/client';
+} from 'decoapiwrapper';
 
 interface DeviceSettings {
   hostname: string;
@@ -46,7 +46,7 @@ class TplinkDecoDevice extends Device {
         this.getSettings() as DeviceSettings;
 
       this.log(`TP-Link Deco Device initialized: ${this.getName()}`);
-      const api = new decoapiwapper(hostname);
+      const api = new decoapiwrapper(hostname);
 
       this.log(
         `TP-Link Deco Device hostname: ${hostname} and password: ${password}`,

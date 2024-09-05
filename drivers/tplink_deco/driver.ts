@@ -1,11 +1,11 @@
 'use strict';
 import crypto from 'crypto';
 import { Driver } from 'homey';
-import decoapiwapper from '../../lib/client';
-import { DeviceListResponse } from '../../lib/client';
+import decoapiwrapper from 'decoapiwrapper';
+import { DeviceListResponse } from 'decoapiwrapper';
 
 class TplinkDecoDriver extends Driver {
-  private api: decoapiwapper | null = null;
+  private api: decoapiwrapper | null = null;
   /**
    * Called when the driver is initialized.
    * Checks if API settings are available; if not, waits for user input.
@@ -40,7 +40,7 @@ class TplinkDecoDriver extends Driver {
         this.log('password: ', password);
         this.log('creating client');
         try {
-          this.api = new decoapiwapper(hostname);
+          this.api = new decoapiwrapper(hostname);
           const result = (await this.api.authenticate(password)) as boolean;
           this.log('result: ', result);
           if (result) {
@@ -69,25 +69,23 @@ class TplinkDecoDriver extends Driver {
           deviceList.error_code === 0 &&
           deviceList.result.device_list.length > 0
         ) {
-          const device = deviceList.result.device_list[0];
-          const devices = [
-            {
-              name: device.custom_nickname || device.device_model,
-              data: {
-                id: device.mac,
-                hostname: hostname,
-                username: username,
-                password: password,
-                ip: hostname,
-              },
-              settings: {
-                hostname,
-                username,
-                password,
-                timeoutSeconds: 10,
-              },
+          const devices = deviceList.result.device_list.map((device) => ({
+            name:
+              this.decodeBase64(device.custom_nickname) || device.device_model,
+            data: {
+              id: device.mac,
+              hostname: hostname,
+              username: username,
+              password: password,
+              ip: hostname,
             },
-          ];
+            settings: {
+              hostname,
+              username,
+              password,
+              timeoutSeconds: 10,
+            },
+          }));
           this.log(devices);
           return devices;
         } else {
@@ -123,7 +121,7 @@ class TplinkDecoDriver extends Driver {
         this.log('password: ', password);
         this.log('repairing client');
         try {
-          this.api = new decoapiwapper(hostname);
+          this.api = new decoapiwrapper(hostname);
           const result = await this.api.authenticate(password);
           if (result) {
             this.log('Successfully connected to TP-Link Deco');
@@ -138,6 +136,29 @@ class TplinkDecoDriver extends Driver {
         }
       },
     );
+  }
+
+  // If no error do respond with result
+  private decodeBase64(encoded: string | undefined): string {
+    if (!encoded) {
+      this.error('driver.ts: No string provided for decoding');
+      return '';
+    }
+
+    // Check if the string is base64 encoded
+    const base64Regex =
+      /^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/;
+    if (!base64Regex.test(encoded)) {
+      this.error('driver.ts: Provided string is not base64 encoded');
+      return encoded;
+    }
+
+    try {
+      return Buffer.from(encoded, 'base64').toString('utf-8');
+    } catch (e) {
+      this.error(`driver.ts: Failed to decode base64 string: ${encoded}`, e);
+      return encoded; // Return the original string if decoding fails
+    }
   }
 }
 
