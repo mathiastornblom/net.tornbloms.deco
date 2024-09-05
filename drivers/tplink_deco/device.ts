@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import Homey, { Device } from 'homey';
+import { Device } from 'homey';
 import decoapiwrapper from 'decoapiwrapper';
 import {
   DeviceListResponse,
@@ -9,12 +9,6 @@ import {
   InternetResponse,
   ErrorResponse,
 } from 'decoapiwrapper';
-
-interface DeviceSettings {
-  hostname: string;
-  password: string;
-  timeoutSeconds: number;
-}
 
 /**
  * TplinkDecoDevice class to manage individual TP-Link Deco devices in Homey.
@@ -42,21 +36,23 @@ class TplinkDecoDevice extends Device {
   async onInit() {
     try {
       // Retrieve device settings
-      const { hostname, password, timeoutSeconds } =
-        this.getSettings() as DeviceSettings;
+      const settings = this.getSettings();
+      const devicedata = this.getData();
 
       this.log(`TP-Link Deco Device initialized: ${this.getName()}`);
-      const api = new decoapiwrapper(hostname);
+      const api = new decoapiwrapper(settings.hostname);
 
       this.log(
-        `TP-Link Deco Device hostname: ${hostname} and password: ${password}`,
+        `TP-Link Deco Device hostname: ${settings.hostname} and password: ${settings.password}`,
       );
-      if (hostname && password) {
+      if (settings.hostname && settings.password) {
         // Authenticate with the API
-        this.connected = await api.authenticate(password).catch((e) => {
-          this.error('Failed to authenticate', e);
-          return false;
-        });
+        this.connected = await api
+          .authenticate(settings.password)
+          .catch((e) => {
+            this.error('Failed to authenticate', e);
+            return false;
+          });
         this.log('Successfully connected to TP-Link Deco');
       } else {
         this.error('Missing API configuration settings');
@@ -69,16 +65,26 @@ class TplinkDecoDevice extends Device {
         deviceList.error_code === 0 &&
         deviceList.result.device_list.length > 0
       ) {
-        const device = deviceList.result.device_list[0];
-        // Update device settings with retrieved information
-        await this.setSettings({
-          device_model: device.device_model,
-          hardware_ver: device.hardware_ver,
-          software_ver: device.software_ver,
-          hw_id: device.hw_id,
-          mac: device.mac,
-          role: device.role,
-        });
+        // Filter the device list to find the current device
+        const device = deviceList.result.device_list.find(
+          (d) => d.mac === devicedata.id,
+        );
+        if (device) {
+          // Update device settings with retrieved information
+          await this.setSettings({
+            hostname: device.device_ip,
+            name:
+              device.device_model + ' - ' + this.decodeBase64(device.nickname),
+            device_model: device.device_model,
+            hardware_ver: device.hardware_ver,
+            software_ver: device.software_ver,
+            hw_id: device.hw_id,
+            mac: device.mac,
+            role: device.role,
+          });
+        } else {
+          this.error('Current device not found in the device list');
+        }
       } else {
         this.error('Failed to retrieve device information');
       }
@@ -151,10 +157,17 @@ class TplinkDecoDevice extends Device {
         'measure_mem_usage',
         this.savedMemUsage,
       ).catch(this.error);
-      await this.setCapabilityValue(
-        'wan_ipv4_ipaddr',
-        wlanResponse.result.wan.ip_info.ip,
-      ).catch(this.error);
+      if (settings.role === 'master') {
+        await this.setCapabilityValue(
+          'wan_ipv4_ipaddr',
+          wlanResponse.result.wan.ip_info.ip,
+        ).catch(this.error);
+      } else {
+        await this.removeCapability('wan_ipv4_ipaddr').catch(this.error);
+      }
+      await this.setCapabilityValue('device_role', settings.role).catch(
+        this.error,
+      );
       await this.setCapabilityValue(
         'lan_ipv4_ipaddr',
         wlanResponse.result.lan.ip_info.ip,
@@ -191,17 +204,13 @@ class TplinkDecoDevice extends Device {
         'alarm_wan_state',
         this.savedWanState,
       ).catch(this.error);
-      const wanStateFlow = this.homey.flow.getDeviceTriggerCard(
-        'alarm_wan_state_changed',
-      );
 
       // Register capability listeners for reboot, CPU usage, and memory usage
       this.registerCapabilityListener('reboot', async (value) => {
         if (Boolean(value)) {
           this.log(`Reboot triggered: ${Boolean(value)}`);
-          const settings = this.getSettings();
-          this.log(`mac: ${settings.mac}`);
-          const rebooted = await api.reboot(settings.mac).catch(this.error);
+          this.log(`mac: ${devicedata.id}`);
+          const rebooted = await api.reboot(devicedata.id).catch(this.error);
           if (rebooted) {
             setTimeout(async () => {
               await this.setCapabilityValue('reboot', false).catch(this.error);
@@ -286,7 +295,7 @@ class TplinkDecoDevice extends Device {
 
       // Set up an interval to periodically update device metrics
       this.timeoutSecondsIntervalId = setInterval(async () => {
-        this.log('Running interval', timeoutSeconds * 1000);
+        this.log('Running interval', settings.timeoutSeconds * 1000);
 
         // Retrieve updated performance metrics from the API
         const performance = (await api.performance()) as PerformanceResponse;
@@ -358,10 +367,17 @@ class TplinkDecoDevice extends Device {
           'measure_mem_usage',
           resultMemUsage,
         ).catch(this.error);
-        await this.setCapabilityValue(
-          'wan_ipv4_ipaddr',
-          wlanResponse.result.wan.ip_info.ip,
-        ).catch(this.error);
+        if (settings.role === 'master') {
+          await this.setCapabilityValue(
+            'wan_ipv4_ipaddr',
+            wlanResponse.result.wan.ip_info.ip,
+          ).catch(this.error);
+        } else {
+          await this.removeCapability('wan_ipv4_ipaddr').catch(this.error);
+        }
+        await this.setCapabilityValue('device_role', settings.role).catch(
+          this.error,
+        );
         await this.setCapabilityValue(
           'lan_ipv4_ipaddr',
           wlanResponse.result.lan.ip_info.ip,
@@ -394,7 +410,10 @@ class TplinkDecoDevice extends Device {
           const cardTriggerCpuUsage =
             this.homey.flow.getDeviceTriggerCard('cpu_usage');
           cardTriggerCpuUsage
-            .trigger(this, { device: hostname, cpu_usage: resultCpuUsage })
+            .trigger(this, {
+              device: settings.hostname,
+              cpu_usage: resultCpuUsage,
+            })
             .catch((err) => {
               this.error(`Failed to trigger: ${cardTriggerCpuUsage.id} `, err);
             });
@@ -406,7 +425,10 @@ class TplinkDecoDevice extends Device {
           const cardTriggerMemUsage =
             this.homey.flow.getDeviceTriggerCard('mem_usage');
           cardTriggerMemUsage
-            .trigger(this, { device: hostname, mem_usage: resultMemUsage })
+            .trigger(this, {
+              device: settings.hostname,
+              mem_usage: resultMemUsage,
+            })
             .catch((err) => {
               this.error(`Failed to trigger: ${cardTriggerMemUsage.id} `, err);
             });
@@ -428,7 +450,10 @@ class TplinkDecoDevice extends Device {
               'alarm_wan_state_changed',
             );
             cardTriggerWanStatus
-              .trigger({ device: hostname, wan_state: currentWANStatus })
+              .trigger({
+                device: settings.hostname,
+                wan_state: currentWANStatus,
+              })
               .catch((err) => {
                 this.error(
                   `Failed to trigger: ${cardTriggerWanStatus.id} `,
@@ -446,7 +471,7 @@ class TplinkDecoDevice extends Device {
             currentWANStatus,
           ).catch(this.error);
         }
-      }, timeoutSeconds * 1000); // Interval set to timeoutSeconds
+      }, settings.timeoutSeconds * 1000); // Interval set to timeoutSeconds
     } catch (error) {
       this.error('Failed to initialize device', error);
     }
@@ -500,6 +525,28 @@ class TplinkDecoDevice extends Device {
       clearInterval(this.timeoutSecondsIntervalId);
       this.log('timeoutSecondsIntervalId cleared'); // Log clearing of the interval
       this.timeoutSecondsIntervalId = null; // Reset the interval ID
+    }
+  }
+  // If no error do respond with result
+  private decodeBase64(encoded: string | undefined): string {
+    if (!encoded) {
+      this.error('driver.ts: No string provided for decoding');
+      return '';
+    }
+
+    // Check if the string is base64 encoded
+    const base64Regex =
+      /^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/;
+    if (!base64Regex.test(encoded)) {
+      this.error('driver.ts: Provided string is not base64 encoded');
+      return encoded;
+    }
+
+    try {
+      return Buffer.from(encoded, 'base64').toString('utf-8');
+    } catch (e) {
+      this.error(`driver.ts: Failed to decode base64 string: ${encoded}`, e);
+      return encoded; // Return the original string if decoding fails
     }
   }
 }

@@ -24,7 +24,7 @@
       "id": "login_credentials",
       "template": "login_credentials",
       "options": {
-        "logo": "/assets/logo.png",
+        "logo": "../../../assets/logo.png",
         "title": {
           "en": "Add your ip or hostname and password",
           "sv": "Ange hostnamn eller IP samt lösenord",
@@ -88,6 +88,7 @@
       "id": "list_devices",
       "template": "list_devices",
       "navigation": {
+        "prev": "login_credentials",
         "next": "add_devices"
       }
     },
@@ -110,12 +111,9 @@
     "wan_ipv4_ipaddr",
     "lan_ipv4_ipaddr",
     "connected_clients",
-    "reboot"
+    "reboot",
+    "device_role"
   ],
-  "platforms": [
-    "local"
-  ],
-  "connectivity": [
-    "lan"
-  ]
+  "platforms": ["local"],
+  "connectivity": ["lan"]
 }

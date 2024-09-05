@@ -71,18 +71,32 @@ class TplinkDecoDriver extends Driver {
         ) {
           const devices = deviceList.result.device_list.map((device) => ({
             name:
-              this.decodeBase64(device.custom_nickname) || device.device_model,
+              device.device_model + ' - ' + this.decodeBase64(device.nickname),
             data: {
               id: device.mac,
-              hostname: hostname,
+              name:
+                device.device_model +
+                ' - ' +
+                this.decodeBase64(device.nickname),
+              mac: device.mac,
+              hostname: device.device_ip,
               username: username,
               password: password,
-              ip: hostname,
+              model: device.device_model,
+              ip: device.device_ip,
             },
             settings: {
-              hostname,
+              id: device.mac,
+              name:
+                device.device_model +
+                ' - ' +
+                this.decodeBase64(device.nickname),
+              mac: device.mac,
+              hostname: device.device_ip,
               username,
               password,
+              model: device.device_model,
+              ip: device.device_ip,
               timeoutSeconds: 10,
             },
           }));

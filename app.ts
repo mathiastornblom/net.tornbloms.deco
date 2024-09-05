@@ -12,7 +12,9 @@ class TplinkDecoApp extends Homey.App {
   private api: decoapiwrapper | null = null;
 
   async onInit(): Promise<void> {
-    this.log('TP-Link Deco app has been initialized');
+    this.log(
+      `${this.homey.manifest.id} - ${this.homey.manifest.version} started...`,
+    );
   }
 
   async onUninit() {

@@ -1,0 +1,10 @@
+{
+  "type": "string",
+  "title": {
+    "en": "Device Role",
+    "sv": "Enhets roll"
+  },
+  "getable": true,
+  "setable": false,
+  "icon": "./assets/capabilities/router-wifi-svgrepo-com.svg"
+}
