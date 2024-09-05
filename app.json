@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "net.tornbloms.deco",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -676,7 +676,7 @@
           "id": "login_credentials",
           "template": "login_credentials",
           "options": {
-            "logo": "/assets/logo.png",
+            "logo": "../../../assets/logo.png",
             "title": {
               "en": "Add your ip or hostname and password",
               "sv": "Ange hostnamn eller IP samt lösenord",
@@ -740,6 +740,7 @@
           "id": "list_devices",
           "template": "list_devices",
           "navigation": {
+            "prev": "login_credentials",
             "next": "add_devices"
           }
         },

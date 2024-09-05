@@ -22,5 +22,8 @@
   },
   "1.1.4": {
     "en": "FIX: Adding multiple devices"
+  },
+  "1.1.5": {
+    "en": "Updates to pairing"
   }
 }
