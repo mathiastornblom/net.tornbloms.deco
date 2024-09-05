@@ -13,5 +13,8 @@
   },
   "1.1.1": {
     "en": "Return multiple devices when adding. Moved API wapper to node package"
+  },
+  "1.1.2": {
+    "en": "Fixex to Device name and IP"
   }
 }
