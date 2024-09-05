@@ -16,5 +16,8 @@
   },
   "1.1.2": {
     "en": "Fixex to Device name and IP"
+  },
+  "1.1.3": {
+    "en": "More fixes to adding multiple devices"
   }
 }
