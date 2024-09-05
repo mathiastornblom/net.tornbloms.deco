@@ -34,5 +34,8 @@
   },
   "1.1.8": {
     "en": "Fix in adding miltiple devices at pairing"
+  },
+  "1.1.9": {
+    "en": "FIX session password"
   }
 }
