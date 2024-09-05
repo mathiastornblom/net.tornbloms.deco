@@ -25,5 +25,8 @@
   },
   "1.1.5": {
     "en": "Updates to pairing"
+  },
+  "1.1.6": {
+    "en": "Added device role"
   }
 }
