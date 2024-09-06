@@ -4,3 +4,6 @@
 .vscode
 .env
 .DS_Store
+
+# Sentry Config File
+.sentryclirc

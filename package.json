@@ -1,16 +1,15 @@
 {
   "name": "net.tornbloms.deco",
-  "version": "1.0.0",
+  "version": "1.1.12",
   "main": "app.ts",
   "scripts": {
-    "build": "tsc",
-    "test": "jest"
+    "build": "tsc"
   },
   "devDependencies": {
     "@tsconfig/node16": "^16.1.3",
     "@types/debug": "^4.1.12",
     "@types/homey": "npm:homey-apps-sdk-v3-types@^0.3.7",
-    "@types/node": "^22.5.3",
+    "@types/node": "^22.5.4",
     "@types/ping": "^0.4.4",
     "@types/source-map-support": "^0.5.10",
     "@types/tough-cookie": "^4.0.5",
@@ -23,6 +22,7 @@
     "bn.js": "^5.2.1",
     "debug": "^4.3.6",
     "decoapiwrapper": "^1.0.11",
+    "homey-log": "^2.1.0",
     "tough-cookie": "^4.1.4"
   }
 }

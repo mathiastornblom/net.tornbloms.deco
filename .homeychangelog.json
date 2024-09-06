@@ -43,5 +43,8 @@
   },
   "1.1.11": {
     "en": "Added Homey-Log"
+  },
+  "1.1.12": {
+    "en": "New homey-log"
   }
 }

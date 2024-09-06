@@ -6,6 +6,14 @@
     "outDir": ".homeybuild/",
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
-    "sourceMap": true
+    "sourceMap": true,
+
+    // Set `sourceRoot` to  "/" to strip the build path prefix
+    // from generated source code references.
+    // This improves issue grouping in Sentry.
+    "sourceRoot": "/",
+
+    "typeRoots": ["./node_modules/@types", "types"],
+    "inlineSources": true
   }
 }

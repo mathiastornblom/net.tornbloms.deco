@@ -22,7 +22,6 @@ class TplinkDecoDriver extends Driver {
     this.log('Starting pairing process');
 
     let hostname = '';
-    let username = 'admin';
     let password = '';
 
     // Received when a view has changed
@@ -74,29 +73,21 @@ class TplinkDecoDriver extends Driver {
               device.device_model + ' - ' + this.decodeBase64(device.nickname),
             data: {
               id: device.mac,
+            },
+            settings: {
               name:
                 device.device_model +
                 ' - ' +
                 this.decodeBase64(device.nickname),
               mac: device.mac,
               hostname: device.device_ip,
-              username: username,
               password: password,
               model: device.device_model,
               ip: device.device_ip,
-            },
-            settings: {
-              id: device.mac,
-              name:
-                device.device_model +
-                ' - ' +
-                this.decodeBase64(device.nickname),
-              mac: device.mac,
-              hostname: device.device_ip,
-              username,
-              password,
-              model: device.device_model,
-              ip: device.device_ip,
+              role: device.role,
+              hardware_ver: device.hardware_ver,
+              software_ver: device.software_ver,
+              hw_id: device.hw_id,
               timeoutSeconds: 10,
             },
           }));
@@ -135,8 +126,8 @@ class TplinkDecoDriver extends Driver {
         this.log('password: ', password);
         this.log('repairing client');
         try {
-          this.api = new decoapiwrapper(hostname);
-          const result = await this.api.authenticate(password);
+          const api = new decoapiwrapper(hostname);
+          const result = await api.authenticate(password);
           if (result) {
             this.log('Successfully connected to TP-Link Deco');
             return { success: true };
