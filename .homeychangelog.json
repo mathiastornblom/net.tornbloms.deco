@@ -49,5 +49,8 @@
   },
   "1.1.13": {
     "en": "Betterstack logging"
+  },
+  "1.1.14": {
+    "en": "Added mote logging"
   }
 }
