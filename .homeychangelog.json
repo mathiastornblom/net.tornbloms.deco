@@ -46,5 +46,8 @@
   },
   "1.1.12": {
     "en": "New homey-log"
+  },
+  "1.1.13": {
+    "en": "Betterstack logging"
   }
 }
