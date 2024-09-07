@@ -1,8 +1,8 @@
 'use strict';
 import crypto from 'crypto';
 import { Driver } from 'homey';
-import decoapiwrapper from 'decoapiwrapper';
-import { DeviceListResponse } from 'decoapiwrapper';
+import decoapiwrapper from '../../lib/client';
+import { DeviceListResponse } from '../../lib/client';
 
 class TplinkDecoDriver extends Driver {
   private api: decoapiwrapper | null = null;

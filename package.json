@@ -20,8 +20,8 @@
     "axios": "^1.7.7",
     "axios-cookiejar-support": "^5.0.2",
     "bn.js": "^5.2.1",
-    "debug": "^4.3.6",
-    "decoapiwrapper": "^1.0.11",
+    "debug": "^4.3.7",
+    "homey-betterstack": "^0.3.5",
     "homey-log": "^2.1.0",
     "tough-cookie": "^4.1.4"
   }

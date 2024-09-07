@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { Device } from 'homey';
-import decoapiwrapper from 'decoapiwrapper';
+import decoapiwrapper from '../../lib/client';
 import {
   DeviceListResponse,
   PerformanceResponse,
@@ -8,7 +8,7 @@ import {
   ClientListResponse,
   InternetResponse,
   ErrorResponse,
-} from 'decoapiwrapper';
+} from '../../lib/client';
 
 /**
  * TplinkDecoDevice class to manage individual TP-Link Deco devices in Homey.
@@ -62,6 +62,7 @@ class TplinkDecoDevice extends Device {
 
       // Retrieve device list from the API
       const deviceList = (await this.api.deviceList()) as DeviceListResponse;
+      this.homey.app.log('onInit():deviceList: ', deviceList);
       if (
         deviceList.error_code === 0 &&
         deviceList.result.device_list.length > 0
@@ -96,10 +97,12 @@ class TplinkDecoDevice extends Device {
         Number(performance.result.mem_usage) * 100,
       );
       const wlanResponse = (await this.api.getWAN()) as WANResponse;
+      this.homey.app.log('onInit():wlanResponse: ', wlanResponse);
       const clientList = (await this.api.clientList()) as ClientListResponse;
+      this.homey.app.log('onInit():clientList: ', clientList);
       const internetResponse =
         (await this.api.getInternet()) as InternetResponse;
-
+      this.homey.app.log('onInit():internetResponse: ', internetResponse);
       const clientStateFlow = this.homey.flow.getDeviceTriggerCard(
         'client_state_changed',
       );
@@ -297,6 +300,7 @@ class TplinkDecoDevice extends Device {
         // Retrieve updated performance metrics from the API
         const performance =
           (await this.api.performance()) as PerformanceResponse;
+        this.homey.app.log('onInit():performance: ', performance);
         const resultCpuUsage = Math.round(
           Number(performance.result.cpu_usage) * 100,
         );
@@ -304,7 +308,9 @@ class TplinkDecoDevice extends Device {
           Number(performance.result.mem_usage) * 100,
         );
         const wlanResponse = (await this.api.getWAN()) as WANResponse;
+        this.homey.app.log('onInit():wlanResponse: ', wlanResponse);
         const clientList = (await this.api.clientList()) as ClientListResponse;
+        this.homey.app.log('onInit():clientList: ', clientList);
 
         this.log('clientList.length: ', clientList.result.client_list.length);
         const lastClients = this.clients;
