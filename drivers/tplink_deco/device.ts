@@ -62,7 +62,10 @@ class TplinkDecoDevice extends Device {
 
       // Retrieve device list from the API
       const deviceList = (await this.api.deviceList()) as DeviceListResponse;
-      this.homey.app.log('onInit():deviceList: ', deviceList);
+      this.homey.app.log(
+        'onInit():deviceList: ',
+        JSON.stringify(deviceList, null, 2),
+      );
       if (
         deviceList.error_code === 0 &&
         deviceList.result.device_list.length > 0
@@ -97,12 +100,21 @@ class TplinkDecoDevice extends Device {
         Number(performance.result.mem_usage) * 100,
       );
       const wlanResponse = (await this.api.getWAN()) as WANResponse;
-      this.homey.app.log('onInit():wlanResponse: ', wlanResponse);
+      this.homey.app.log(
+        'onInit():wlanResponse: ',
+        JSON.stringify(wlanResponse, null, 2),
+      );
       const clientList = (await this.api.clientList()) as ClientListResponse;
-      this.homey.app.log('onInit():clientList: ', clientList);
+      this.homey.app.log(
+        'onInit():clientList: ',
+        JSON.stringify(clientList, null, 2),
+      );
       const internetResponse =
         (await this.api.getInternet()) as InternetResponse;
-      this.homey.app.log('onInit():internetResponse: ', internetResponse);
+      this.homey.app.log(
+        'onInit():internetResponse: ',
+        JSON.stringify(internetResponse, null, 2),
+      );
       const clientStateFlow = this.homey.flow.getDeviceTriggerCard(
         'client_state_changed',
       );
@@ -300,7 +312,10 @@ class TplinkDecoDevice extends Device {
         // Retrieve updated performance metrics from the API
         const performance =
           (await this.api.performance()) as PerformanceResponse;
-        this.homey.app.log('onInit():performance: ', performance);
+        this.homey.app.log(
+          'onInit():performance: ',
+          JSON.stringify(performance, null, 2),
+        );
         const resultCpuUsage = Math.round(
           Number(performance.result.cpu_usage) * 100,
         );
@@ -308,9 +323,15 @@ class TplinkDecoDevice extends Device {
           Number(performance.result.mem_usage) * 100,
         );
         const wlanResponse = (await this.api.getWAN()) as WANResponse;
-        this.homey.app.log('onInit():wlanResponse: ', wlanResponse);
+        this.homey.app.log(
+          'onInit():wlanResponse: ',
+          JSON.stringify(wlanResponse, null, 2),
+        );
         const clientList = (await this.api.clientList()) as ClientListResponse;
-        this.homey.app.log('onInit():clientList: ', clientList);
+        this.homey.app.log(
+          'onInit():clientList: ',
+          JSON.stringify(clientList, null, 2),
+        );
 
         this.log('clientList.length: ', clientList.result.client_list.length);
         const lastClients = this.clients;
@@ -548,6 +569,13 @@ class TplinkDecoDevice extends Device {
       this.error(`driver.ts: Failed to decode base64 string: ${encoded}`, e);
       return encoded; // Return the original string if decoding fails
     }
+  }
+  private cleanString(input: string): string {
+    // Regular expression to match escape characters and control characters.
+    const escapeCharsRegex = /\\[\'\"\\nrtbfv0x0B\xFF]|[\x00-\x1F\x7F]/g;
+
+    // Remove escape and control characters, and trim leading and trailing spaces in one step.
+    return input.replace(escapeCharsRegex, '').trim();
   }
 }
 

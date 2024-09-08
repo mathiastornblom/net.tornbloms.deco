@@ -70,7 +70,9 @@ class TplinkDecoDriver extends Driver {
         ) {
           const devices = deviceList.result.device_list.map((device) => ({
             name:
-              device.device_model + ' - ' + this.decodeBase64(device.nickname),
+              device.device_model +
+              ' - ' +
+              this.cleanString(this.decodeBase64(device.nickname)),
             data: {
               id: device.mac,
             },
@@ -78,7 +80,7 @@ class TplinkDecoDriver extends Driver {
               name:
                 device.device_model +
                 ' - ' +
-                this.decodeBase64(device.nickname),
+                this.cleanString(this.decodeBase64(device.nickname)),
               mac: device.mac,
               hostname: device.device_ip,
               password: password,
@@ -164,6 +166,14 @@ class TplinkDecoDriver extends Driver {
       this.error(`driver.ts: Failed to decode base64 string: ${encoded}`, e);
       return encoded; // Return the original string if decoding fails
     }
+  }
+
+  private cleanString(input: string): string {
+    // Regular expression to match escape characters and control characters.
+    const escapeCharsRegex = /\\[\'\"\\nrtbfv0x0B\xFF]|[\x00-\x1F\x7F]/g;
+
+    // Remove escape and control characters, and trim leading and trailing spaces in one step.
+    return input.replace(escapeCharsRegex, '').trim();
   }
 }
 
