@@ -178,10 +178,9 @@ class TplinkDecoDevice extends Device {
       await this.setCapabilityValue('device_role', settings.role).catch(
         this.error,
       );
-      await this.setCapabilityValue(
-        'lan_ipv4_ipaddr',
-        wlanResponse.result.lan.ip_info.ip,
-      ).catch(this.error);
+      await this.setCapabilityValue('lan_ipv4_ipaddr', settings.hostname).catch(
+        this.error,
+      );
       await this.setCapabilityValue(
         'connected_clients',
         clientList.result.client_list.length,
@@ -401,7 +400,7 @@ class TplinkDecoDevice extends Device {
         );
         await this.setCapabilityValue(
           'lan_ipv4_ipaddr',
-          wlanResponse.result.lan.ip_info.ip,
+          settings.hostname,
         ).catch(this.error);
         await this.setCapabilityValue(
           'connected_clients',
