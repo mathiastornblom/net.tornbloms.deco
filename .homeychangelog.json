@@ -73,5 +73,8 @@
   },
   "1.2.5": {
     "en": "More Logging"
+  },
+  "1.2.6": {
+    "en": "Corrected logging"
   }
 }
