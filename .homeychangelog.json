@@ -94,5 +94,8 @@
   },
   "1.2.12": {
     "en": "Further restructions"
+  },
+  "1.2.13": {
+    "en": "Catching errors"
   }
 }
