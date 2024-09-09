@@ -85,5 +85,11 @@
   },
   "1.2.9": {
     "en": "Reverted setInterval"
+  },
+  "1.2.10": {
+    "en": "Removed setIntervall"
+  },
+  "1.2.11": {
+    "en": "Restructure"
   }
 }
