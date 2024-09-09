@@ -79,5 +79,8 @@
   },
   "1.2.7": {
     "en": "Random timer added"
+  },
+  "1.2.8": {
+    "en": "Moved SetInterval into function"
   }
 }
