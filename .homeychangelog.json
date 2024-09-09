@@ -55,5 +55,8 @@
   },
   "1.1.15": {
     "en": "Added debugging to get mode devices supported."
+  },
+  "1.2.0": {
+    "en": "Reverted back to 1.1.15, bumped version"
   }
 }
