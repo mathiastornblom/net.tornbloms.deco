@@ -9,6 +9,7 @@ import {
   InternetResponse,
   ErrorResponse,
 } from '../../lib/client';
+import { hostname } from 'os';
 
 /**
  * TplinkDecoDevice class to manage individual TP-Link Deco devices in Homey.
@@ -38,13 +39,18 @@ class TplinkDecoDevice extends Device {
     try {
       // Retrieve device settings
       const settings = this.getSettings();
+      this.homey.app.log(
+        `${settings.hostname} onInit():settings: `,
+        JSON.stringify(settings, null, 2),
+      );
       const devicedata = this.getData();
+      this.homey.app.log(
+        `${settings.hostname} onInit():devicedata: `,
+        JSON.stringify(devicedata, null, 2),
+      );
 
       this.log(`TP-Link Deco Device initialized: ${this.getName()}`);
-
-      this.log(
-        `TP-Link Deco Device hostname: ${settings.hostname} and password: ${settings.password}`,
-      );
+      this.homey.app.log(`TP-Link Deco Device initialized: ${this.getName()}`);
       if (settings.hostname && settings.password) {
         // Authenticate with the API
         this.api = new decoapiwrapper(settings.hostname);
@@ -52,6 +58,7 @@ class TplinkDecoDevice extends Device {
           .authenticate(settings.password)
           .catch((e) => {
             this.error('Failed to authenticate', e);
+            this.homey.app.error('Failed to authenticate', e);
             return false;
           });
         this.log('Successfully connected to TP-Link Deco');
@@ -63,7 +70,7 @@ class TplinkDecoDevice extends Device {
       // Retrieve device list from the API
       const deviceList = (await this.api.deviceList()) as DeviceListResponse;
       this.homey.app.log(
-        'onInit():deviceList: ',
+        `${settings.hostname} onInit():deviceList: `,
         JSON.stringify(deviceList, null, 2),
       );
       if (
@@ -93,6 +100,10 @@ class TplinkDecoDevice extends Device {
 
       // Retrieve performance metrics from the API
       const performance = (await this.api.performance()) as PerformanceResponse;
+      this.homey.app.log(
+        `${settings.hostname} onInit():performance: `,
+        JSON.stringify(performance, null, 2),
+      );
       this.savedCpuUsage = Math.round(
         Number(performance.result.cpu_usage) * 100,
       );
@@ -312,7 +323,7 @@ class TplinkDecoDevice extends Device {
         const performance =
           (await this.api.performance()) as PerformanceResponse;
         this.homey.app.log(
-          'onInit():performance: ',
+          `${settings.hostname} onInit():performance: `,
           JSON.stringify(performance, null, 2),
         );
         const resultCpuUsage = Math.round(
@@ -328,7 +339,7 @@ class TplinkDecoDevice extends Device {
         );
         const clientList = (await this.api.clientList()) as ClientListResponse;
         this.homey.app.log(
-          'onInit():clientList: ',
+          `${settings.hostname} onInit():clientList: `,
           JSON.stringify(clientList, null, 2),
         );
 
@@ -387,25 +398,49 @@ class TplinkDecoDevice extends Device {
           'measure_cpu_usage',
           resultCpuUsage,
         ).catch(this.error);
+        this.homey.app.log(
+          `${settings.hostname} onInit():measure_cpu_usage: `,
+          resultCpuUsage,
+        );
         await this.setCapabilityValue(
           'measure_mem_usage',
           resultMemUsage,
         ).catch(this.error);
+        this.homey.app.log(
+          `${settings.hostname} onInit():measure_mem_usage: `,
+          resultMemUsage,
+        );
         await this.setCapabilityValue(
           'wan_ipv4_ipaddr',
           wlanResponse.result.wan.ip_info.ip,
         ).catch(this.error);
+        this.homey.app.log(
+          `${settings.hostname} onInit():wan_ipv4_ipaddr: `,
+          wlanResponse.result.wan.ip_info.ip,
+        );
         await this.setCapabilityValue('device_role', settings.role).catch(
           this.error,
+        );
+        this.homey.app.log(
+          `${settings.hostname} onInit():device_role: `,
+          settings.role,
         );
         await this.setCapabilityValue(
           'lan_ipv4_ipaddr',
           settings.hostname,
         ).catch(this.error);
+        this.homey.app.log(
+          `${settings.hostname} onInit():lan_ipv4_ipaddr: `,
+          settings.hostname,
+        );
         await this.setCapabilityValue(
           'connected_clients',
           clientList.result.client_list.length,
         ).catch(this.error);
+        this.homey.app.log(
+          `${settings.hostname} onInit():connected_clients: `,
+          clientList.result.client_list.length,
+        );
 
         // Calculate total download and upload speeds
         let totalDownKiloBytesPerSecond = 0;
