@@ -52,5 +52,8 @@
   },
   "1.1.14": {
     "en": "Added mote logging"
+  },
+  "1.1.15": {
+    "en": "Added debugging to get mode devices supported."
   }
 }
