@@ -61,5 +61,11 @@
   },
   "1.2.1": {
     "en": "Added additional login"
+  },
+  "1.2.2": {
+    "en": "Even more Logging"
+  },
+  "1.2.3": {
+    "en": "More logging while addinf devices"
   }
 }
