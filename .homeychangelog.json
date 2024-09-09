@@ -67,5 +67,8 @@
   },
   "1.2.3": {
     "en": "More logging while addinf devices"
+  },
+  "1.2.4": {
+    "en": "Further logging"
   }
 }
