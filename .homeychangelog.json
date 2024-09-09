@@ -82,5 +82,8 @@
   },
   "1.2.8": {
     "en": "Moved SetInterval into function"
+  },
+  "1.2.9": {
+    "en": "Reverted setInterval"
   }
 }
