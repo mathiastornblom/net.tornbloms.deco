@@ -115,5 +115,8 @@
   },
   "1.2.19": {
     "en": "Minor update"
+  },
+  "1.2.20": {
+    "en": "Moved toggle of debugging to app settings screen. added the removal off http och https if added to the paring. "
   }
 }
