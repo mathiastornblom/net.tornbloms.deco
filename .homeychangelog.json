@@ -103,5 +103,8 @@
   },
   "1.2.15": {
     "en": "Fixed craches in fetching clients"
+  },
+  "1.2.16": {
+    "en": "Dealing with fetching clients not supported on some models"
   }
 }
