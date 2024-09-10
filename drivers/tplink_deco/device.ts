@@ -95,11 +95,11 @@ class TplinkDecoDevice extends Device {
           (d) => d.mac === devicedata.id,
         );
         if (this.homey.settings.get('debugenabled')) {
-        this.homey.app.log(
-          `${settings.hostname} onInit():Filtered device: `,
-          JSON.stringify(device, null, 2),
-        );
-      }
+          this.homey.app.log(
+            `${settings.hostname} onInit():Filtered device: `,
+            JSON.stringify(device, null, 2),
+          );
+        }
         if (device) {
           // Update device settings with retrieved information
           await this.setSettings({
@@ -114,11 +114,11 @@ class TplinkDecoDevice extends Device {
             return { error_code: 1, result: { cpu_usage: 0, mem_usage: 0 } }; // Return default values in case of error
           })) as PerformanceResponse;
           if (this.homey.settings.get('debugenabled')) {
-          this.homey.app.log(
-            `${settings.hostname} onInit():performance: `,
-            JSON.stringify(performance, null, 2),
-          );
-        }
+            this.homey.app.log(
+              `${settings.hostname} onInit():performance: `,
+              JSON.stringify(performance, null, 2),
+            );
+          }
           this.savedCpuUsage = Math.round(
             Number(performance.result.cpu_usage) * 100,
           );
@@ -131,11 +131,11 @@ class TplinkDecoDevice extends Device {
             return { error_code: 1, result: {} }; // Return default values in case of error
           })) as WANResponse;
           if (this.homey.settings.get('debugenabled')) {
-          this.homey.app.log(
-            `${settings.hostname} onInit():wlanResponse: `,
-            JSON.stringify(wlanResponse, null, 2),
-          );
-        }
+            this.homey.app.log(
+              `${settings.hostname} onInit():wlanResponse: `,
+              JSON.stringify(wlanResponse, null, 2),
+            );
+          }
           let clientList = (await this.api.clientList().catch((e) => {
             this.error('Failed to retrieve client list', e);
             this.homey.app.error('Failed to retrieve client list', e);
@@ -157,11 +157,11 @@ class TplinkDecoDevice extends Device {
             return { error_code: 1, result: {} }; // Return default values in case of error
           })) as InternetResponse;
           if (this.homey.settings.get('debugenabled')) {
-          this.homey.app.log(
-            `${settings.hostname} onInit():internetResponse: `,
-            JSON.stringify(internetResponse, null, 2),
-          );
-        }
+            this.homey.app.log(
+              `${settings.hostname} onInit():internetResponse: `,
+              JSON.stringify(internetResponse, null, 2),
+            );
+          }
           const clientStateFlow = this.homey.flow.getDeviceTriggerCard(
             'client_state_changed',
           );
@@ -218,10 +218,14 @@ class TplinkDecoDevice extends Device {
             'measure_mem_usage',
             this.savedMemUsage,
           ).catch(this.error);
-          await this.setCapabilityValue(
-            'wan_ipv4_ipaddr',
-            wlanResponse.result.wan.ip_info.ip,
-          ).catch(this.error);
+          const ipInfo = wlanResponse?.result?.wan?.ip_info;
+          if (ipInfo) {
+            await this.setCapabilityValue('wan_ipv4_ipaddr', ipInfo.ip).catch(
+              this.error,
+            );
+          } else {
+            this.error('IP information not available');
+          }
           await this.setCapabilityValue('device_role', settings.role).catch(
             this.error,
           );
@@ -368,21 +372,20 @@ class TplinkDecoDevice extends Device {
           // Set up an interval to periodically update device metrics
           this.timeoutSecondsIntervalId = setInterval(async () => {
             this.log('Running interval', settings.timeoutSeconds * 1000);
-if (this.homey.settings.get('debugenabled')) {
-            this.homey.app.log(
-              `Setting interval for device ${this.getName()} (${
-                this.getData().id
-              }) with IP ${settings.hostname} with intervall id: ${
-                this.timeoutSecondsIntervalId
-              }`,
-            );
-          
+            if (this.homey.settings.get('debugenabled')) {
+              this.homey.app.log(
+                `Setting interval for device ${this.getName()} (${
+                  this.getData().id
+                }) with IP ${settings.hostname} with intervall id: ${
+                  this.timeoutSecondsIntervalId
+                }`,
+              );
 
-            this.homey.app.log(
-              `${settings.hostname} Timer api: `,
-              JSON.stringify(this.api, null, 2),
-            );
-          }
+              this.homey.app.log(
+                `${settings.hostname} Timer api: `,
+                JSON.stringify(this.api, null, 2),
+              );
+            }
             // Retrieve updated performance metrics from the API
             const performance = (await this.api.performance().catch((e) => {
               this.error('Failed to retrieve performance data', e);
@@ -393,11 +396,11 @@ if (this.homey.settings.get('debugenabled')) {
               return { error_code: 1, result: { cpu_usage: 0, mem_usage: 0 } }; // Return default values in case of error
             })) as PerformanceResponse;
             if (this.homey.settings.get('debugenabled')) {
-            this.homey.app.log(
-              `${settings.hostname} Timer: onInit():performance: `,
-              JSON.stringify(performance, null, 2),
-            );
-          }
+              this.homey.app.log(
+                `${settings.hostname} Timer: onInit():performance: `,
+                JSON.stringify(performance, null, 2),
+              );
+            }
             const resultCpuUsage = Math.round(
               Number(performance.result.cpu_usage) * 100,
             );
@@ -410,11 +413,11 @@ if (this.homey.settings.get('debugenabled')) {
               return { error_code: 1, result: {} }; // Return default values in case of error
             })) as WANResponse;
             if (this.homey.settings.get('debugenabled')) {
-            this.homey.app.log(
-              `${settings.hostname} Timer: onInit():wlanResponse: `,
-              JSON.stringify(wlanResponse, null, 2),
-            );
-          }
+              this.homey.app.log(
+                `${settings.hostname} Timer: onInit():wlanResponse: `,
+                JSON.stringify(wlanResponse, null, 2),
+              );
+            }
 
             let clientList = (await this.api.clientList().catch((e) => {
               this.error('Failed to retrieve client list', e);
@@ -426,18 +429,17 @@ if (this.homey.settings.get('debugenabled')) {
                 },
               }; // Return default values in case of error
             })) as ClientListResponse;
-if (this.homey.settings.get('debugenabled')) {
-            this.homey.app.log(
-              `${settings.hostname} Timer: onInit():clientList: `,
-              JSON.stringify(clientList, null, 2),
-            );
-          
+            if (this.homey.settings.get('debugenabled')) {
+              this.homey.app.log(
+                `${settings.hostname} Timer: onInit():clientList: `,
+                JSON.stringify(clientList, null, 2),
+              );
 
-            this.log(
-              'clientList.length: ',
-              clientList.result.client_list.length,
-            );
-}
+              this.log(
+                'clientList.length: ',
+                clientList.result.client_list.length,
+              );
+            }
             const lastClients = this.clients;
             this.log('lastClients.length: ', lastClients.length);
             this.clients = clientList.result.client_list;
@@ -493,60 +495,64 @@ if (this.homey.settings.get('debugenabled')) {
               resultCpuUsage,
             ).catch(this.error);
             if (this.homey.settings.get('debugenabled')) {
-            this.homey.app.log(
-              `${settings.hostname} Timer: onInit():measure_cpu_usage: `,
-              resultCpuUsage,
-            );
-          }
+              this.homey.app.log(
+                `${settings.hostname} Timer: onInit():measure_cpu_usage: `,
+                resultCpuUsage,
+              );
+            }
             await this.setCapabilityValue(
               'measure_mem_usage',
               resultMemUsage,
             ).catch(this.error);
             if (this.homey.settings.get('debugenabled')) {
               this.homey.app.log(
-              `${settings.hostname} Timer: onInit():measure_mem_usage: `,
-              resultMemUsage,
-            );
-          }
-            await this.setCapabilityValue(
-              'wan_ipv4_ipaddr',
-              wlanResponse.result.wan.ip_info.ip,
-            ).catch(this.error);
+                `${settings.hostname} Timer: onInit():measure_mem_usage: `,
+                resultMemUsage,
+              );
+            }
+            const ipInfo = wlanResponse?.result?.wan?.ip_info;
+            if (ipInfo) {
+              await this.setCapabilityValue('wan_ipv4_ipaddr', ipInfo.ip).catch(
+                this.error,
+              );
+            } else {
+              this.error('IP information not available');
+            }
             if (this.homey.settings.get('debugenabled')) {
-            this.homey.app.log(
-              `${settings.hostname} Timer: onInit():wan_ipv4_ipaddr: `,
-              wlanResponse.result.wan.ip_info.ip,
-            );
-          }
+              this.homey.app.log(
+                `${settings.hostname} Timer: onInit():wan_ipv4_ipaddr: `,
+                wlanResponse.result.wan.ip_info.ip,
+              );
+            }
             await this.setCapabilityValue('device_role', settings.role).catch(
               this.error,
             );
-if (this.homey.settings.get('debugenabled')) {
-            this.homey.app.log(
-              `${settings.hostname} Timer: onInit():device_role: `,
-              settings.role,
-            );
-          }
+            if (this.homey.settings.get('debugenabled')) {
+              this.homey.app.log(
+                `${settings.hostname} Timer: onInit():device_role: `,
+                settings.role,
+              );
+            }
             await this.setCapabilityValue(
               'lan_ipv4_ipaddr',
               settings.hostname,
             ).catch(this.error);
-           if (this.homey.settings.get('debugenabled')) {
-            this.homey.app.log(
-              `${settings.hostname} Timer: onInit():lan_ipv4_ipaddr: `,
-              settings.hostname,
-            );
-          }
+            if (this.homey.settings.get('debugenabled')) {
+              this.homey.app.log(
+                `${settings.hostname} Timer: onInit():lan_ipv4_ipaddr: `,
+                settings.hostname,
+              );
+            }
             await this.setCapabilityValue(
               'connected_clients',
               clientList.result.client_list.length,
             ).catch(this.error);
             if (this.homey.settings.get('debugenabled')) {
-            this.homey.app.log(
-              `${settings.hostname} Timer: onInit():connected_clients: `,
-              clientList.result.client_list.length,
-            );
-          }
+              this.homey.app.log(
+                `${settings.hostname} Timer: onInit():connected_clients: `,
+                clientList.result.client_list.length,
+              );
+            }
 
             // Calculate total download and upload speeds
             let totalDownKiloBytesPerSecond = 0;
