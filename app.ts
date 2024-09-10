@@ -13,7 +13,7 @@ if (process.env.DEBUG === '1') {
 class TplinkDecoApp extends HomeyLog {
   private api: decoapiwrapper | null = null;
   homeyLog: any;
-
+  debugEnabled: boolean = this.homey.settings.get('debugenabled') || false;
   async onInit(): Promise<void> {
     this.homeyLog = new Log({ homey: this.homey });
     this.log(

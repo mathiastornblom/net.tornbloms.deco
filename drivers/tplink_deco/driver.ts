@@ -5,6 +5,7 @@ import decoapiwrapper from '../../lib/client';
 import { DeviceListResponse } from '../../lib/client';
 
 class TplinkDecoDriver extends Driver {
+  debugEnabled: boolean = this.homey.settings.get('debugenabled') || false;
   private api: decoapiwrapper | null = null;
   /**
    * Called when the driver is initialized.
@@ -33,7 +34,7 @@ class TplinkDecoDriver extends Driver {
       'login',
       async (data: { username: string; password: string }) => {
         this.log('pair: login');
-        hostname = data.username;
+        hostname = data.username.replace(/^http:\/\/|^https:\/\//i, '').trim();
         this.log('hostname: ', hostname);
         password = data.password;
         this.log('password: ', password);
@@ -94,6 +95,12 @@ class TplinkDecoDriver extends Driver {
             },
           }));
           this.log(devices);
+          if (this.debugEnabled) {
+            this.homey.app.log(
+              `driver.ts:onInit() driver: `,
+              JSON.stringify(devices, null, 2),
+            );
+          }
           return devices;
         } else {
           this.error('Failed to retrieve device information');

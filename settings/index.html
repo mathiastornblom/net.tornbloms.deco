@@ -1,0 +1,77 @@
+<head>
+  <script
+    type="text/javascript"
+    src="/homey.js"
+    data-origin="settings"
+  ></script>
+  <style>
+    .homey-form-group {
+      margin: 20px;
+    }
+    .homey-button-primary-full {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="homey-header">
+    <h1
+      class="homey-title"
+      data-i18n="settings.title"
+      >Settings</h1
+    >
+  </header>
+
+  <div class="homey-form-group">
+    <fieldset class="homey-form-checkbox-set">
+      <legend class="homey-form-checkbox-set-title"
+        >Group of checkbox buttons</legend
+      >
+      <label class="homey-form-checkbox">
+        <input
+          id="enableDebugging"
+          class="homey-form-checkbox-input"
+          type="checkbox"
+          name="Enable Debugging"
+        />
+        <span class="homey-form-checkbox-checkmark"></span>
+        <span class="homey-form-checkbox-text">Debugging</span>
+      </label>
+    </fieldset>
+  </div>
+
+  <button
+    id="save"
+    class="homey-button-primary-full"
+    >Save changes</button
+  >
+
+  <script type="text/javascript">
+    function onHomeyReady(Homey) {
+      Homey.ready();
+      var enableDebugging = document.getElementById('enableDebugging');
+      var saveButton = document.getElementById('save');
+
+      // Retrieve the existing setting on load
+      Homey.get('debugenabled', function (error, value) {
+        if (error) return Homey.alert(error);
+        enableDebugging.checked = value || false;
+      });
+
+      // Save state when the Save button is clicked
+      saveButton.addEventListener('click', function () {
+        var isChecked = enableDebugging.checked;
+
+        Homey.set('debugenabled', isChecked, function (error) {
+          if (error) {
+            return Homey.alert(error);
+          }
+          Homey.alert('Changes saved successfully!');
+        });
+      });
+    }
+  </script>
+</body>

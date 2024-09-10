@@ -1,0 +1,1581 @@
+{
+  "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
+  "id": "net.tornbloms.deco",
+  "version": "1.2.19",
+  "compatibility": ">=12.0.0",
+  "sdk": 3,
+  "platforms": [
+    "local"
+  ],
+  "name": {
+    "en": "TP-Link Deco",
+    "nl": "TP-Link Deco",
+    "da": "TP-Link Deco",
+    "de": "TP-Link Deco",
+    "es": "TP-Link Deco",
+    "fr": "TP-Link Deco",
+    "it": "TP-Link Deco",
+    "no": "TP-Link Deco",
+    "sv": "TP-Link Deco",
+    "pl": "TP-Link Deco",
+    "ru": "TP-Link Deco",
+    "ko": "TP-Link Deco"
+  },
+  "description": {
+    "en": "Superior Mesh WiFi, Everywhere",
+    "nl": "Superieur Mesh WiFi, overal",
+    "da": "Overlegen Mesh WiFi, overalt",
+    "de": "Überlegenes Mesh WiFi, überall",
+    "es": "WiFi de malla superior, en todas partes",
+    "fr": "WiFi Mesh supérieur, partout",
+    "it": "WiFi Mesh superiore, ovunque",
+    "no": "Overlegen Mesh WiFi, overalt",
+    "sv": "Överlägsen Mesh WiFi, överallt",
+    "pl": "Najlepsze Mesh WiFi, wszędzie",
+    "ru": "Превосходный Mesh WiFi, повсюду",
+    "ko": "최고의 Mesh WiFi, 어디서든"
+  },
+  "category": [
+    "internet"
+  ],
+  "permissions": [],
+  "images": {
+    "small": "/assets/images/small.png",
+    "large": "/assets/images/large.png",
+    "xlarge": "/assets/images/xlarge.png"
+  },
+  "author": {
+    "name": "Mathias Törnblom",
+    "email": "mathias@tornbloms.net"
+  },
+  "tags": {
+    "en": [
+      "TP_link",
+      "Deco"
+    ],
+    "nl": [
+      "TP_link",
+      "Deco"
+    ],
+    "da": [
+      "TP_link",
+      "Deco"
+    ],
+    "de": [
+      "TP_link",
+      "Deco"
+    ],
+    "es": [
+      "TP_link",
+      "Deco"
+    ],
+    "fr": [
+      "TP_link",
+      "Deco"
+    ],
+    "it": [
+      "TP_link",
+      "Deco"
+    ],
+    "no": [
+      "TP_link",
+      "Deco"
+    ],
+    "sv": [
+      "TP_link",
+      "Deco"
+    ],
+    "pl": [
+      "TP_link",
+      "Deco"
+    ],
+    "ru": [
+      "TP_link",
+      "Deco"
+    ],
+    "ko": [
+      "TP_link",
+      "Deco"
+    ]
+  },
+  "contributors": {
+    "developers": [
+      {
+        "name": "Mathias Törnblom"
+      }
+    ],
+    "translators": [
+      {
+        "name": "Mathias Törnblom"
+      }
+    ]
+  },
+  "contributing": {
+    "donate": {
+      "paypal": {
+        "username": "mathiastornblom"
+      },
+      "githubSponsors": {
+        "username": "mathiastornblom"
+      }
+    }
+  },
+  "bugs": {
+    "url": "https://github.com/mathiastornblom/net.tornbloms.deco/issues"
+  },
+  "source": "https://github.com/mathiastornblom/net.tornbloms.deco",
+  "support": "mailto:mathias@tornbloms.net",
+  "homeyCommunityTopicId": 115521,
+  "homepage": "https://github.com/mathiastornblom/net.tornbloms.deco",
+  "brandColor": "#70c8d4",
+  "flow": {
+    "triggers": [
+      {
+        "title": {
+          "en": "WAN status changed",
+          "nl": "WAN-status gewijzigd",
+          "da": "WAN-status ændret",
+          "de": "WAN-Status geändert",
+          "es": "Estado de WAN cambiado",
+          "fr": "Statut de WAN changé",
+          "it": "Stato WAN cambiato",
+          "no": "WAN-status endret",
+          "sv": "WAN-status ändrad",
+          "pl": "Status WAN zmieniony",
+          "ru": "Состояние WAN изменено",
+          "ko": "WAN 상태 변경됨"
+        },
+        "highlight": true,
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=tplink_deco"
+          }
+        ],
+        "tokens": [
+          {
+            "type": "boolean",
+            "name": "wan_state",
+            "title": {
+              "en": "WAN State",
+              "nl": "WAN-status",
+              "da": "WAN-tilstand",
+              "de": "WAN-Zustand",
+              "es": "Estado de WAN",
+              "fr": "État de WAN",
+              "it": "Stato WAN",
+              "no": "WAN-tilstand",
+              "sv": "WAN-tillstånd",
+              "pl": "Stan WAN",
+              "ru": "Состояние WAN",
+              "ko": "WAN 상태"
+            }
+          }
+        ],
+        "id": "alarm_wan_state_changed"
+      },
+      {
+        "title": {
+          "en": "WAN status offline",
+          "nl": "WAN status offline",
+          "da": "WAN-status offline",
+          "de": "WAN-Status offline",
+          "es": "Estado de WAN desconectado",
+          "fr": "État WAN hors ligne",
+          "it": "Stato WAN offline",
+          "no": "WAN-status frakoblet",
+          "sv": "WAN-status offline",
+          "pl": "Status WAN offline",
+          "ru": "WAN оффлайн",
+          "ko": "WAN 상태 오프라인"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=tplink_deco"
+          }
+        ],
+        "tokens": [
+          {
+            "type": "boolean",
+            "name": "wan_state",
+            "title": {
+              "en": "WAN State",
+              "nl": "WAN-status",
+              "da": "WAN-status",
+              "de": "WAN-Zustand",
+              "es": "Estado de WAN",
+              "fr": "État WAN",
+              "it": "Stato WAN",
+              "no": "WAN-tilstand",
+              "sv": "WAN-status",
+              "pl": "Stan WAN",
+              "ru": "Состояние WAN",
+              "ko": "WAN 상태"
+            }
+          }
+        ],
+        "id": "alarm_wan_state_false"
+      },
+      {
+        "title": {
+          "en": "WAN status online",
+          "nl": "WAN status online",
+          "da": "WAN-status online",
+          "de": "WAN-Status online",
+          "es": "Estado WAN en línea",
+          "fr": "État WAN en ligne",
+          "it": "Stato WAN online",
+          "no": "WAN-status online",
+          "sv": "WAN-status online",
+          "pl": "Status WAN online",
+          "ru": "WAN статус онлайн",
+          "ko": "WAN 상태 온라인"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=tplink_deco"
+          }
+        ],
+        "tokens": [
+          {
+            "type": "boolean",
+            "name": "wan_state",
+            "title": {
+              "en": "WAN State",
+              "nl": "WAN-status",
+              "da": "WAN-tilstand",
+              "de": "WAN-Status",
+              "es": "Estado de WAN",
+              "fr": "État WAN",
+              "it": "Stato WAN",
+              "no": "WAN-tilstand",
+              "sv": "WAN-status",
+              "pl": "Stan WAN",
+              "ru": "WAN состояние",
+              "ko": "WAN 상태"
+            }
+          }
+        ],
+        "id": "alarm_wan_state_true"
+      },
+      {
+        "title": {
+          "en": "A client became...",
+          "nl": "Een klant werd...",
+          "da": "En klient blev...",
+          "de": "Ein Kunde wurde...",
+          "es": "Un cliente se convirtió en...",
+          "fr": "Un client est devenu...",
+          "it": "Un cliente è diventato...",
+          "no": "En klient ble...",
+          "sv": "En klient blev...",
+          "pl": "Klient stał się...",
+          "ru": "Клиент стал...",
+          "ko": "클라이언트가 되었습니다..."
+        },
+        "titleFormatted": {
+          "en": "[[client]] became [[status]]",
+          "nl": "[[client]] werd [[status]]",
+          "da": "[[client]] blev [[status]]",
+          "de": "[[client]] wurde [[status]]",
+          "es": "[[client]] se convirtió en [[status]]",
+          "fr": "[[client]] est devenu [[status]]",
+          "it": "[[client]] è diventato [[status]]",
+          "no": "[[client]] ble [[status]]",
+          "sv": "[[client]] blev [[status]]",
+          "pl": "[[client]] stał się [[status]]",
+          "ru": "[[client]] стал [[status]]",
+          "ko": "[[client]]가 [[status]]가 되었습니다"
+        },
+        "highlight": true,
+        "tokens": [
+          {
+            "type": "string",
+            "name": "name",
+            "title": {
+              "en": "name",
+              "nl": "naam",
+              "da": "navn",
+              "de": "Name",
+              "es": "nombre",
+              "fr": "nom",
+              "it": "nome",
+              "no": "navn",
+              "sv": "namn",
+              "pl": "imię",
+              "ru": "имя",
+              "ko": "이름"
+            },
+            "example": {
+              "en": "PC",
+              "nl": "PC",
+              "da": "PC",
+              "de": "PC",
+              "es": "PC",
+              "fr": "PC",
+              "it": "PC",
+              "no": "PC",
+              "sv": "PC",
+              "pl": "PC",
+              "ru": "ПК",
+              "ko": "PC"
+            }
+          },
+          {
+            "type": "string",
+            "name": "ipaddr",
+            "title": {
+              "en": "ip address",
+              "nl": "ip adres",
+              "da": "ip adresse",
+              "de": "IP-Adresse",
+              "es": "dirección IP",
+              "fr": "adresse IP",
+              "it": "indirizzo IP",
+              "no": "IP-adresse",
+              "sv": "IP-adress",
+              "pl": "adres IP",
+              "ru": "IP-адрес",
+              "ko": "IP 주소"
+            },
+            "example": {
+              "en": "192.168.0.2",
+              "nl": "192.168.0.2",
+              "da": "192.168.0.2",
+              "de": "192.168.0.2",
+              "es": "192.168.0.2",
+              "fr": "192.168.0.2",
+              "it": "192.168.0.2",
+              "no": "192.168.0.2",
+              "sv": "192.168.0.2",
+              "pl": "192.168.0.2",
+              "ru": "192.168.0.2",
+              "ko": "192.168.0.2"
+            }
+          },
+          {
+            "type": "string",
+            "name": "mac",
+            "title": {
+              "en": "mac address",
+              "nl": "mac adres",
+              "da": "mac adresse",
+              "de": "MAC-Adresse",
+              "es": "dirección MAC",
+              "fr": "adresse MAC",
+              "it": "indirizzo MAC",
+              "no": "MAC-adresse",
+              "sv": "MAC-adress",
+              "pl": "adres MAC",
+              "ru": "MAC-адрес",
+              "ko": "MAC 주소"
+            },
+            "example": {
+              "en": "A1:B2:C3:D4:E5:F6",
+              "nl": "A1:B2:C3:D4:E5:F6",
+              "da": "A1:B2:C3:D4:E5:F6",
+              "de": "A1:B2:C3:D4:E5:F6",
+              "es": "A1:B2:C3:D4:E5:F6",
+              "fr": "A1:B2:C3:D4:E5:F6",
+              "it": "A1:B2:C3:D4:E5:F6",
+              "no": "A1:B2:C3:D4:E5:F6",
+              "sv": "A1:B2:C3:D4:E5:F6",
+              "pl": "A1:B2:C3:D4:E5:F6",
+              "ru": "A1:B2:C3:D4:E5:F6",
+              "ko": "A1:B2:C3:D4:E5:F6"
+            }
+          }
+        ],
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=tplink_deco"
+          },
+          {
+            "name": "client",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "client",
+              "nl": "klant",
+              "da": "klient",
+              "de": "Kunde",
+              "es": "cliente",
+              "fr": "client",
+              "it": "cliente",
+              "no": "klient",
+              "sv": "klient",
+              "pl": "klient",
+              "ru": "клиент",
+              "ko": "클라이언트"
+            }
+          },
+          {
+            "name": "status",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "online",
+                "title": {
+                  "en": "online",
+                  "nl": "online",
+                  "da": "på nettet",
+                  "de": "online",
+                  "es": "en línea",
+                  "fr": "en ligne",
+                  "it": "online",
+                  "no": "på nett",
+                  "sv": "online",
+                  "pl": "online",
+                  "ru": "в сети",
+                  "ko": "온라인"
+                }
+              },
+              {
+                "id": "offline",
+                "title": {
+                  "en": "offline",
+                  "nl": "offline",
+                  "da": "offline",
+                  "de": "offline",
+                  "es": "fuera de línea",
+                  "fr": "hors ligne",
+                  "it": "offline",
+                  "no": "frakoblet",
+                  "sv": "offline",
+                  "pl": "offline",
+                  "ru": "офлайн",
+                  "ko": "오프라인"
+                }
+              }
+            ]
+          }
+        ],
+        "id": "client_state_changed"
+      },
+      {
+        "id": "cpu_usage",
+        "title": {
+          "en": "CPU Usage",
+          "nl": "CPU-gebruik",
+          "da": "CPU-brug",
+          "de": "CPU-Auslastung",
+          "es": "Uso de CPU",
+          "fr": "Utilisation du CPU",
+          "it": "Utilizzo della CPU",
+          "no": "CPU-bruk",
+          "sv": "CPU-användning",
+          "pl": "Zużycie CPU",
+          "ru": "Использование ЦП",
+          "ko": "CPU 사용량"
+        },
+        "titleFormatted": {
+          "en": "CPU Usage is [[cpu_usage]]",
+          "nl": "CPU-gebruik is [[cpu_usage]]",
+          "da": "CPU-brug er [[cpu_usage]]",
+          "de": "CPU-Auslastung ist [[cpu_usage]]",
+          "es": "El uso de CPU es [[cpu_usage]]",
+          "fr": "L'utilisation du CPU est [[cpu_usage]]",
+          "it": "L'utilizzo della CPU è [[cpu_usage]]",
+          "no": "CPU-bruk er [[cpu_usage]]",
+          "sv": "CPU-användningen är [[cpu_usage]]",
+          "pl": "Zużycie CPU wynosi [[cpu_usage]]",
+          "ru": "Использование ЦП составляет [[cpu_usage]]",
+          "ko": "CPU 사용량은 [[cpu_usage]]입니다"
+        },
+        "hint": {
+          "en": "The CPU usage of the router.",
+          "nl": "Het CPU-gebruik van de router.",
+          "da": "CPU-brug af routeren.",
+          "de": "Die CPU-Auslastung des Routers.",
+          "es": "El uso de CPU del router.",
+          "fr": "L'utilisation du CPU du routeur.",
+          "it": "L'utilizzo della CPU del router.",
+          "no": "CPU-bruken til ruteren.",
+          "sv": "CPU-användningen för routern.",
+          "pl": "Zużycie CPU routera.",
+          "ru": "Использование ЦП маршрутизатора.",
+          "ko": "라우터의 CPU 사용량."
+        },
+        "args": [
+          {
+            "name": "cpu_usage",
+            "type": "number",
+            "filter": "driver_id=tplink_deco"
+          }
+        ]
+      },
+      {
+        "id": "mem_usage",
+        "title": {
+          "en": "Memory Usage",
+          "nl": "Geheugengebruik",
+          "da": "Hukommelsesforbrug",
+          "de": "Speichernutzung",
+          "es": "Uso de Memoria",
+          "fr": "Utilisation de la Mémoire",
+          "it": "Utilizzo della Memoria",
+          "no": "Minnestatus",
+          "sv": "Minnesanvändning",
+          "pl": "Zużycie Pamięci",
+          "ru": "Использование Памяти",
+          "ko": "메모리 사용량"
+        },
+        "titleFormatted": {
+          "en": "Memory Usage is [[mem_usage]]",
+          "nl": "Geheugengebruik is [[mem_usage]]",
+          "da": "Hukommelsesforbruget er [[mem_usage]]",
+          "de": "Speichernutzung ist [[mem_usage]]",
+          "es": "El uso de memoria es [[mem_usage]]",
+          "fr": "L'utilisation de la mémoire est [[mem_usage]]",
+          "it": "L'utilizzo della memoria è [[mem_usage]]",
+          "no": "Minnestatus er [[mem_usage]]",
+          "sv": "Minnesanvändningen är [[mem_usage]]",
+          "pl": "Zużycie pamięci wynosi [[mem_usage]]",
+          "ru": "Использование памяти составляет [[mem_usage]]",
+          "ko": "메모리 사용량은 [[mem_usage]]입니다"
+        },
+        "hint": {
+          "en": "The memory usage of the router.",
+          "nl": "Het geheugengebruik van de router.",
+          "da": "Routerens hukommelsesforbrug.",
+          "de": "Der Speicherverbrauch des Routers.",
+          "es": "El uso de memoria del enrutador.",
+          "fr": "L'utilisation de la mémoire du routeur.",
+          "it": "L'utilizzo della memoria del router.",
+          "no": "Minnestatus for ruteren.",
+          "sv": "Minnesanvändningen av routern.",
+          "pl": "Zużycie pamięci przez router.",
+          "ru": "Использование памяти роутера.",
+          "ko": "라우터의 메모리 사용량."
+        },
+        "args": [
+          {
+            "name": "mem_usage",
+            "type": "number",
+            "filter": "driver_id=tplink_deco"
+          }
+        ]
+      }
+    ],
+    "conditions": [
+      {
+        "title": {
+          "en": "client is online",
+          "nl": "klant is online",
+          "da": "klient er online",
+          "de": "Kunde ist online",
+          "es": "el cliente está en línea",
+          "fr": "le client est en ligne",
+          "it": "il cliente è online",
+          "no": "klienten er online",
+          "sv": "klienten är online",
+          "pl": "klient jest online",
+          "ru": "клиент в сети",
+          "ko": "클라이언트가 온라인 상태입니다"
+        },
+        "titleFormatted": {
+          "en": "[[client]] is online",
+          "nl": "[[client]] is online",
+          "da": "[[client]] er online",
+          "de": "[[client]] ist online",
+          "es": "[[client]] está en línea",
+          "fr": "[[client]] est en ligne",
+          "it": "[[client]] è online",
+          "no": "[[client]] er online",
+          "sv": "[[client]] är online",
+          "pl": "[[client]] jest online",
+          "ru": "[[client]] в сети",
+          "ko": "[[client]]가 온라인 상태입니다"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=tplink_deco"
+          },
+          {
+            "type": "autocomplete",
+            "name": "client",
+            "placeholder": {
+              "en": "client",
+              "nl": "klant",
+              "da": "klient",
+              "de": "Kunde",
+              "es": "cliente",
+              "fr": "client",
+              "it": "cliente",
+              "no": "klient",
+              "sv": "klient",
+              "pl": "klient",
+              "ru": "клиент",
+              "ko": "클라이언트"
+            }
+          }
+        ],
+        "id": "client_is_online"
+      }
+    ],
+    "actions": [
+      {
+        "id": "reboot",
+        "title": {
+          "en": "Reboot",
+          "nl": "Opnieuw opstarten",
+          "da": "Genstart",
+          "de": "Neustart",
+          "es": "Reiniciar",
+          "fr": "Redémarrer",
+          "it": "Riavvia",
+          "no": "Omstart",
+          "sv": "Starta om",
+          "pl": "Restart",
+          "ru": "Перезагрузить",
+          "ko": "재부팅"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=tplink_deco"
+          }
+        ],
+        "action": "reboot"
+      }
+    ]
+  },
+  "drivers": [
+    {
+      "id": "tplink_deco",
+      "name": {
+        "en": "TP-Link Deco",
+        "sv": "TP-Link Deco",
+        "nl": "TP-Link Deco",
+        "da": "TP-Link Deco",
+        "de": "TP-Link Deco",
+        "es": "TP-Link Deco",
+        "fr": "TP-Link Deco",
+        "it": "TP-Link Deco",
+        "no": "TP-Link Deco",
+        "pl": "TP-Link Deco",
+        "ru": "TP-Link Deco",
+        "ko": "TP-Link Deco"
+      },
+      "images": {
+        "small": "/drivers/tplink_deco/assets/images/small.png",
+        "large": "/drivers/tplink_deco/assets/images/large.png",
+        "xlarge": "/drivers/tplink_deco/assets/images/xlarge.png"
+      },
+      "pair": [
+        {
+          "id": "login_credentials",
+          "template": "login_credentials",
+          "options": {
+            "logo": "../../../assets/logo.png",
+            "title": {
+              "en": "Add your ip or hostname and password",
+              "sv": "Ange hostnamn eller IP samt lösenord",
+              "nl": "Voeg je IP of hostnaam en wachtwoord toe",
+              "da": "Tilføj din IP-adresse eller værtsnavn og adgangskode",
+              "de": "Füge deine IP-Adresse oder Hostnamen und dein Passwort hinzu",
+              "es": "Añade tu IP o nombre de host y tu contraseña",
+              "fr": "Ajoutez votre adresse IP ou nom d'hôte et mot de passe",
+              "it": "Aggiungi il tuo indirizzo IP o nome dell'host e la password",
+              "no": "Legg til din IP-adresse eller vertsnavn og passord",
+              "pl": "Dodaj swój adres IP lub nazwę hosta i hasło",
+              "ru": "Добавьте ваш IP-адрес или имя хоста и пароль",
+              "ko": "IP 또는 호스트 이름과 비밀번호를 입력하세요"
+            },
+            "usernameLabel": {
+              "en": "Hostname / IP",
+              "sv": "Hostnamn / IP",
+              "nl": "Hostnaam / IP",
+              "da": "Værtsnavn / IP-adresse",
+              "de": "Hostname / IP-Adresse",
+              "es": "Nombre de host / Dirección IP",
+              "fr": "Nom d'hôte / Adresse IP",
+              "it": "Nome dell'host / Indirizzo IP",
+              "no": "Vertsnavn / IP-adresse",
+              "pl": "Nazwa hosta / Adres IP",
+              "ru": "Имя хоста / IP-адрес",
+              "ko": "호스트 이름 / IP"
+            },
+            "usernamePlaceholder": "tplinkdeco.net",
+            "passwordLabel": {
+              "en": "Password",
+              "sv": "Lösenord",
+              "nl": "Wachtwoord",
+              "da": "Adgangskode",
+              "de": "Passwort",
+              "es": "Contraseña",
+              "fr": "Mot de passe",
+              "it": "Password",
+              "no": "Passord",
+              "pl": "Hasło",
+              "ru": "Пароль",
+              "ko": "비밀번호"
+            },
+            "passwordPlaceholder": {
+              "en": "Password",
+              "sv": "Lösenord",
+              "nl": "Wachtwoord",
+              "da": "Adgangskode",
+              "de": "Passwort",
+              "es": "Contraseña",
+              "fr": "Mot de passe",
+              "it": "Password",
+              "no": "Passord",
+              "pl": "Hasło",
+              "ru": "Пароль",
+              "ko": "비밀번호"
+            }
+          }
+        },
+        {
+          "id": "list_devices",
+          "template": "list_devices",
+          "navigation": {
+            "prev": "login_credentials",
+            "next": "add_devices"
+          }
+        },
+        {
+          "id": "add_devices",
+          "template": "add_devices"
+        },
+        {
+          "id": "done",
+          "template": "done"
+        }
+      ],
+      "class": "other",
+      "capabilities": [
+        "measure_down_kilo_bytes_per_second",
+        "measure_up_kilo_bytes_per_second",
+        "measure_cpu_usage",
+        "measure_mem_usage",
+        "alarm_wan_state",
+        "wan_ipv4_ipaddr",
+        "lan_ipv4_ipaddr",
+        "connected_clients",
+        "reboot",
+        "device_role"
+      ],
+      "platforms": [
+        "local"
+      ],
+      "connectivity": [
+        "lan"
+      ],
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Login details",
+            "nl": "Logingegevens",
+            "da": "Loginoplysninger",
+            "de": "Anmeldedaten",
+            "es": "Detalles de inicio de sesión",
+            "fr": "Détails de connexion",
+            "it": "Dettagli di accesso",
+            "no": "Innloggingsdetaljer",
+            "sv": "Inloggningsdetaljer",
+            "pl": "Szczegóły logowania",
+            "ru": "Данные для входа",
+            "ko": "로그인 정보"
+          },
+          "children": [
+            {
+              "id": "hostname",
+              "type": "label",
+              "label": {
+                "en": "Hostname/IP",
+                "nl": "Hostnaam/IP",
+                "da": "Værtsnavn/IP",
+                "de": "Hostname/IP",
+                "es": "Nombre de host/IP",
+                "fr": "Nom d'hôte/IP",
+                "it": "Nome host/IP",
+                "no": "Vertsnavn/IP",
+                "sv": "Värdnamn/IP",
+                "pl": "Nazwa hosta/IP",
+                "ru": "Имя хоста/IP",
+                "ko": "호스트네임/IP"
+              },
+              "value": "192.168.68.1",
+              "required": true,
+              "hint": {
+                "en": "The hostname or the IP of the router.",
+                "nl": "De hostnaam of IP van de router.",
+                "da": "Værtsnavnet eller IP-adressen på routeren.",
+                "de": "Der Hostname oder die IP des Routers.",
+                "es": "El nombre del host o la IP del router.",
+                "fr": "Le nom d'hôte ou l'IP du routeur.",
+                "it": "Il nome host o l'IP del router.",
+                "no": "Vertsnavnet eller IP-adressen til ruteren.",
+                "sv": "Värdnamnet eller IP-adressen till routern.",
+                "pl": "Nazwa hosta lub IP routera.",
+                "ru": "Имя хоста или IP адрес роутера.",
+                "ko": "라우터의 호스트네임 또는 IP."
+              }
+            },
+            {
+              "id": "password",
+              "type": "password",
+              "label": {
+                "en": "Password",
+                "nl": "Wachtwoord",
+                "da": "Adgangskode",
+                "de": "Passwort",
+                "es": "Contraseña",
+                "fr": "Mot de passe",
+                "it": "Password",
+                "no": "Passord",
+                "sv": "Lösenord",
+                "pl": "Hasło",
+                "ru": "Пароль",
+                "ko": "비밀번호"
+              },
+              "value": "Secret",
+              "required": true,
+              "hint": {
+                "en": "The TP-Link password of the owner.",
+                "nl": "Het TP-Link wachtwoord van de eigenaar.",
+                "da": "Ejernes TP-Link-adgangskode.",
+                "de": "Das TP-Link Passwort des Besitzers.",
+                "es": "La contraseña de TP-Link del propietario.",
+                "fr": "Le mot de passe TP-Link du propriétaire.",
+                "it": "La password TP-Link del proprietario.",
+                "no": "TP-Link-passordet til eieren.",
+                "sv": "Ägarens TP-Link-lösenord.",
+                "pl": "Hasło TP-Link właściciela.",
+                "ru": "Пароль TP-Link владельца.",
+                "ko": "소유자의 TP-Link 비밀번호."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Timers",
+            "nl": "Timers",
+            "da": "Timere",
+            "de": "Timer",
+            "es": "Temporizadores",
+            "fr": "Minuteries",
+            "it": "Timer",
+            "no": "Tidsmålere",
+            "sv": "Timers",
+            "pl": "Timery",
+            "ru": "Таймеры",
+            "ko": "타이머"
+          },
+          "children": [
+            {
+              "id": "timeoutSeconds",
+              "type": "number",
+              "label": {
+                "en": "Query router every",
+                "nl": "Vraag router elke",
+                "da": "Spørg routeren hver",
+                "de": "Abfrage Router alle",
+                "es": "Consultar el router cada",
+                "fr": "Interroger le routeur toutes les",
+                "it": "Interroga il router ogni",
+                "no": "Spørr ruter hver",
+                "sv": "Fråga routern varje",
+                "pl": "Zapytaj router co",
+                "ru": "Запрос роутера каждые",
+                "ko": "라우터를 쿼리할 간격"
+              },
+              "value": 10,
+              "min": 1,
+              "max": 3600,
+              "step": 1,
+              "required": true,
+              "default": 10,
+              "units": {
+                "en": "seconds",
+                "nl": "seconden",
+                "da": "sekunder",
+                "de": "Sekunden",
+                "es": "segundos",
+                "fr": "secondes",
+                "it": "secondi",
+                "no": "sekunder",
+                "sv": "sekunder",
+                "pl": "sekund",
+                "ru": "секунд",
+                "ko": "초"
+              },
+              "hint": {
+                "en": "Value in seconds, dont set too low as it might cause stability issues on your network",
+                "nl": "Waarde in seconden, stel niet te laag in, omdat dit stabiliteitsproblemen op uw netwerk kan veroorzaken",
+                "da": "Værdi i sekunder, sæt ikke værdien for lavt, da det kan forårsage stabilitetsproblemer på dit netværk",
+                "de": "Wert in Sekunden, nicht zu niedrig einstellen, da dies zu Stabilitätsproblemen im Netzwerk führen könnte",
+                "es": "Valor en segundos, no lo configures demasiado bajo ya que podría causar problemas de estabilidad en tu red",
+                "fr": "Valeur en secondes, ne la définissez pas trop basse car cela pourrait provoquer des problèmes de stabilité sur votre réseau",
+                "it": "Valore in secondi, non impostare troppo basso poiché potrebbe causare problemi di stabilità sulla tua rete",
+                "no": "Verdi i sekunder, ikke sett for lavt da det kan forårsake stabilitetsproblemer i nettverket ditt",
+                "sv": "Värde i sekunder, ställ inte för lågt eftersom det kan orsaka stabilitetsproblem i ditt nätverk",
+                "pl": "Wartość w sekundach, nie ustawiaj zbyt nisko, ponieważ może to powodować problemy ze stabilnością sieci",
+                "ru": "Значение в секундах, не устанавливайте слишком низкое значение, так как это может вызвать проблемы со стабильностью в вашей сети",
+                "ko": "초 단위 값, 너무 낮게 설정하면 네트워크에 안정성 문제가 발생할 수 있습니다"
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Device Settings",
+            "nl": "Apparaatinstellingen",
+            "da": "Enhedsindstillinger",
+            "de": "Geräteeinstellungen",
+            "es": "Configuración del dispositivo",
+            "fr": "Paramètres de l'appareil",
+            "it": "Impostazioni del dispositivo",
+            "no": "Enhetsinnstillinger",
+            "sv": "Enhetsinställningar",
+            "pl": "Ustawienia urządzenia",
+            "ru": "Настройки устройства",
+            "ko": "장치 설정"
+          },
+          "children": [
+            {
+              "id": "model",
+              "type": "label",
+              "label": {
+                "en": "Device model:",
+                "nl": "Model van het apparaat:",
+                "da": "Enhedsmodel:",
+                "de": "Gerätemodell:",
+                "es": "Modelo del dispositivo:",
+                "fr": "Modèle de l'appareil :",
+                "it": "Modello del dispositivo:",
+                "no": "Enhetsmodell:",
+                "sv": "Enhetsmodell:",
+                "pl": "Model urządzenia:",
+                "ru": "Модель устройства:",
+                "ko": "장치 모델:"
+              },
+              "hint": {
+                "en": "Model name of the device",
+                "nl": "Modelnaam van het apparaat",
+                "da": "Enhedens modelnavn",
+                "de": "Modellname des Geräts",
+                "es": "Nombre del modelo del dispositivo",
+                "fr": "Nom du modèle de l'appareil",
+                "it": "Nome del modello del dispositivo",
+                "no": "Modellnavn på enheten",
+                "sv": "Modellnamn på enheten",
+                "pl": "Nazwa modelu urządzenia",
+                "ru": "Название модели устройства",
+                "ko": "장치 모델 이름"
+              }
+            },
+            {
+              "id": "hardware_ver",
+              "type": "label",
+              "label": {
+                "en": "Hardware version:",
+                "nl": "Hardwareversie:",
+                "da": "Hardwareversion:",
+                "de": "Hardwareversion:",
+                "es": "Versión de hardware:",
+                "fr": "Version matérielle :",
+                "it": "Versione hardware:",
+                "no": "Maskinvareversjon:",
+                "sv": "Hårdvaruversion:",
+                "pl": "Wersja sprzętu:",
+                "ru": "Версия оборудования:",
+                "ko": "하드웨어 버전:"
+              },
+              "hint": {
+                "en": "Hardware version of the device",
+                "nl": "Hardwareversie van het apparaat",
+                "da": "Hardwareversion af enheden",
+                "de": "Hardwareversion des Geräts",
+                "es": "Versión de hardware del dispositivo",
+                "fr": "Version matérielle de l'appareil",
+                "it": "Versione hardware del dispositivo",
+                "no": "Maskinvareversjon av enheten",
+                "sv": "Hårdvaruversion av enheten",
+                "pl": "Wersja sprzętu urządzenia",
+                "ru": "Версия оборудования устройства",
+                "ko": "장치의 하드웨어 버전"
+              }
+            },
+            {
+              "id": "software_ver",
+              "type": "label",
+              "label": {
+                "en": "Firmware version:",
+                "nl": "Firmwareversie:",
+                "da": "Firmwareversion:",
+                "de": "Firmware-Version:",
+                "es": "Versión de firmware:",
+                "fr": "Version du firmware :",
+                "it": "Versione del firmware:",
+                "no": "Firmwareversjon:",
+                "sv": "Firmware-version:",
+                "pl": "Wersja oprogramowania:",
+                "ru": "Версия прошивки:",
+                "ko": "펌웨어 버전:"
+              },
+              "hint": {
+                "en": "Firmware version of the device",
+                "nl": "Firmwareversie van het apparaat",
+                "da": "Firmwareversion af enheden",
+                "de": "Firmwareversion des Geräts",
+                "es": "Versión del firmware del dispositivo",
+                "fr": "Version du firmware de l'appareil",
+                "it": "Versione del firmware del dispositivo",
+                "no": "Firmwareversjon av enheten",
+                "sv": "Firmware-version av enheten",
+                "pl": "Wersja oprogramowania sprzętowego urządzenia",
+                "ru": "Версия прошивки устройства",
+                "ko": "장치의 펌웨어 버전"
+              }
+            },
+            {
+              "id": "hw_id",
+              "type": "label",
+              "label": {
+                "en": "Hardware id:",
+                "nl": "Hardware-id:",
+                "da": "Hardware-id:",
+                "de": "Hardware-ID:",
+                "es": "ID de hardware:",
+                "fr": "Identifiant matériel :",
+                "it": "ID hardware:",
+                "no": "Maskinvare-ID:",
+                "sv": "Maskinvaru-id:",
+                "pl": "Identyfikator sprzętu:",
+                "ru": "Идентификатор оборудования:",
+                "ko": "하드웨어 ID:"
+              },
+              "hint": {
+                "en": "Id of the device",
+                "nl": "Id van het apparaat",
+                "da": "Id på enheden",
+                "de": "ID des Geräts",
+                "es": "ID del dispositivo",
+                "fr": "Id de l'appareil",
+                "it": "Id del dispositivo",
+                "no": "ID på enheten",
+                "sv": "Id för enheten",
+                "pl": "Identyfikator urządzenia",
+                "ru": "Идентификатор устройства",
+                "ko": "장치 ID"
+              }
+            },
+            {
+              "id": "mac",
+              "type": "label",
+              "label": {
+                "en": "Mac address:",
+                "nl": "Mac-adres:",
+                "da": "Mac-adresse:",
+                "de": "Mac-Adresse:",
+                "es": "Dirección MAC:",
+                "fr": "Adresse Mac :",
+                "it": "Indirizzo Mac:",
+                "no": "Mac-adresse:",
+                "sv": "Mac-adress:",
+                "pl": "Adres Mac:",
+                "ru": "Адрес Mac:",
+                "ko": "맥 주소:"
+              },
+              "hint": {
+                "en": "Mac address of the device",
+                "nl": "Mac-adres van het apparaat",
+                "da": "Mac-adresse på enheden",
+                "de": "Mac-Adresse des Geräts",
+                "es": "Dirección MAC del dispositivo",
+                "fr": "Adresse Mac de l'appareil",
+                "it": "Indirizzo Mac del dispositivo",
+                "no": "Mac-adressen til enheten",
+                "sv": "MAC-adress för enheten",
+                "pl": "Adres Mac urządzenia",
+                "ru": "Mac адрес устройства",
+                "ko": "장치의 맥 주소"
+              }
+            },
+            {
+              "id": "role",
+              "type": "label",
+              "label": {
+                "en": "Role:",
+                "nl": "Rol:",
+                "da": "Rolle:",
+                "de": "Rolle:",
+                "es": "Papel:",
+                "fr": "Rôle :",
+                "it": "Ruolo:",
+                "no": "Rolle:",
+                "sv": "Roll:",
+                "pl": "Rola:",
+                "ru": "Роль:",
+                "ko": "역할:"
+              },
+              "hint": {
+                "en": "Role of the device",
+                "nl": "Rol van het apparaat",
+                "da": "Enhedens rolle",
+                "de": "Rolle des Geräts",
+                "es": "Rol del dispositivo",
+                "fr": "Rôle de l'appareil",
+                "it": "Ruolo del dispositivo",
+                "no": "Enhetens rolle",
+                "sv": "Enhetens roll",
+                "pl": "Rola urządzenia",
+                "ru": "Роль устройства",
+                "ko": "장치의 역할"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "capabilities": {
+    "alarm_wan_state": {
+      "type": "boolean",
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
+      "title": {
+        "en": "WAN Disconnected",
+        "nl": "WAN losgekoppeld",
+        "da": "WAN afbrudt",
+        "de": "WAN getrennt",
+        "es": "WAN desconectado",
+        "fr": "WAN déconnecté",
+        "it": "WAN disconnesso",
+        "no": "WAN frakoblet",
+        "sv": "WAN frånkopplad",
+        "pl": "WAN odłączony",
+        "ru": "WAN отключен",
+        "ko": "WAN 연결 끊김"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": true,
+      "insightsTitleTrue": {
+        "en": "WAN disconnected",
+        "nl": "WAN losgekoppeld",
+        "da": "WAN afbrudt",
+        "de": "WAN getrennt",
+        "es": "WAN desconectado",
+        "fr": "WAN déconnecté",
+        "it": "WAN disconnesso",
+        "no": "WAN frakoblet",
+        "sv": "WAN frånkopplad",
+        "pl": "WAN odłączony",
+        "ru": "WAN отключен",
+        "ko": "WAN 연결 끊김"
+      },
+      "insightsTitleFalse": {
+        "en": "WAN connected",
+        "nl": "WAN verbonden",
+        "da": "WAN tilsluttet",
+        "de": "WAN verbunden",
+        "es": "WAN conectado",
+        "fr": "WAN connecté",
+        "it": "WAN connesso",
+        "no": "WAN tilkoblet",
+        "sv": "WAN ansluten",
+        "pl": "WAN połączony",
+        "ru": "WAN подключен",
+        "ko": "WAN 연결됨"
+      },
+      "icon": "./assets/capabilities/alarm_wan.svg"
+    },
+    "connected_clients": {
+      "type": "number",
+      "title": {
+        "en": "Connected Clients",
+        "nl": "Verbonden Clients",
+        "da": "Forbundne Klienter",
+        "de": "Verbundene Clients",
+        "es": "Clientes Conectados",
+        "fr": "Clients Connectés",
+        "it": "Client Connessi",
+        "no": "Tilkoblede Klienter",
+        "sv": "Anslutna Klienter",
+        "pl": "Połączone Klienci",
+        "ru": "Подключенные Клиенты",
+        "ko": "연결된 클라이언트"
+      },
+      "units": {
+        "en": "pcs",
+        "nl": "stuks",
+        "da": "stk",
+        "de": "Stk",
+        "es": "pzs",
+        "fr": "pcs",
+        "it": "pcs",
+        "no": "stk",
+        "sv": "st",
+        "pl": "szt",
+        "ru": "шт",
+        "ko": "개"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": true,
+      "icon": "./assets/capabilities/connected_clients.svg"
+    },
+    "device_role": {
+      "type": "string",
+      "title": {
+        "en": "Device Role",
+        "sv": "Enhets roll",
+        "nl": "Apparaatrol",
+        "da": "Enhedsrolle",
+        "de": "Geräterolle",
+        "es": "Rol del dispositivo",
+        "fr": "Rôle de l'appareil",
+        "it": "Ruolo del dispositivo",
+        "no": "Enhetsrolle",
+        "pl": "Rola urządzenia",
+        "ru": "Роль устройства",
+        "ko": "장치 역할"
+      },
+      "getable": true,
+      "setable": false,
+      "icon": "./assets/capabilities/router-wifi-svgrepo-com.svg"
+    },
+    "lan_ipv4_ipaddr": {
+      "type": "string",
+      "title": {
+        "en": "LAN IP Address",
+        "nl": "LAN IP-adres",
+        "da": "LAN IP-adresse",
+        "de": "LAN-IP-Adresse",
+        "es": "Dirección IP LAN",
+        "fr": "Adresse IP LAN",
+        "it": "Indirizzo IP LAN",
+        "no": "LAN IP-adresse",
+        "sv": "LAN IP-adress",
+        "pl": "Adres IP LAN",
+        "ru": "LAN IP-адрес",
+        "ko": "LAN IP 주소"
+      },
+      "getable": true,
+      "setable": false,
+      "icon": "./assets/capabilities/lan_ip_address.svg"
+    },
+    "measure_cpu_usage": {
+      "type": "number",
+      "title": {
+        "en": "CPU Usage",
+        "nl": "CPU-gebruik",
+        "da": "CPU-brug",
+        "de": "CPU-Auslastung",
+        "es": "Uso de CPU",
+        "fr": "Utilisation du CPU",
+        "it": "Utilizzo della CPU",
+        "no": "CPU-bruk",
+        "sv": "CPU-användning",
+        "pl": "Zużycie CPU",
+        "ru": "Использование ЦП",
+        "ko": "CPU 사용량"
+      },
+      "units": {
+        "en": "%",
+        "nl": "%",
+        "da": "%",
+        "de": "%",
+        "es": "%",
+        "fr": "%",
+        "it": "%",
+        "no": "%",
+        "sv": "%",
+        "pl": "%",
+        "ru": "%",
+        "ko": "%"
+      },
+      "getable": true,
+      "setable": false,
+      "desc": {
+        "en": "Current CPU usage",
+        "nl": "Huidig CPU-gebruik",
+        "da": "Nuværende CPU-brug",
+        "de": "Aktuelle CPU-Auslastung",
+        "es": "Uso actual de la CPU",
+        "fr": "Utilisation actuelle du CPU",
+        "it": "Utilizzo attuale della CPU",
+        "no": "Nåværende CPU-bruk",
+        "sv": "Nuvarande CPU-användning",
+        "pl": "Bieżące zużycie CPU",
+        "ru": "Текущее использование ЦП",
+        "ko": "현재 CPU 사용량"
+      },
+      "insights": true,
+      "chartType": "spline",
+      "uiComponent": "sensor",
+      "icon": "/assets/capabilities/cpu-icon.svg"
+    },
+    "measure_down_kilo_bytes_per_second": {
+      "type": "number",
+      "title": {
+        "en": "Download Speed",
+        "nl": "Downloadsnelheid",
+        "da": "Downloadhastighed",
+        "de": "Download-Geschwindigkeit",
+        "es": "Velocidad de descarga",
+        "fr": "Vitesse de téléchargement",
+        "it": "Velocità di download",
+        "no": "Nedlastingshastighet",
+        "sv": "Nedladdningshastighet",
+        "pl": "Prędkość pobierania",
+        "ru": "Скорость загрузки",
+        "ko": "다운로드 속도"
+      },
+      "units": {
+        "en": "KB/s",
+        "nl": "KB/s",
+        "da": "KB/s",
+        "de": "KB/s",
+        "es": "KB/s",
+        "fr": "KB/s",
+        "it": "KB/s",
+        "no": "KB/s",
+        "sv": "KB/s",
+        "pl": "KB/s",
+        "ru": "KB/s",
+        "ko": "KB/s"
+      },
+      "getable": true,
+      "setable": false,
+      "desc": {
+        "en": "Kilo Bytes per Second (KB/s)",
+        "nl": "Kilobytes per seconde (KB/s)",
+        "da": "Kilobyte per sekund (KB/s)",
+        "de": "Kilobytes pro Sekunde (KB/s)",
+        "es": "Kilobytes por segundo (KB/s)",
+        "fr": "Kilooctets par seconde (KB/s)",
+        "it": "Kilobyte al secondo (KB/s)",
+        "no": "Kilobyte per sekund (KB/s)",
+        "sv": "Kilobyte per sekund (KB/s)",
+        "pl": "Kilobajty na sekundę (KB/s)",
+        "ru": "Килобайты в секунду (KB/s)",
+        "ko": "킬로바이트 매 초 (KB/s)"
+      },
+      "insights": true,
+      "chartType": "spline",
+      "uiComponent": "sensor",
+      "icon": "/assets/capabilities/cloud-arrow-down-svgrepo-com.svg"
+    },
+    "measure_mem_usage": {
+      "type": "number",
+      "title": {
+        "en": "Memory Usage",
+        "nl": "Geheugengebruik",
+        "da": "Hukommelsesbrug",
+        "de": "Speichernutzung",
+        "es": "Uso de memoria",
+        "fr": "Utilisation de la mémoire",
+        "it": "Utilizzo della memoria",
+        "no": "Minnebruk",
+        "sv": "Minnesanvändning",
+        "pl": "Użycie pamięci",
+        "ru": "Использование памяти",
+        "ko": "메모리 사용량"
+      },
+      "units": {
+        "en": "%",
+        "nl": "%",
+        "da": "%",
+        "de": "%",
+        "es": "%",
+        "fr": "%",
+        "it": "%",
+        "no": "%",
+        "sv": "%",
+        "pl": "%",
+        "ru": "%",
+        "ko": "%"
+      },
+      "getable": true,
+      "setable": false,
+      "desc": {
+        "en": "Current memory usage",
+        "nl": "Huidig geheugengebruik",
+        "da": "Nuværende hukommelsesbrug",
+        "de": "Aktuelle Speichernutzung",
+        "es": "Uso de memoria actual",
+        "fr": "Utilisation actuelle de la mémoire",
+        "it": "Utilizzo attuale della memoria",
+        "no": "Nåværende minnebruk",
+        "sv": "Nuvarande minnesanvändning",
+        "pl": "Aktualne użycie pamięci",
+        "ru": "Текущее использование памяти",
+        "ko": "현재 메모리 사용량"
+      },
+      "insights": true,
+      "chartType": "spline",
+      "uiComponent": "sensor",
+      "icon": "/assets/capabilities/ram-memory-icon.svg"
+    },
+    "measure_up_kilo_bytes_per_second": {
+      "type": "number",
+      "title": {
+        "en": "Upload Speed",
+        "nl": "Upload Snelheid",
+        "da": "Uploadhastighed",
+        "de": "Upload-Geschwindigkeit",
+        "es": "Velocidad de subida",
+        "fr": "Vitesse de téléchargement",
+        "it": "Velocità di upload",
+        "no": "Opplastingshastighet",
+        "sv": "Uppladdningshastighet",
+        "pl": "Prędkość przesyłania",
+        "ru": "Скорость загрузки",
+        "ko": "업로드 속도"
+      },
+      "units": {
+        "en": "KB/s",
+        "nl": "KB/s",
+        "da": "KB/s",
+        "de": "KB/s",
+        "es": "KB/s",
+        "fr": "KB/s",
+        "it": "KB/s",
+        "no": "KB/s",
+        "sv": "KB/s",
+        "pl": "KB/s",
+        "ru": "KB/s",
+        "ko": "KB/s"
+      },
+      "getable": true,
+      "setable": false,
+      "desc": {
+        "en": "Kilo Bytes per Second (KB/s)",
+        "nl": "Kilobytes per seconde (KB/s)",
+        "da": "Kilobytes pr. sekund (KB/s)",
+        "de": "Kilobytes pro Sekunde (KB/s)",
+        "es": "Kilobytes por segundo (KB/s)",
+        "fr": "Kilooctets par seconde (KB/s)",
+        "it": "Kilobyte al secondo (KB/s)",
+        "no": "Kilobyte per sekund (KB/s)",
+        "sv": "Kilobyte per sekund (KB/s)",
+        "pl": "Kilobajty na sekundę (KB/s)",
+        "ru": "Килобайты в секунду (KB/s)",
+        "ko": "킬로바이트/초 (KB/s)"
+      },
+      "insights": true,
+      "chartType": "spline",
+      "uiComponent": "sensor",
+      "icon": "/assets/capabilities/cloud-up-arrow-svgrepo-com.svg"
+    },
+    "reboot": {
+      "type": "boolean",
+      "title": {
+        "en": "Reboot",
+        "nl": "Herstart",
+        "da": "Genstart",
+        "de": "Neustart",
+        "es": "Reiniciar",
+        "fr": "Redémarrer",
+        "it": "Riavviare",
+        "no": "Omstart",
+        "sv": "Starta om",
+        "pl": "Restart",
+        "ru": "Перезагрузка",
+        "ko": "재부팅"
+      },
+      "insightsTitleTrue": {
+        "en": "Router restarted",
+        "nl": "Router herstart",
+        "da": "Router genstartet",
+        "de": "Router neu gestartet",
+        "es": "Enrutador reiniciado",
+        "fr": "Routeur redémarré",
+        "it": "Router riavviato",
+        "no": "Router startet på nytt",
+        "sv": "Router omstartad",
+        "pl": "Router uruchomiony ponownie",
+        "ru": "Маршрутизатор перезагружен",
+        "ko": "라우터가 재부팅되었습니다"
+      },
+      "insightsTitleFalse": {
+        "en": "Router UP",
+        "nl": "Router AAN",
+        "da": "Router OPPE",
+        "de": "Router AKTIV",
+        "es": "Enrutador ENCENDIDO",
+        "fr": "Routeur ACTIF",
+        "it": "Router ATTIVO",
+        "no": "Router OPPE",
+        "sv": "Router UPPE",
+        "pl": "Router WŁĄCZONY",
+        "ru": "Маршрутизатор ВКЛЮЧЕН",
+        "ko": "라우터 작동 중"
+      },
+      "uiQuickAction": false,
+      "uiComponent": "button",
+      "getable": true,
+      "setable": true,
+      "insights": true,
+      "icon": "./assets/capabilities/reboot.svg"
+    },
+    "wan_ipv4_ipaddr": {
+      "type": "string",
+      "title": {
+        "en": "WAN IP Address",
+        "nl": "WAN IP-adres",
+        "da": "WAN IP-adresse",
+        "de": "WAN-IP-Adresse",
+        "es": "Dirección IP de WAN",
+        "fr": "Adresse IP WAN",
+        "it": "Indirizzo IP WAN",
+        "no": "WAN IP-adresse",
+        "sv": "WAN IP-adress",
+        "pl": "Adres IP WAN",
+        "ru": "WAN IP-адрес",
+        "ko": "WAN IP 주소"
+      },
+      "getable": true,
+      "setable": false,
+      "icon": "./assets/capabilities/wan_ip_address.svg"
+    },
+    "wan_ipv4_uptime": {
+      "type": "string",
+      "title": {
+        "en": "Online Duration",
+        "nl": "Online Duur",
+        "da": "Online Varighed",
+        "de": "Online-Dauer",
+        "es": "Duración en Línea",
+        "fr": "Durée en Ligne",
+        "it": "Durata Online",
+        "no": "Online Varighet",
+        "sv": "Online Varaktighet",
+        "pl": "Czas Online",
+        "ru": "Время в сети",
+        "ko": "온라인 지속 시간"
+      },
+      "getable": true,
+      "setable": false,
+      "icon": "./assets/capabilities/uptime.svg"
+    }
+  },
+  "discovery": {
+    "deco": {
+      "type": "mdns-sd",
+      "mdns-sd": {
+        "name": "tplinkdeco.ne",
+        "protocol": "tcp"
+      },
+      "id": "{{name}}"
+    }
+  }
+}

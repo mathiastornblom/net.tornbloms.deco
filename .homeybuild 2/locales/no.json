@@ -1,0 +1,31 @@
+{
+  "settings": {
+    "host": "Vert",
+    "username": "Brukernavn",
+    "password": "Passord",
+    "interval_seconds": "Sekunder mellom oppdateringer",
+    "consider_home": "Sekunder å vente før markering av enhetstracker som ikke hjemme etter ikke å ha blitt sett.",
+    "timeout_seconds": "Tidsavbruddssekunder",
+    "timeout_error_retries": "Antall forsøk ved tidsavbruddsfeil",
+    "verify_ssl": "Verifiser at SSL-sertifikatet er gyldig",
+    "client_prefix": "Klientnavn prefiks",
+    "client_postfix": "Klientnavn postfiks",
+    "deco_prefix": "Deco-navn prefiks",
+    "deco_postfix": "Deco-navn postfiks"
+  },
+  "flow": {
+    "reboot_deco": {
+      "title": "Start Deco på nytt",
+      "description": "Start en TP-Link Deco-enhet på nytt."
+    }
+  },
+  "errors": {
+    "invalid_auth": "Ugyldig autentisering",
+    "invalid_host": "Kan ikke koble til vert.",
+    "timeout_connect": "Tidsavbrudd ved etablering av forbindelse",
+    "unknown": "Uventet feil"
+  },
+  "abort": {
+    "reauth_successful": "Reautentisering vellykket"
+  }
+}

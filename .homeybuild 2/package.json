@@ -1,6 +1,6 @@
 {
   "name": "net.tornbloms.deco",
-  "version": "1.2.20",
+  "version": "1.2.1",
   "main": "app.ts",
   "scripts": {
     "build": "tsc"
@@ -12,7 +12,7 @@
     "@types/node": "^22.5.4",
     "@types/source-map-support": "^0.5.10",
     "@types/tough-cookie": "^4.0.5",
-    "typescript": "^5.6.2"
+    "typescript": "^5.5.4"
   },
   "dependencies": {
     "asn1.js": "^5.4.1",

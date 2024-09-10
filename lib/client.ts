@@ -853,12 +853,18 @@ export default class DecoAPIWraper {
       this.sequence,
       this.c,
     );
-    const result = (await decoInstance.doEncryptedPost(
-      `;stok=${this.stok}/admin/client`,
-      args,
-      Buffer.from(jsonRequest),
-      false,
-    )) as ClientListResponse;
+    let result: ClientListResponse;
+    try {
+      result = (await decoInstance.doEncryptedPost(
+        `;stok=${this.stok}/admin/client`,
+        args,
+        Buffer.from(jsonRequest),
+        false,
+      )) as ClientListResponse;
+    } catch (error) {
+      console.log('client.ts: ' + 'client list request failed:', error);
+      result = { error_code: 1, result: { client_list: [] } }; // Return default values in case of error
+    }
 
     // Check if result is an error
     if (isErrorResponse(result)) {
@@ -867,32 +873,36 @@ export default class DecoAPIWraper {
     }
 
     console.log('client.ts: ' + 'Processing client list response...');
+    try {
+      // Uppdatera client_list med dekodade namn
+      result.result.client_list.forEach((client) => {
+        try {
+          // Försök att dekoda namnet
+          const decodedName = Buffer.from(client.name, 'base64').toString(
+            'utf-8',
+          );
+          console.log('client.ts: ' + `Decoded client name: ${decodedName}`);
 
-    // Uppdatera client_list med dekodade namn
-    result.result.client_list.forEach((client) => {
-      try {
-        // Försök att dekoda namnet
-        const decodedName = Buffer.from(client.name, 'base64').toString(
-          'utf-8',
-        );
-        console.log('client.ts: ' + `Decoded client name: ${decodedName}`);
-
-        // Sätt det dekodade namnet till klienten
-        client.name = decodedName;
-      } catch (e) {
-        // Logga fel om dekodningen misslyckas
-        console.log(
-          'client.ts: ' + `Failed to decode client name: ${client.name}`,
-          e,
-        );
-      }
-    });
-    console.log(
-      'client.ts: ' + 'Processed client list response: ',
-      JSON.stringify(result),
-    );
-    // Returnera det uppdaterade resultatet
-    return result;
+          // Sätt det dekodade namnet till klienten
+          client.name = decodedName;
+        } catch (e) {
+          // Logga fel om dekodningen misslyckas
+          console.log(
+            'client.ts: ' + `Failed to decode client name: ${client.name}`,
+            e,
+          );
+        }
+      });
+      console.log(
+        'client.ts: ' + 'Processed client list response: ',
+        JSON.stringify(result),
+      );
+      // Returnera det uppdaterade resultatet
+      return result;
+    } catch (e) {
+      console.log('client.ts: ' + 'client list request failed:', e);
+      return { error_code: 1, result: { client_list: [] } }; // Return default values in case of error
+    }
   }
 
   // Public method to reboot devices based on their MAC addresses

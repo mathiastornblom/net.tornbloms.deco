@@ -2,7 +2,17 @@
   "type": "string",
   "title": {
     "en": "Device Role",
-    "sv": "Enhets roll"
+    "sv": "Enhets roll",
+    "nl": "Apparaatrol",
+    "da": "Enhedsrolle",
+    "de": "Geräterolle",
+    "es": "Rol del dispositivo",
+    "fr": "Rôle de l'appareil",
+    "it": "Ruolo del dispositivo",
+    "no": "Enhetsrolle",
+    "pl": "Rola urządzenia",
+    "ru": "Роль устройства",
+    "ko": "장치 역할"
   },
   "getable": true,
   "setable": false,
