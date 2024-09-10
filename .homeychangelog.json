@@ -100,5 +100,8 @@
   },
   "1.2.14": {
     "en": "Better catching of erorrs"
+  },
+  "1.2.15": {
+    "en": "Fixed craches in fetching clients"
   }
 }
