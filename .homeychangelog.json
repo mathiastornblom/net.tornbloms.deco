@@ -97,5 +97,8 @@
   },
   "1.2.13": {
     "en": "Catching errors"
+  },
+  "1.2.14": {
+    "en": "Better catching of erorrs"
   }
 }
