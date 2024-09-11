@@ -124,5 +124,8 @@
   },
   "1.2.22": {
     "en": "Nothing, homey-log was missing from publishing"
+  },
+  "1.2.23": {
+    "en": "Nothinf, need to bump version for homey-log to be included"
   }
 }
