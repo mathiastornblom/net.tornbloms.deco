@@ -121,5 +121,8 @@
   },
   "1.2.21": {
     "en": "Fixed when value could not be fetched more gracefully"
+  },
+  "1.2.22": {
+    "en": "Nothing, homey-log was missing from publishing"
   }
 }
