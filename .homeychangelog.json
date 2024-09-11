@@ -127,5 +127,8 @@
   },
   "1.2.23": {
     "en": "Nothinf, need to bump version for homey-log to be included"
+  },
+  "1.2.24": {
+    "en": "Improving loggin around entris casing some craches to make the app even more resiliant."
   }
 }
