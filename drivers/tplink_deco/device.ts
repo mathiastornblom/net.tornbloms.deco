@@ -219,12 +219,22 @@ class TplinkDecoDevice extends Device {
             this.savedMemUsage,
           ).catch(this.error);
           const ipInfo = wlanResponse?.result?.wan?.ip_info;
-          if (ipInfo) {
+          if (ipInfo && ipInfo.ip) {
             await this.setCapabilityValue('wan_ipv4_ipaddr', ipInfo.ip).catch(
               this.error,
             );
           } else {
-            this.error('IP information not available');
+            this.error('IP information or IP address not available');
+          }
+          if (this.homey.settings.get('debugenabled')) {
+            this.homey.app.log(
+              `${settings.hostname} Timer: onInit(): wlanResponse result:`,
+              JSON.stringify(wlanResponse.result, null, 2),
+            );
+            this.homey.app.log(
+              `${settings.hostname} Timer: onInit():wan_ipv4_ipaddr: `,
+              wlanResponse.result.wan.ip_info.ip,
+            );
           }
           await this.setCapabilityValue('device_role', settings.role).catch(
             this.error,
@@ -511,14 +521,18 @@ class TplinkDecoDevice extends Device {
               );
             }
             const ipInfo = wlanResponse?.result?.wan?.ip_info;
-            if (ipInfo) {
+            if (ipInfo && ipInfo.ip) {
               await this.setCapabilityValue('wan_ipv4_ipaddr', ipInfo.ip).catch(
                 this.error,
               );
             } else {
-              this.error('IP information not available');
+              this.error('IP information or IP address not available');
             }
             if (this.homey.settings.get('debugenabled')) {
+              this.homey.app.log(
+                `${settings.hostname} Timer: onInit(): wlanResponse result:`,
+                JSON.stringify(wlanResponse.result, null, 2),
+              );
               this.homey.app.log(
                 `${settings.hostname} Timer: onInit():wan_ipv4_ipaddr: `,
                 wlanResponse.result.wan.ip_info.ip,
@@ -646,7 +660,7 @@ class TplinkDecoDevice extends Device {
                 currentWANStatus,
               ).catch(this.error);
             }
-          }, 10 * 1000 + Math.random() * 10);
+          }, 15 * 1000 + Math.random() * 10);
         } else {
           this.error('Current device not found in the device list');
         }
