@@ -22,7 +22,9 @@ class TplinkDecoApp extends HomeyLog {
   }
 
   async onUninit() {
-    this.log('TP-Link Deco app has been uninitialized');
+    this.log(
+      `${this.homey.manifest.id} - ${this.homey.manifest.version} has been uninitialised`,
+    );
   }
 }
 
