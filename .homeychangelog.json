@@ -130,5 +130,8 @@
   },
   "1.2.24": {
     "en": "Improving loggin around entris casing some craches to make the app even more resiliant."
+  },
+  "1.2.25": {
+    "en": "Refactoring app"
   }
 }

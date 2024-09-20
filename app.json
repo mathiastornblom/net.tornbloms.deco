@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "net.tornbloms.deco",
-  "version": "1.2.24",
+  "version": "1.2.25",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -759,7 +759,9 @@
         "measure_up_kilo_bytes_per_second",
         "measure_cpu_usage",
         "measure_mem_usage",
-        "alarm_wan_state",
+        "alarm_wan_ipv4_state",
+        "alarm_wan_ipv6_state",
+        "alarm_group_state",
         "wan_ipv4_ipaddr",
         "lan_ipv4_ipaddr",
         "connected_clients",
@@ -1146,54 +1148,57 @@
     }
   ],
   "capabilities": {
-    "alarm_wan_state": {
+    "alarm_group_state": {
       "type": "boolean",
       "uiComponent": "sensor",
       "uiQuickAction": false,
       "title": {
-        "en": "WAN Disconnected",
-        "nl": "WAN losgekoppeld",
-        "da": "WAN afbrudt",
-        "de": "WAN getrennt",
-        "es": "WAN desconectado",
-        "fr": "WAN déconnecté",
-        "it": "WAN disconnesso",
-        "no": "WAN frakoblet",
-        "sv": "WAN frånkopplad",
-        "pl": "WAN odłączony",
-        "ru": "WAN отключен",
-        "ko": "WAN 연결 끊김"
+        "en": "Disconnected from Mesh"
       },
       "getable": true,
       "setable": false,
       "insights": true,
       "insightsTitleTrue": {
-        "en": "WAN disconnected",
-        "nl": "WAN losgekoppeld",
-        "da": "WAN afbrudt",
-        "de": "WAN getrennt",
-        "es": "WAN desconectado",
-        "fr": "WAN déconnecté",
-        "it": "WAN disconnesso",
-        "no": "WAN frakoblet",
-        "sv": "WAN frånkopplad",
-        "pl": "WAN odłączony",
-        "ru": "WAN отключен",
-        "ko": "WAN 연결 끊김"
+        "en": "Disconnected from Mesh"
       },
       "insightsTitleFalse": {
-        "en": "WAN connected",
-        "nl": "WAN verbonden",
-        "da": "WAN tilsluttet",
-        "de": "WAN verbunden",
-        "es": "WAN conectado",
-        "fr": "WAN connecté",
-        "it": "WAN connesso",
-        "no": "WAN tilkoblet",
-        "sv": "WAN ansluten",
-        "pl": "WAN połączony",
-        "ru": "WAN подключен",
-        "ko": "WAN 연결됨"
+        "en": "Connected to Mesh"
+      },
+      "icon": "./assets/capabilities/router-wifi-svgrepo-com.svg"
+    },
+    "alarm_wan_ipv4_state": {
+      "type": "boolean",
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
+      "title": {
+        "en": "WAN Disconnected (ipv4)"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": true,
+      "insightsTitleTrue": {
+        "en": "WAN disconnected (ipv4)"
+      },
+      "insightsTitleFalse": {
+        "en": "WAN connected (ipv4)"
+      },
+      "icon": "./assets/capabilities/alarm_wan.svg"
+    },
+    "alarm_wan_ipv6_state": {
+      "type": "boolean",
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
+      "title": {
+        "en": "WAN Disconnected (ipv6)"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": true,
+      "insightsTitleTrue": {
+        "en": "WAN disconnected (ipv6)"
+      },
+      "insightsTitleFalse": {
+        "en": "WAN connected (ipv6)"
       },
       "icon": "./assets/capabilities/alarm_wan.svg"
     },
