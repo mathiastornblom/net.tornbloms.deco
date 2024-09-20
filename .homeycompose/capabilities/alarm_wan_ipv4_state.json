@@ -3,16 +3,49 @@
   "uiComponent": "sensor",
   "uiQuickAction": false,
   "title": {
-    "en": "WAN Disconnected (ipv4)"
+    "en": "WAN Disconnected (ipv4)",
+    "nl": "WAN losgekoppeld (ipv4)",
+    "da": "WAN frakoblet (ipv4)",
+    "de": "WAN getrennt (ipv4)",
+    "es": "WAN desconectado (ipv4)",
+    "fr": "WAN déconnecté (ipv4)",
+    "it": "WAN disconnesso (ipv4)",
+    "no": "WAN frakoblet (ipv4)",
+    "sv": "WAN bortkopplad (ipv4)",
+    "pl": "WAN odłączony (ipv4)",
+    "ru": "WAN отключен (ipv4)",
+    "ko": "WAN 연결 해제됨 (ipv4)"
   },
   "getable": true,
   "setable": false,
   "insights": true,
   "insightsTitleTrue": {
-    "en": "WAN disconnected (ipv4)"
+    "en": "WAN disconnected (ipv4)",
+    "nl": "WAN losgekoppeld (ipv4)",
+    "da": "WAN frakoblet (ipv4)",
+    "de": "WAN getrennt (ipv4)",
+    "es": "WAN desconectado (ipv4)",
+    "fr": "WAN déconnecté (ipv4)",
+    "it": "WAN disconnesso (ipv4)",
+    "no": "WAN frakoblet (ipv4)",
+    "sv": "WAN bortkopplad (ipv4)",
+    "pl": "WAN odłączony (ipv4)",
+    "ru": "WAN отключен (ipv4)",
+    "ko": "WAN 연결 해제됨 (ipv4)"
   },
   "insightsTitleFalse": {
-    "en": "WAN connected (ipv4)"
+    "en": "WAN connected (ipv4)",
+    "nl": "WAN verbonden (ipv4)",
+    "da": "WAN tilsluttet (ipv4)",
+    "de": "WAN verbunden (ipv4)",
+    "es": "WAN conectado (ipv4)",
+    "fr": "WAN connecté (ipv4)",
+    "it": "WAN connesso (ipv4)",
+    "no": "WAN tilkoblet (ipv4)",
+    "sv": "WAN ansluten (ipv4)",
+    "pl": "WAN podłączony (ipv4)",
+    "ru": "WAN подключен (ipv4)",
+    "ko": "WAN 연결됨 (ipv4)"
   },
   "icon": "./assets/capabilities/alarm_wan.svg"
 }

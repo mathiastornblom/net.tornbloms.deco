@@ -3,16 +3,49 @@
   "uiComponent": "sensor",
   "uiQuickAction": false,
   "title": {
-    "en": "WAN Disconnected (ipv6)"
+    "en": "WAN Disconnected (ipv6)",
+    "nl": "WAN Verbonden (ipv6)",
+    "da": "WAN Afbrudt (ipv6)",
+    "de": "WAN Getrennt (ipv6)",
+    "es": "WAN Desconectado (ipv6)",
+    "fr": "WAN Déconnecté (ipv6)",
+    "it": "WAN Disconnesso (ipv6)",
+    "no": "WAN Frakoblet (ipv6)",
+    "sv": "WAN Frånkopplad (ipv6)",
+    "pl": "WAN Odłączony (ipv6)",
+    "ru": "WAN Отключен (ipv6)",
+    "ko": "WAN 연결 끊김 (ipv6)"
   },
   "getable": true,
   "setable": false,
   "insights": true,
   "insightsTitleTrue": {
-    "en": "WAN disconnected (ipv6)"
+    "en": "WAN disconnected (ipv6)",
+    "nl": "WAN Verbonden (ipv6)",
+    "da": "WAN Afbrudt (ipv6)",
+    "de": "WAN Getrennt (ipv6)",
+    "es": "WAN Desconectado (ipv6)",
+    "fr": "WAN Déconnecté (ipv6)",
+    "it": "WAN Disconnesso (ipv6)",
+    "no": "WAN Frakoblet (ipv6)",
+    "sv": "WAN Frånkopplad (ipv6)",
+    "pl": "WAN Odłączony (ipv6)",
+    "ru": "WAN Отключен (ipv6)",
+    "ko": "WAN 연결 끊김 (ipv6)"
   },
   "insightsTitleFalse": {
-    "en": "WAN connected (ipv6)"
+    "en": "WAN connected (ipv6)",
+    "nl": "WAN Verbonden (ipv6)",
+    "da": "WAN Tilsluttet (ipv6)",
+    "de": "WAN Verbunden (ipv6)",
+    "es": "WAN Conectado (ipv6)",
+    "fr": "WAN Connecté (ipv6)",
+    "it": "WAN Connesso (ipv6)",
+    "no": "WAN Tilkoblet (ipv6)",
+    "sv": "WAN Ansluten (ipv6)",
+    "pl": "WAN Połączony (ipv6)",
+    "ru": "WAN Подключен (ipv6)",
+    "ko": "WAN 연결됨 (ipv6)"
   },
   "icon": "./assets/capabilities/alarm_wan.svg"
 }

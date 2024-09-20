@@ -1153,16 +1153,49 @@
       "uiComponent": "sensor",
       "uiQuickAction": false,
       "title": {
-        "en": "Disconnected from Mesh"
+        "en": "Disconnected from Mesh",
+        "nl": "Verbinding verbroken met mesh",
+        "da": "Afbrudt fra mesh",
+        "de": "Vom Mesh getrennt",
+        "es": "Desconectado de la malla",
+        "fr": "Déconnecté du mesh",
+        "it": "Disconnesso dal mesh",
+        "no": "Koblet fra mesh",
+        "sv": "Frånkopplad från mesh",
+        "pl": "Odłączono od siatki",
+        "ru": "Отключено от mesh-сети",
+        "ko": "메시와 연결 끊김"
       },
       "getable": true,
       "setable": false,
       "insights": true,
       "insightsTitleTrue": {
-        "en": "Disconnected from Mesh"
+        "en": "Disconnected from Mesh",
+        "nl": "Verbinding verbroken met mesh",
+        "da": "Afbrudt fra mesh",
+        "de": "Vom Mesh getrennt",
+        "es": "Desconectado de la malla",
+        "fr": "Déconnecté du mesh",
+        "it": "Disconnesso dal mesh",
+        "no": "Koblet fra mesh",
+        "sv": "Frånkopplad från mesh",
+        "pl": "Odłączono od siatki",
+        "ru": "Отключено от mesh-сети",
+        "ko": "메시와 연결 끊김"
       },
       "insightsTitleFalse": {
-        "en": "Connected to Mesh"
+        "en": "Connected to Mesh",
+        "nl": "Verbonden met mesh",
+        "da": "Forbundet til mesh",
+        "de": "Mit dem Mesh verbunden",
+        "es": "Conectado a la malla",
+        "fr": "Connecté au mesh",
+        "it": "Connesso al mesh",
+        "no": "Koblet til mesh",
+        "sv": "Ansluten till mesh",
+        "pl": "Połączono z siatką",
+        "ru": "Подключено к mesh-сети",
+        "ko": "메시에 연결됨"
       },
       "icon": "./assets/capabilities/router-wifi-svgrepo-com.svg"
     },
@@ -1171,16 +1204,49 @@
       "uiComponent": "sensor",
       "uiQuickAction": false,
       "title": {
-        "en": "WAN Disconnected (ipv4)"
+        "en": "WAN Disconnected (ipv4)",
+        "nl": "WAN losgekoppeld (ipv4)",
+        "da": "WAN frakoblet (ipv4)",
+        "de": "WAN getrennt (ipv4)",
+        "es": "WAN desconectado (ipv4)",
+        "fr": "WAN déconnecté (ipv4)",
+        "it": "WAN disconnesso (ipv4)",
+        "no": "WAN frakoblet (ipv4)",
+        "sv": "WAN bortkopplad (ipv4)",
+        "pl": "WAN odłączony (ipv4)",
+        "ru": "WAN отключен (ipv4)",
+        "ko": "WAN 연결 해제됨 (ipv4)"
       },
       "getable": true,
       "setable": false,
       "insights": true,
       "insightsTitleTrue": {
-        "en": "WAN disconnected (ipv4)"
+        "en": "WAN disconnected (ipv4)",
+        "nl": "WAN losgekoppeld (ipv4)",
+        "da": "WAN frakoblet (ipv4)",
+        "de": "WAN getrennt (ipv4)",
+        "es": "WAN desconectado (ipv4)",
+        "fr": "WAN déconnecté (ipv4)",
+        "it": "WAN disconnesso (ipv4)",
+        "no": "WAN frakoblet (ipv4)",
+        "sv": "WAN bortkopplad (ipv4)",
+        "pl": "WAN odłączony (ipv4)",
+        "ru": "WAN отключен (ipv4)",
+        "ko": "WAN 연결 해제됨 (ipv4)"
       },
       "insightsTitleFalse": {
-        "en": "WAN connected (ipv4)"
+        "en": "WAN connected (ipv4)",
+        "nl": "WAN verbonden (ipv4)",
+        "da": "WAN tilsluttet (ipv4)",
+        "de": "WAN verbunden (ipv4)",
+        "es": "WAN conectado (ipv4)",
+        "fr": "WAN connecté (ipv4)",
+        "it": "WAN connesso (ipv4)",
+        "no": "WAN tilkoblet (ipv4)",
+        "sv": "WAN ansluten (ipv4)",
+        "pl": "WAN podłączony (ipv4)",
+        "ru": "WAN подключен (ipv4)",
+        "ko": "WAN 연결됨 (ipv4)"
       },
       "icon": "./assets/capabilities/alarm_wan.svg"
     },
@@ -1189,16 +1255,49 @@
       "uiComponent": "sensor",
       "uiQuickAction": false,
       "title": {
-        "en": "WAN Disconnected (ipv6)"
+        "en": "WAN Disconnected (ipv6)",
+        "nl": "WAN Verbonden (ipv6)",
+        "da": "WAN Afbrudt (ipv6)",
+        "de": "WAN Getrennt (ipv6)",
+        "es": "WAN Desconectado (ipv6)",
+        "fr": "WAN Déconnecté (ipv6)",
+        "it": "WAN Disconnesso (ipv6)",
+        "no": "WAN Frakoblet (ipv6)",
+        "sv": "WAN Frånkopplad (ipv6)",
+        "pl": "WAN Odłączony (ipv6)",
+        "ru": "WAN Отключен (ipv6)",
+        "ko": "WAN 연결 끊김 (ipv6)"
       },
       "getable": true,
       "setable": false,
       "insights": true,
       "insightsTitleTrue": {
-        "en": "WAN disconnected (ipv6)"
+        "en": "WAN disconnected (ipv6)",
+        "nl": "WAN Verbonden (ipv6)",
+        "da": "WAN Afbrudt (ipv6)",
+        "de": "WAN Getrennt (ipv6)",
+        "es": "WAN Desconectado (ipv6)",
+        "fr": "WAN Déconnecté (ipv6)",
+        "it": "WAN Disconnesso (ipv6)",
+        "no": "WAN Frakoblet (ipv6)",
+        "sv": "WAN Frånkopplad (ipv6)",
+        "pl": "WAN Odłączony (ipv6)",
+        "ru": "WAN Отключен (ipv6)",
+        "ko": "WAN 연결 끊김 (ipv6)"
       },
       "insightsTitleFalse": {
-        "en": "WAN connected (ipv6)"
+        "en": "WAN connected (ipv6)",
+        "nl": "WAN Verbonden (ipv6)",
+        "da": "WAN Tilsluttet (ipv6)",
+        "de": "WAN Verbunden (ipv6)",
+        "es": "WAN Conectado (ipv6)",
+        "fr": "WAN Connecté (ipv6)",
+        "it": "WAN Connesso (ipv6)",
+        "no": "WAN Tilkoblet (ipv6)",
+        "sv": "WAN Ansluten (ipv6)",
+        "pl": "WAN Połączony (ipv6)",
+        "ru": "WAN Подключен (ipv6)",
+        "ko": "WAN 연결됨 (ipv6)"
       },
       "icon": "./assets/capabilities/alarm_wan.svg"
     },

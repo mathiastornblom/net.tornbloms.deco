@@ -116,6 +116,10 @@
     "reboot",
     "device_role"
   ],
-  "platforms": ["local"],
-  "connectivity": ["lan"]
+  "platforms": [
+    "local"
+  ],
+  "connectivity": [
+    "lan"
+  ]
 }
