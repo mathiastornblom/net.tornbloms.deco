@@ -107,17 +107,15 @@
     "measure_up_kilo_bytes_per_second",
     "measure_cpu_usage",
     "measure_mem_usage",
-    "alarm_wan_state",
+    "alarm_wan_ipv4_state",
+    "alarm_wan_ipv6_state",
+    "alarm_group_state",
     "wan_ipv4_ipaddr",
     "lan_ipv4_ipaddr",
     "connected_clients",
     "reboot",
     "device_role"
   ],
-  "platforms": [
-    "local"
-  ],
-  "connectivity": [
-    "lan"
-  ]
+  "platforms": ["local"],
+  "connectivity": ["lan"]
 }

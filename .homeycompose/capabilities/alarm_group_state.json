@@ -1,0 +1,18 @@
+{
+  "type": "boolean",
+  "uiComponent": "sensor",
+  "uiQuickAction": false,
+  "title": {
+    "en": "Disconnected from Mesh"
+  },
+  "getable": true,
+  "setable": false,
+  "insights": true,
+  "insightsTitleTrue": {
+    "en": "Disconnected from Mesh"
+  },
+  "insightsTitleFalse": {
+    "en": "Connected to Mesh"
+  },
+  "icon": "./assets/capabilities/router-wifi-svgrepo-com.svg"
+}

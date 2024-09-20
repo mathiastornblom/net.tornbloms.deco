@@ -11,19 +11,20 @@ import {
 } from '../../lib/client';
 
 /**
- * TplinkDecoDevice class to manage individual TP-Link Deco devices in Homey.
- * Handles initialization, settings updates, and device-specific actions.
+ * Class representing a TP-Link Deco Device in Homey.
+ * Manages initialization, settings updates, and device-specific actions.
  */
 class TplinkDecoDevice extends Device {
+  // Indicates if debug mode is enabled
   debugEnabled: boolean = this.homey.settings.get('debugenabled') || false;
+
   // Variables to store previous state values
-  private savedDownKiloBytesPerSecond = 0;
-  private savedUpKiloBytesPerSecond = 0;
   private savedCpuUsage = 0;
   private savedMemUsage = 0;
-  private savedWanState = false;
+  private savedWanipv4State = false;
+  private savedWanipv6State = false;
 
-  // Define interval ID properties to store interval identifiers
+  // Interval ID for periodic updates
   private timeoutSecondsIntervalId: ReturnType<typeof setInterval> | null =
     null;
   private api: decoapiwrapper | any;
@@ -31,641 +32,154 @@ class TplinkDecoDevice extends Device {
   connected = false; // Connection status
   clients: any[] = []; // List of connected clients
 
+  // Buffer for read operations
+  readBody = Buffer.from('{"operation": "read"}');
+
   /**
    * Initializes the TP-Link Deco device.
-   * Sets up the API connection using device settings.
+   * Sets up the API connection using device settings and starts periodic updates.
    */
   async onInit() {
     try {
+      // Log device initialization
       this.homey.app.log(
         `Device instance: ${this.getName()} (${this.getData().id})`,
       );
-
-      // Retrieve device settings
-      const settings = this.getSettings();
-      this.homey.app.log(
-        `${settings.hostname} onInit():settings: `,
-        JSON.stringify(settings, null, 2),
-      );
+      this.log(`TP-Link Deco Device initialized: ${this.getName()}`);
 
       // Retrieve device data
       const devicedata = this.getData();
-      const logDebug = (message: string, data?: any) => {
-        if (this.homey.settings.get('debug')) {
-          this.homey.app.log(message, JSON.stringify(data, null, 2));
-        }
-      };
 
-      logDebug(`${settings.hostname} onInit():devicedata: `, devicedata);
+      // Retrieve device settings
+      const settings = this.getSettings();
+      this.debug(`Settings:`, settings);
 
-      this.log(`TP-Link Deco Device started initialized: ${this.getName()}`);
-      this.homey.app.log(
-        `TP-Link Deco Device started initialized: ${this.getName()}`,
-      );
+      // Check if hostname and password are provided
       if (settings.hostname && settings.password) {
-        // Authenticate with the API
+        // Instantiate the API wrapper with the device hostname
         this.api = new decoapiwrapper(settings.hostname);
+
+        // Authenticate with the API
         this.connected = await this.api
           .authenticate(settings.password)
           .catch((e) => {
             this.error('Failed to authenticate', e);
-            this.homey.app.error('Failed to authenticate', e);
             return false;
           });
+
+        if (!this.connected) {
+          this.error('Authentication failed');
+          return;
+        }
+
         this.log('Successfully connected to TP-Link Deco');
+
+        // Register capability listeners for reboot, CPU usage, and memory usage
+        this.registerCapabilityListener('reboot', async (value) => {
+          if (Boolean(value)) {
+            this.log(`Reboot triggered: ${Boolean(value)}`);
+            this.log(`mac: ${devicedata.id}`);
+            const rebooted = await this.api
+              .reboot(devicedata.id)
+              .catch(this.error);
+            if (rebooted) {
+              setTimeout(async () => {
+                await this.setCapabilityValue('reboot', false).catch(
+                  this.error,
+                );
+              }, 60000); // 60 seconds
+            } else {
+              this.error('Failed to reboot');
+            }
+          }
+        });
+
+        this.registerCapabilityListener('measure_cpu_usage', async (value) => {
+          this.savedCpuUsage = value;
+          this.log(`CPU Usage: ${value}`);
+        });
+
+        this.registerCapabilityListener('measure_mem_usage', async (value) => {
+          this.savedMemUsage = value;
+          this.log(`Memory Usage: ${value}`);
+        });
+
+        const clientIsConnected =
+          this.homey.flow.getConditionCard('client_is_online');
+        clientIsConnected.registerRunListener(async (args) => {
+          if (this.clients.find((client) => client.mac === args.client.mac)) {
+            return true;
+          }
+          return false;
+        });
+        clientIsConnected.registerArgumentAutocompleteListener(
+          'client',
+          async (query) => {
+            const filteredClients = this.clients.filter((client) => {
+              const search = query.toLowerCase();
+
+              return (
+                client.mac.toLowerCase().includes(search) ||
+                client.name.toLowerCase().includes(search) ||
+                client.ipaddr.toLowerCase().includes(search)
+              );
+            });
+            const results = [
+              ...filteredClients.map((client) => ({
+                name: client.name,
+                mac: client.mac,
+                description: client.mac,
+              })),
+            ];
+
+            return results;
+          },
+        );
+
+        const clientStateFlow = this.homey.flow.getDeviceTriggerCard(
+          'client_state_changed',
+        );
+        clientStateFlow.registerRunListener(async (args, state) => {
+          this.log('clientStateFlow.registerRunListener', {
+            args,
+            state,
+          });
+          return (
+            args.status === state.status && args.client.mac === state.client.mac
+          );
+        });
+        clientStateFlow.registerArgumentAutocompleteListener(
+          'client',
+          async (query) => {
+            const filteredClients = this.clients.filter((client) => {
+              const search = query.toLowerCase();
+
+              return (
+                client.mac.toLowerCase().includes(search) ||
+                client.name.toLowerCase().includes(search) ||
+                client.ipaddr.toLowerCase().includes(search)
+              );
+            });
+            const results = [
+              ...filteredClients.map((client) => ({
+                name: client.name,
+                mac: client.mac,
+                description: client.mac,
+              })),
+            ];
+
+            return results;
+          },
+        );
+
+        // Initialize capabilities on device start
+        await this.updateDeviceMetrics();
+
+        // Set up an interval to periodically update device metrics using timeoutSeconds from settings
+        const interval = (settings.timeoutSeconds || 15) * 1000; // Default to 15 seconds if not set
+        this.setUpdateInterval(interval);
       } else {
         this.error('Missing API configuration settings');
-        this.connected = false;
-      }
-
-      // Retrieve device list from the API
-      const deviceList = (await this.api.deviceList()) as DeviceListResponse;
-      if (this.homey.settings.get('debugenabled')) {
-        this.homey.app.log(
-          `${settings.hostname} onInit():deviceList: `,
-          JSON.stringify(deviceList, null, 2),
-        );
-      }
-      if (
-        deviceList.error_code === 0 &&
-        deviceList.result.device_list.length > 0
-      ) {
-        // Filter the device list to find the current device
-        const device = deviceList.result.device_list.find(
-          (d) => d.mac === devicedata.id,
-        );
-        if (this.homey.settings.get('debugenabled')) {
-          this.homey.app.log(
-            `${settings.hostname} onInit():Filtered device: `,
-            JSON.stringify(device, null, 2),
-          );
-        }
-        if (device) {
-          // Update device settings with retrieved information
-          await this.setSettings({
-            hardware_ver: device.hardware_ver,
-            software_ver: device.software_ver,
-            role: device.role,
-          });
-
-          const performance = (await this.api.performance().catch((e) => {
-            this.error('Failed to retrieve performance data', e);
-            this.homey.app.error('Failed to retrieve performance data', e);
-            return { error_code: 1, result: { cpu_usage: 0, mem_usage: 0 } }; // Return default values in case of error
-          })) as PerformanceResponse;
-          if (this.homey.settings.get('debugenabled')) {
-            this.homey.app.log(
-              `${settings.hostname} onInit():performance: `,
-              JSON.stringify(performance, null, 2),
-            );
-          }
-          this.savedCpuUsage = Math.round(
-            Number(performance.result.cpu_usage) * 100,
-          );
-          this.savedMemUsage = Math.round(
-            Number(performance.result.mem_usage) * 100,
-          );
-          const wlanResponse = (await this.api.getWAN().catch((e) => {
-            this.error('Failed to retrieve WAN data', e);
-            this.homey.app.error('Failed to retrieve WAN data', e);
-            return { error_code: 1, result: {} }; // Return default values in case of error
-          })) as WANResponse;
-          if (this.homey.settings.get('debugenabled')) {
-            this.homey.app.log(
-              `${settings.hostname} onInit():wlanResponse: `,
-              JSON.stringify(wlanResponse, null, 2),
-            );
-          }
-          let clientList = (await this.api.clientList().catch((e) => {
-            this.error('Failed to retrieve client list', e);
-            this.homey.app.error('Failed to retrieve client list', e);
-            return {
-              error_code: 1,
-              result: {
-                client_list: [],
-              },
-            }; // Return default values in case of error
-          })) as ClientListResponse;
-          this.homey.app.log(
-            `${settings.hostname} onInit():clientList: `,
-            JSON.stringify(clientList, null, 2),
-          );
-
-          const internetResponse = (await this.api.getInternet().catch((e) => {
-            this.error('Failed to retrieve internet data', e);
-            this.homey.app.error('Failed to retrieve internet data', e);
-            return { error_code: 1, result: {} }; // Return default values in case of error
-          })) as InternetResponse;
-          if (this.homey.settings.get('debugenabled')) {
-            this.homey.app.log(
-              `${settings.hostname} onInit():internetResponse: `,
-              JSON.stringify(internetResponse, null, 2),
-            );
-          }
-          const clientStateFlow = this.homey.flow.getDeviceTriggerCard(
-            'client_state_changed',
-          );
-          const lastClients = this.clients;
-          this.clients = clientList.result.client_list;
-
-          for (const client of this.clients) {
-            if (lastClients.length > 0) {
-              if (
-                !lastClients.find((obj) => {
-                  return obj.mac === client.mac;
-                })
-              ) {
-                const tokens = {
-                  name: client.name,
-                  ipaddr: client.ip,
-                  mac: client.mac,
-                };
-
-                await clientStateFlow.trigger(this, tokens, {
-                  status: 'online',
-                  client: tokens,
-                });
-              }
-            }
-          }
-
-          if (lastClients.length > 0) {
-            for (const client of lastClients) {
-              if (
-                !this.clients.find((obj) => {
-                  return obj.mac === client.mac;
-                })
-              ) {
-                const tokens = {
-                  name: client.name,
-                  ipaddr: client.ip,
-                  mac: client.mac,
-                };
-                await clientStateFlow.trigger(this, tokens, {
-                  status: 'offline',
-                  client: tokens,
-                });
-              }
-            }
-          }
-
-          // Update device capabilities with retrieved information
-          await this.setCapabilityValue(
-            'measure_cpu_usage',
-            this.savedCpuUsage,
-          ).catch(this.error);
-          await this.setCapabilityValue(
-            'measure_mem_usage',
-            this.savedMemUsage,
-          ).catch(this.error);
-          const ipInfo = wlanResponse?.result?.wan?.ip_info;
-          if (ipInfo && ipInfo.ip) {
-            await this.setCapabilityValue('wan_ipv4_ipaddr', ipInfo.ip).catch(
-              this.error,
-            );
-          } else {
-            this.error('IP information or IP address not available');
-          }
-          if (this.homey.settings.get('debugenabled')) {
-            this.homey.app.log(
-              `${settings.hostname} Timer: onInit(): wlanResponse result:`,
-              JSON.stringify(wlanResponse.result, null, 2),
-            );
-            this.homey.app.log(
-              `${settings.hostname} Timer: onInit():wan_ipv4_ipaddr: `,
-              wlanResponse.result.wan.ip_info.ip,
-            );
-          }
-          await this.setCapabilityValue('device_role', settings.role).catch(
-            this.error,
-          );
-          await this.setCapabilityValue(
-            'lan_ipv4_ipaddr',
-            settings.hostname,
-          ).catch(this.error);
-          await this.setCapabilityValue(
-            'connected_clients',
-            clientList.result.client_list.length,
-          ).catch(this.error);
-
-          // Calculate total download and upload speeds
-          let totalDownKiloBytesPerSecond = 0;
-          let totalUpKiloBytesPerSecond = 0;
-
-          for (const client of clientList.result.client_list) {
-            totalDownKiloBytesPerSecond += client.down_speed;
-            totalUpKiloBytesPerSecond += client.up_speed;
-          }
-
-          this.log(`Total Download Speed: ${totalDownKiloBytesPerSecond} KB/s`);
-          this.log(`Total Upload Speed: ${totalUpKiloBytesPerSecond} KB/s`);
-          this.savedDownKiloBytesPerSecond = totalDownKiloBytesPerSecond;
-          this.savedUpKiloBytesPerSecond = totalUpKiloBytesPerSecond;
-          await this.setCapabilityValue(
-            'measure_down_kilo_bytes_per_second',
-            totalDownKiloBytesPerSecond,
-          ).catch(this.error);
-          await this.setCapabilityValue(
-            'measure_up_kilo_bytes_per_second',
-            totalUpKiloBytesPerSecond,
-          ).catch(this.error);
-
-          // Update WAN alarm status
-          this.savedWanState =
-            internetResponse.result.ipv4.inet_status !== 'online';
-          await this.setCapabilityValue(
-            'alarm_wan_state',
-            this.savedWanState,
-          ).catch(this.error);
-
-          // Register capability listeners for reboot, CPU usage, and memory usage
-          this.registerCapabilityListener('reboot', async (value) => {
-            if (Boolean(value)) {
-              this.log(`Reboot triggered: ${Boolean(value)}`);
-              this.log(`mac: ${devicedata.id}`);
-              const rebooted = await this.api
-                .reboot(devicedata.id)
-                .catch(this.error);
-              if (rebooted) {
-                setTimeout(async () => {
-                  await this.setCapabilityValue('reboot', false).catch(
-                    this.error,
-                  );
-                }, 60000); // 60 seconds
-              } else {
-                this.error('Failed to reboot');
-              }
-            }
-          });
-
-          this.registerCapabilityListener(
-            'measure_cpu_usage',
-            async (value) => {
-              this.savedCpuUsage = value;
-              this.log(`CPU Usage: ${value}`);
-            },
-          );
-
-          this.registerCapabilityListener(
-            'measure_mem_usage',
-            async (value) => {
-              this.savedMemUsage = value;
-              this.log(`Memory Usage: ${value}`);
-            },
-          );
-
-          const clientIsConnected =
-            this.homey.flow.getConditionCard('client_is_online');
-          clientIsConnected.registerRunListener(async (args) => {
-            if (this.clients.find((client) => client.mac === args.client.mac)) {
-              return true;
-            }
-            return false;
-          });
-          clientIsConnected.registerArgumentAutocompleteListener(
-            'client',
-            async (query) => {
-              const filteredClients = this.clients.filter((client) => {
-                const search = query.toLowerCase();
-
-                return (
-                  client.mac.toLowerCase().includes(search) ||
-                  client.name.toLowerCase().includes(search) ||
-                  client.ipaddr.toLowerCase().includes(search)
-                );
-              });
-              const results = [
-                ...filteredClients.map((client) => ({
-                  name: client.name,
-                  mac: client.mac,
-                  description: client.mac,
-                })),
-              ];
-
-              return results;
-            },
-          );
-
-          clientStateFlow.registerRunListener(async (args, state) => {
-            this.log('clientStateFlow.registerRunListener', {
-              args,
-              state,
-            });
-            return (
-              args.status === state.status &&
-              args.client.mac === state.client.mac
-            );
-          });
-          clientStateFlow.registerArgumentAutocompleteListener(
-            'client',
-            async (query) => {
-              const filteredClients = this.clients.filter((client) => {
-                const search = query.toLowerCase();
-
-                return (
-                  client.mac.toLowerCase().includes(search) ||
-                  client.name.toLowerCase().includes(search) ||
-                  client.ipaddr.toLowerCase().includes(search)
-                );
-              });
-              const results = [
-                ...filteredClients.map((client) => ({
-                  name: client.name,
-                  mac: client.mac,
-                  description: client.mac,
-                })),
-              ];
-
-              return results;
-            },
-          );
-          // Set up an interval to periodically update device metrics
-          this.timeoutSecondsIntervalId = setInterval(async () => {
-            this.log('Running interval', settings.timeoutSeconds * 1000);
-            if (this.homey.settings.get('debugenabled')) {
-              this.homey.app.log(
-                `Setting interval for device ${this.getName()} (${
-                  this.getData().id
-                }) with IP ${settings.hostname} with intervall id: ${
-                  this.timeoutSecondsIntervalId
-                }`,
-              );
-
-              this.homey.app.log(
-                `${settings.hostname} Timer api: `,
-                JSON.stringify(this.api, null, 2),
-              );
-            }
-            // Retrieve updated performance metrics from the API
-            const performance = (await this.api.performance().catch((e) => {
-              this.error('Failed to retrieve performance data', e);
-              this.homey.app.error(
-                'Timer: Failed to retrieve performance data',
-                e,
-              );
-              return { error_code: 1, result: { cpu_usage: 0, mem_usage: 0 } }; // Return default values in case of error
-            })) as PerformanceResponse;
-            if (this.homey.settings.get('debugenabled')) {
-              this.homey.app.log(
-                `${settings.hostname} Timer: onInit():performance: `,
-                JSON.stringify(performance, null, 2),
-              );
-            }
-            const resultCpuUsage = Math.round(
-              Number(performance.result.cpu_usage) * 100,
-            );
-            const resultMemUsage = Math.round(
-              Number(performance.result.mem_usage) * 100,
-            );
-            const wlanResponse = (await this.api.getWAN().catch((e) => {
-              this.error('Failed to retrieve WAN data', e);
-              this.homey.app.error('Timer: Failed to retrieve WAN data', e);
-              return { error_code: 1, result: {} }; // Return default values in case of error
-            })) as WANResponse;
-            if (this.homey.settings.get('debugenabled')) {
-              this.homey.app.log(
-                `${settings.hostname} Timer: onInit():wlanResponse: `,
-                JSON.stringify(wlanResponse, null, 2),
-              );
-            }
-
-            let clientList = (await this.api.clientList().catch((e) => {
-              this.error('Failed to retrieve client list', e);
-              this.homey.app.error('Timer: Failed to retrieve client list', e);
-              return {
-                error_code: 1,
-                result: {
-                  client_list: [],
-                },
-              }; // Return default values in case of error
-            })) as ClientListResponse;
-            if (this.homey.settings.get('debugenabled')) {
-              this.homey.app.log(
-                `${settings.hostname} Timer: onInit():clientList: `,
-                JSON.stringify(clientList, null, 2),
-              );
-
-              this.log(
-                'clientList.length: ',
-                clientList.result.client_list.length,
-              );
-            }
-            const lastClients = this.clients;
-            this.log('lastClients.length: ', lastClients.length);
-            this.clients = clientList.result.client_list;
-            this.log('this.clients.length: ', this.clients.length);
-            for (const client of this.clients) {
-              if (lastClients.length > 0) {
-                if (
-                  !lastClients.find((obj) => {
-                    return obj.mac === client.mac;
-                  })
-                ) {
-                  const tokens = {
-                    name: client.name,
-                    ipaddr: client.ip,
-                    mac: client.mac,
-                  };
-                  await clientStateFlow
-                    .trigger(this, tokens, {
-                      status: 'online',
-                      client: tokens,
-                    })
-                    .catch(this.error);
-                  this.log(`client ${tokens.name} is online`);
-                }
-              }
-            }
-            if (lastClients.length > 0) {
-              for (const client of lastClients) {
-                if (
-                  !this.clients.find((obj) => {
-                    return obj.mac === client.mac;
-                  })
-                ) {
-                  const tokens = {
-                    name: client.name,
-                    ipaddr: client.ip,
-                    mac: client.mac,
-                  };
-                  await clientStateFlow
-                    .trigger(this, tokens, {
-                      status: 'offline',
-                      client: tokens,
-                    })
-                    .catch(this.error);
-                  this.log(`client ${tokens.name} is offline`);
-                }
-              }
-            }
-
-            // Update device capabilities with retrieved information
-            await this.setCapabilityValue(
-              'measure_cpu_usage',
-              resultCpuUsage,
-            ).catch(this.error);
-            if (this.homey.settings.get('debugenabled')) {
-              this.homey.app.log(
-                `${settings.hostname} Timer: onInit():measure_cpu_usage: `,
-                resultCpuUsage,
-              );
-            }
-            await this.setCapabilityValue(
-              'measure_mem_usage',
-              resultMemUsage,
-            ).catch(this.error);
-            if (this.homey.settings.get('debugenabled')) {
-              this.homey.app.log(
-                `${settings.hostname} Timer: onInit():measure_mem_usage: `,
-                resultMemUsage,
-              );
-            }
-            const ipInfo = wlanResponse?.result?.wan?.ip_info;
-            if (ipInfo && ipInfo.ip) {
-              await this.setCapabilityValue('wan_ipv4_ipaddr', ipInfo.ip).catch(
-                this.error,
-              );
-            } else {
-              this.error('IP information or IP address not available');
-            }
-            if (this.homey.settings.get('debugenabled')) {
-              this.homey.app.log(
-                `${settings.hostname} Timer: onInit(): wlanResponse result:`,
-                JSON.stringify(wlanResponse.result, null, 2),
-              );
-              this.homey.app.log(
-                `${settings.hostname} Timer: onInit():wan_ipv4_ipaddr: `,
-                wlanResponse.result.wan.ip_info.ip,
-              );
-            }
-            await this.setCapabilityValue('device_role', settings.role).catch(
-              this.error,
-            );
-            if (this.homey.settings.get('debugenabled')) {
-              this.homey.app.log(
-                `${settings.hostname} Timer: onInit():device_role: `,
-                settings.role,
-              );
-            }
-            await this.setCapabilityValue(
-              'lan_ipv4_ipaddr',
-              settings.hostname,
-            ).catch(this.error);
-            if (this.homey.settings.get('debugenabled')) {
-              this.homey.app.log(
-                `${settings.hostname} Timer: onInit():lan_ipv4_ipaddr: `,
-                settings.hostname,
-              );
-            }
-            await this.setCapabilityValue(
-              'connected_clients',
-              clientList.result.client_list.length,
-            ).catch(this.error);
-            if (this.homey.settings.get('debugenabled')) {
-              this.homey.app.log(
-                `${settings.hostname} Timer: onInit():connected_clients: `,
-                clientList.result.client_list.length,
-              );
-            }
-
-            // Calculate total download and upload speeds
-            let totalDownKiloBytesPerSecond = 0;
-            let totalUpKiloBytesPerSecond = 0;
-            for (const client of clientList.result.client_list) {
-              totalDownKiloBytesPerSecond += client.down_speed;
-              totalUpKiloBytesPerSecond += client.up_speed;
-            }
-            this.log(
-              `Total Download Speed: ${totalDownKiloBytesPerSecond} KB/s`,
-            );
-            this.log(`Total Upload Speed: ${totalUpKiloBytesPerSecond} KB/s`);
-            await this.setCapabilityValue(
-              'measure_down_kilo_bytes_per_second',
-              totalDownKiloBytesPerSecond,
-            ).catch(this.error);
-            await this.setCapabilityValue(
-              'measure_up_kilo_bytes_per_second',
-              totalUpKiloBytesPerSecond,
-            ).catch(this.error);
-
-            // Trigger flow cards if CPU or memory usage has changed
-            if (resultCpuUsage !== this.savedCpuUsage) {
-              const cardTriggerCpuUsage =
-                this.homey.flow.getDeviceTriggerCard('cpu_usage');
-              cardTriggerCpuUsage
-                .trigger(this, {
-                  device: settings.hostname,
-                  cpu_usage: resultCpuUsage,
-                })
-                .catch((err) => {
-                  this.error(
-                    `Failed to trigger: ${cardTriggerCpuUsage.id} `,
-                    err,
-                  );
-                });
-              this.savedCpuUsage = resultCpuUsage;
-              this.log(`CPU Usage: ${resultCpuUsage}`);
-            }
-
-            if (resultMemUsage !== this.savedMemUsage) {
-              const cardTriggerMemUsage =
-                this.homey.flow.getDeviceTriggerCard('mem_usage');
-              cardTriggerMemUsage
-                .trigger(this, {
-                  device: settings.hostname,
-                  mem_usage: resultMemUsage,
-                })
-                .catch((err) => {
-                  this.error(
-                    `Failed to trigger: ${cardTriggerMemUsage.id} `,
-                    err,
-                  );
-                });
-              this.savedMemUsage = resultMemUsage;
-              this.log(`Memory Usage: ${resultMemUsage}`);
-
-              // Update WAN status if it has changed
-              const currentWANStatus =
-                internetResponse.result.ipv4.inet_status !== 'online';
-              this.log(
-                `Current WAN status: ${internetResponse.result.ipv4.inet_status}`,
-              );
-              this.log(`Computed alarm status: ${currentWANStatus}`);
-              if (currentWANStatus !== this.savedWanState) {
-                this.log(
-                  `WAN alarm status changed from ${this.savedWanState} to ${currentWANStatus}`,
-                );
-                const cardTriggerWanStatus = this.homey.flow.getTriggerCard(
-                  'alarm_wan_state_changed',
-                );
-                cardTriggerWanStatus
-                  .trigger({
-                    device: settings.hostname,
-                    wan_state: currentWANStatus,
-                  })
-                  .catch((err) => {
-                    this.error(
-                      `Failed to trigger: ${cardTriggerWanStatus.id} `,
-                      err,
-                    );
-                  });
-
-                this.savedWanState = currentWANStatus;
-              } else {
-                this.log('WAN alarm status remains unchanged.');
-              }
-
-              await this.setCapabilityValue(
-                'alarm_wan_state',
-                currentWANStatus,
-              ).catch(this.error);
-            }
-          }, 15 * 1000 + Math.random() * 10);
-        } else {
-          this.error('Current device not found in the device list');
-        }
-      } else {
-        this.error('Failed to retrieve device information');
       }
     } catch (error) {
       this.error('Failed to initialize device', error);
@@ -684,12 +198,8 @@ class TplinkDecoDevice extends Device {
     newSettings,
     changedKeys,
   }: {
-    oldSettings: {
-      [key: string]: string | number | boolean | null | undefined;
-    };
-    newSettings: {
-      [key: string]: string | number | boolean | null | undefined;
-    };
+    oldSettings: { [key: string]: any };
+    newSettings: { [key: string]: any };
     changedKeys: string[];
   }): Promise<void> {
     this.log('Device settings updated:', {
@@ -698,58 +208,478 @@ class TplinkDecoDevice extends Device {
       changedKeys,
     });
 
+    // Update debug mode if changed
+    if (changedKeys.includes('debugenabled')) {
+      this.debugEnabled = newSettings.debugenabled === 'true';
+    }
+
     // Reinitialize API if hostname or password has changed
     if (changedKeys.includes('hostname') || changedKeys.includes('password')) {
       try {
+        this.api = new decoapiwrapper(newSettings.hostname);
+        this.connected = await this.api.authenticate(newSettings.password);
         this.log('API reinitialized with updated settings');
       } catch (error) {
         this.error('Failed to reinitialize API', error);
       }
     }
+
+    // Update the interval if timeoutSeconds has changed
+    if (changedKeys.includes('timeoutSeconds')) {
+      const interval = (newSettings.timeoutSeconds || 15) * 1000; // Default to 15 seconds if not set
+      this.setUpdateInterval(interval);
+      this.log(
+        `Update interval changed to ${newSettings.timeoutSeconds} seconds`,
+      );
+    }
   }
 
   /**
-   * onDeleted is called when the user deletes the device.
-   * This method ensures that any active intervals are cleared to prevent continued operations.
+   * Called when the device is deleted.
+   * Ensures that any active intervals are cleared to prevent continued operations.
    */
   async onDeleted(): Promise<void> {
     this.log('TplinkDecoDevice has been deleted');
 
-    // Clear the first interval if it's active
+    // Clear the interval if it's active
     if (this.timeoutSecondsIntervalId) {
       clearInterval(this.timeoutSecondsIntervalId);
-      this.log('timeoutSecondsIntervalId cleared'); // Log clearing of the interval
-      this.timeoutSecondsIntervalId = null; // Reset the interval ID
+      this.log('Cleared interval for device metrics update');
+      this.timeoutSecondsIntervalId = null;
     }
   }
-  // If no error do respond with result
-  private decodeBase64(encoded: string | undefined): string {
-    if (!encoded) {
-      this.error('driver.ts: No string provided for decoding');
-      return '';
+
+  /**
+   * Sets up or updates the interval for updating device metrics.
+   * @param interval - The interval in milliseconds.
+   */
+  private setUpdateInterval(interval: number) {
+    // Clear any existing interval
+    if (this.timeoutSecondsIntervalId) {
+      clearInterval(this.timeoutSecondsIntervalId);
+      this.timeoutSecondsIntervalId = null;
     }
 
-    // Check if the string is base64 encoded
-    const base64Regex =
-      /^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/;
-    if (!base64Regex.test(encoded)) {
-      this.error('driver.ts: Provided string is not base64 encoded');
-      return encoded;
-    }
+    // Set up a new interval
+    this.timeoutSecondsIntervalId = setInterval(
+      this.updateDeviceMetrics.bind(this),
+      interval + Math.random() * 10,
+    );
+    this.log(`Set update interval to ${interval / 1000} seconds`);
+  }
 
+  /**
+   * Updates device metrics by fetching data from the API and updating capabilities.
+   * Handles performance metrics, WAN IP address, internet status, client list, and client state changes.
+   */
+  private async updateDeviceMetrics() {
     try {
-      return Buffer.from(encoded, 'base64').toString('utf-8');
-    } catch (e) {
-      this.error(`driver.ts: Failed to decode base64 string: ${encoded}`, e);
-      return encoded; // Return the original string if decoding fails
+      const settings = this.getSettings();
+      const devicedata = this.getData();
+
+      // Fetch performance metrics
+      const performance = await this.safeApiCall(
+        () =>
+          this.api.custom(
+            '/admin/network',
+            { form: 'performance' },
+            this.readBody,
+          ),
+        {
+          error_code: 1,
+          result: { cpu_usage: 0, mem_usage: 0 },
+        },
+        'Performance Metrics',
+      );
+
+      // Calculate CPU and memory usage percentages
+      const resultCpuUsage = Math.round(
+        Number(performance?.result?.cpu_usage ?? 0) * 100,
+      );
+      const resultMemUsage = Math.round(
+        Number(performance?.result?.mem_usage ?? 0) * 100,
+      );
+
+      // Update device capabilities with retrieved performance information
+      await this.updateCapability('measure_cpu_usage', resultCpuUsage);
+      await this.updateCapability('measure_mem_usage', resultMemUsage);
+
+      // Fetch WAN IP address
+      const wanResponse = await this.safeApiCall(
+        () =>
+          this.api.custom(
+            '/admin/network',
+            { form: 'wan_ipv4' },
+            this.readBody,
+          ),
+        {
+          error_code: 1,
+          result: {
+            lan: {
+              ip_info: {
+                ip: '',
+                mac: '',
+                mask: '',
+              },
+            },
+            wan: {
+              dial_type: '',
+              enable_auto_dns: '',
+              info: {},
+              ip_info: {
+                dns1: '',
+                dns2: '',
+                gateway: '',
+                ip: '',
+                mac: '',
+                mask: '',
+              },
+            },
+          },
+        },
+        'WAN IPv4 Data',
+      );
+
+      // Extract WAN IP address
+      const wanIpAddress = wanResponse?.result?.wan?.ip_info?.ip ?? '';
+      // Update capability with WAN IP address
+      await this.updateCapability('wan_ipv4_ipaddr', wanIpAddress);
+
+      // Fetch Internet status
+      const internetResponse = await this.safeApiCall(
+        () =>
+          this.api.custom(
+            '/admin/network',
+            { form: 'internet' },
+            this.readBody,
+          ),
+        {
+          error_code: 1,
+          result: {
+            ipv4: {
+              auto_detect_type: '',
+              connect_type: '',
+              dial_status: '',
+              error_code: 1,
+              inet_status: '',
+            },
+            ipv6: {
+              auto_detect_type: '',
+              connect_type: '',
+              dial_status: '',
+              error_code: 1,
+              inet_status: '',
+            },
+            link_status: '',
+          },
+        },
+        'Internet Status',
+      );
+
+      // Handle WAN state changes for IPv4 and IPv6
+      await this.handleWanStateChange(
+        'ipv4',
+        internetResponse?.result?.ipv4?.inet_status ?? '',
+        this.savedWanipv4State ?? false,
+        'alarm_wan_ipv4_state',
+      );
+
+      await this.handleWanStateChange(
+        'ipv6',
+        internetResponse?.result?.ipv6?.inet_status ?? '',
+        this.savedWanipv6State ?? false,
+        'alarm_wan_ipv6_state',
+      );
+
+      // Fetch client list
+      const request = {
+        Operation: 'read',
+        Params: {
+          device_mac: 'default',
+        },
+      };
+      const jsonRequest = JSON.stringify(request);
+      /*       const clientListResponse = await this.safeApiCall(
+        () =>
+          this.api.custom(
+            '/admin/client',
+            { form: 'client_list' },
+            Buffer.from(jsonRequest),
+          ),
+        {
+          error_code: 0,
+          result: {
+            client_list: [
+              {
+                access_host: '',
+                client_mesh: true,
+                client_type: '',
+                connection_type: '',
+                down_speed: 0,
+                enable_priority: false,
+                interface: '',
+                ip: '',
+                mac: '',
+                name: '=',
+                online: true,
+                owner_id: '',
+                remain_time: 0,
+                space_id: '',
+                up_speed: 0,
+                wire_type: '',
+              },
+            ],
+          },
+        },
+        'Client List',
+      ); */
+      let clientListResponse = (await this.api.clientList().catch((e) => {
+        this.error('Failed to retrieve client list', e);
+        this.homey.app.error('Failed to retrieve client list', e);
+        return {
+          error_code: 1,
+          result: {
+            client_list: [],
+          },
+        }; // Return default values in case of error
+      })) as ClientListResponse;
+
+      const clientList = clientListResponse?.result?.client_list ?? [];
+      // Update capability with the number of connected clients
+      await this.updateCapability('connected_clients', clientList.length);
+
+      // Handle client state changes
+      await this.handleClientStateChanges(clientList);
+
+      // Calculate total download and upload speeds
+      const { totalDownKiloBytesPerSecond, totalUpKiloBytesPerSecond } =
+        clientList.reduce(
+          (totals, client) => {
+            totals.totalDownKiloBytesPerSecond += client.down_speed ?? 0;
+            totals.totalUpKiloBytesPerSecond += client.up_speed ?? 0;
+            return totals;
+          },
+          { totalDownKiloBytesPerSecond: 0, totalUpKiloBytesPerSecond: 0 },
+        );
+
+      // Update capabilities with total download and upload speeds
+      await this.updateCapability(
+        'measure_down_kilo_bytes_per_second',
+        totalDownKiloBytesPerSecond,
+      );
+      await this.updateCapability(
+        'measure_up_kilo_bytes_per_second',
+        totalUpKiloBytesPerSecond,
+      );
+
+      // Trigger flow cards if CPU or memory usage has changed
+      await this.triggerUsageFlowCards(
+        resultCpuUsage,
+        resultMemUsage,
+        settings.hostname,
+      );
+    } catch (error) {
+      this.error('Failed to update device metrics', error);
     }
   }
-  private cleanString(input: string): string {
-    // Regular expression to match escape characters and control characters.
-    const escapeCharsRegex = /\\[\'\"\\nrtbfv0x0B\xFF]|[\x00-\x1F\x7F]/g;
 
-    // Remove escape and control characters, and trim leading and trailing spaces in one step.
-    return input.replace(escapeCharsRegex, '').trim();
+  /**
+   * Handles WAN state changes for IPv4 and IPv6.
+   * Triggers flow cards if the WAN state has changed.
+   * @param ipVersion - 'ipv4' or 'ipv6'.
+   * @param inetStatus - The current internet status.
+   * @param savedWanState - The previously saved WAN state.
+   * @param capabilityName - The capability name to update.
+   */
+  private async handleWanStateChange(
+    ipVersion: 'ipv4' | 'ipv6',
+    inetStatus: string,
+    savedWanState: boolean,
+    capabilityName: string,
+  ) {
+    try {
+      // Determine current WAN status
+      const currentWanStatus = inetStatus?.toLowerCase() !== 'online';
+
+      // Check if WAN status has changed
+      if (currentWanStatus !== savedWanState) {
+        const cardTriggerWanStatus = this.homey.flow.getTriggerCard(
+          'alarm_wan_state_changed',
+        );
+
+        // Trigger flow card for WAN state change
+        await cardTriggerWanStatus.trigger({
+          device: this.getName() ?? 'Unknown Device',
+          wan_state: currentWanStatus,
+          ip_version: ipVersion,
+        });
+
+        // Update saved WAN state
+        this[`savedWan${ipVersion}State`] = currentWanStatus;
+      }
+
+      // Update capability with current WAN status
+      await this.updateCapability(capabilityName, currentWanStatus);
+    } catch (err) {
+      this.error(
+        `Failed to handle WAN ${ipVersion} state change for device: ${
+          this.getName() ?? 'Unknown Device'
+        }`,
+        err,
+      );
+    }
+  }
+
+  /**
+   * Triggers flow cards for CPU and memory usage changes.
+   * @param resultCpuUsage - The current CPU usage percentage.
+   * @param resultMemUsage - The current memory usage percentage.
+   * @param hostname - The hostname of the device.
+   */
+  private async triggerUsageFlowCards(
+    resultCpuUsage: number,
+    resultMemUsage: number,
+    hostname: string,
+  ) {
+    try {
+      // Trigger flow card for CPU usage change
+      if (
+        typeof resultCpuUsage === 'number' &&
+        resultCpuUsage !== this.savedCpuUsage
+      ) {
+        const cardTriggerCpuUsage =
+          this.homey.flow.getDeviceTriggerCard('cpu_usage');
+        await cardTriggerCpuUsage.trigger(this, {
+          device: hostname ?? 'Unknown Device',
+          cpu_usage: resultCpuUsage,
+        });
+        // Update saved CPU usage
+        this.savedCpuUsage = resultCpuUsage;
+      }
+
+      // Trigger flow card for memory usage change
+      if (
+        typeof resultMemUsage === 'number' &&
+        resultMemUsage !== this.savedMemUsage
+      ) {
+        const cardTriggerMemUsage =
+          this.homey.flow.getDeviceTriggerCard('mem_usage');
+        await cardTriggerMemUsage.trigger(this, {
+          device: hostname ?? 'Unknown Device',
+          mem_usage: resultMemUsage,
+        });
+        // Update saved memory usage
+        this.savedMemUsage = resultMemUsage;
+      }
+    } catch (err) {
+      this.error('Failed to trigger usage flow cards', err);
+    }
+  }
+
+  /**
+   * Handles client state changes by comparing the current client list with the previous one.
+   * Triggers flow cards when clients go online or offline.
+   * @param clientList - The current list of clients.
+   */
+  private async handleClientStateChanges(clientList: any[]) {
+    try {
+      const clientStateFlow = this.homey.flow.getDeviceTriggerCard(
+        'client_state_changed',
+      );
+
+      // Create Maps for quick lookup of clients by MAC address
+      const lastClientsMap = new Map(
+        this.clients?.map((client) => [client.mac, client]),
+      );
+      const currentClientsMap = new Map(
+        clientList.map((client) => [client.mac, client]),
+      );
+
+      // Clients that have come online
+      for (const [mac, client] of currentClientsMap) {
+        if (!lastClientsMap.has(mac)) {
+          const tokens = {
+            name: client.name,
+            ipaddr: client.ip,
+            mac: client.mac,
+            type: client.client_type,
+          };
+          await clientStateFlow.trigger(this, tokens, {
+            status: 'online',
+            client: tokens,
+          });
+        }
+      }
+
+      // Clients that have gone offline
+      for (const [mac, client] of lastClientsMap) {
+        if (!currentClientsMap.has(mac)) {
+          const tokens = {
+            name: client.name,
+            ipaddr: client.ip,
+            mac: client.mac,
+            type: client.client_type,
+          };
+          await clientStateFlow.trigger(this, tokens, {
+            status: 'offline',
+            client: tokens,
+          });
+        }
+      }
+
+      // Update the stored clients for the next comparison
+      this.clients = clientList;
+    } catch (err) {
+      this.error('Failed to handle client state changes', err);
+    }
+  }
+
+  /**
+   * Safely calls an API method and returns a default value if it fails.
+   * @param apiMethod - The API method to call.
+   * @param defaultValue - The default value to return in case of failure.
+   * @param methodName - The name of the API method for logging purposes.
+   * @returns The result of the API method or the default value.
+   */
+  private async safeApiCall<T>(
+    apiMethod: () => Promise<T>,
+    defaultValue: T,
+    methodName: string = 'API method',
+  ): Promise<T> {
+    try {
+      return await apiMethod();
+    } catch (e) {
+      this.error(`Failed to retrieve ${methodName}`, e);
+      return defaultValue;
+    }
+  }
+
+  /**
+   * Updates a device capability with the provided value.
+   * @param capability - The name of the capability to update.
+   * @param value - The value to set for the capability.
+   */
+  private async updateCapability(capability: string, value: any) {
+    try {
+      await this.setCapabilityValue(capability, value);
+    } catch (err) {
+      this.error(`Failed to update capability ${capability}`, err);
+    }
+  }
+
+  /**
+   * Logs debug messages if debug mode is enabled.
+   * @param message - The debug message to log.
+   * @param data - Optional data to log with the message.
+   */
+  private debug(message: string, data?: any) {
+    if (this.debugEnabled) {
+      if (data !== undefined) {
+        this.log(`DEBUG: ${message}`, JSON.stringify(data, null, 2));
+      } else {
+        this.log(`DEBUG: ${message}`);
+      }
+    }
   }
 }
 
