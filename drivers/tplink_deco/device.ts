@@ -54,6 +54,19 @@ class TplinkDecoDevice extends Device {
       const settings = this.getSettings();
       this.debug(`Settings:`, settings);
 
+      if (this.hasCapability('wan_ipv4_ipaddr') && settings.role === 'slave') {
+        await this.removeCapability('wan_ipv4_ipaddr');
+      }
+      if (
+        !this.hasCapability('wan_ipv4_ipaddr') &&
+        settings.role === 'master'
+      ) {
+        await this.addCapability('wan_ipv4_ipaddr');
+      }
+      if (this.hasCapability('alarm_wan_ipv6_state')) {
+        this.removeCapability('alarm_wan_ipv6_state');
+      }
+
       // Check if hostname and password are provided
       if (settings.hostname && settings.password) {
         // Instantiate the API wrapper with the device hostname
@@ -378,46 +391,50 @@ class TplinkDecoDevice extends Device {
           await this.updateCapability('measure_mem_usage', resultMemUsage);
 
           // Fetch WAN IP address
-          const wanResponse = await this.safeApiCall(
-            () =>
-              this.api.custom(
-                '/admin/network',
-                { form: 'wan_ipv4' },
-                this.readBody,
-              ),
-            {
-              error_code: 1,
-              result: {
-                lan: {
-                  ip_info: {
-                    ip: '',
-                    mac: '',
-                    mask: '',
+          if (device.role.toLowerCase() === 'master') {
+            if (!this.hasCapability('wan_ipv4_ipaddr')) {
+              await this.addCapability('wan_ipv4_ipaddr');
+            }
+            const wanResponse = await this.safeApiCall(
+              () =>
+                this.api.custom(
+                  '/admin/network',
+                  { form: 'wan_ipv4' },
+                  this.readBody,
+                ),
+              {
+                error_code: 1,
+                result: {
+                  lan: {
+                    ip_info: {
+                      ip: '',
+                      mac: '',
+                      mask: '',
+                    },
                   },
-                },
-                wan: {
-                  dial_type: '',
-                  enable_auto_dns: '',
-                  info: {},
-                  ip_info: {
-                    dns1: '',
-                    dns2: '',
-                    gateway: '',
-                    ip: '',
-                    mac: '',
-                    mask: '',
+                  wan: {
+                    dial_type: '',
+                    enable_auto_dns: '',
+                    info: {},
+                    ip_info: {
+                      dns1: '',
+                      dns2: '',
+                      gateway: '',
+                      ip: '',
+                      mac: '',
+                      mask: '',
+                    },
                   },
                 },
               },
-            },
-            'WAN IPv4 Data',
-          );
+              'WAN IPv4 Data',
+            );
 
-          // Extract WAN IP address
-          const wanIpAddress = wanResponse?.result?.wan?.ip_info?.ip ?? '';
-          // Update capability with WAN IP address
-          await this.updateCapability('wan_ipv4_ipaddr', wanIpAddress);
-
+            // Extract WAN IP address
+            const wanIpAddress = wanResponse?.result?.wan?.ip_info?.ip ?? '';
+            // Update capability with WAN IP address
+            await this.updateCapability('wan_ipv4_ipaddr', wanIpAddress);
+          }
           // Fetch Internet status
           const internetResponse = await this.safeApiCall(
             () =>
@@ -456,13 +473,17 @@ class TplinkDecoDevice extends Device {
             this.savedWanipv4State ?? false,
             'alarm_wan_ipv4_state',
           );
-
-          await this.handleWanStateChange(
-            'ipv6',
-            internetResponse?.result?.ipv6?.inet_status ?? '',
-            this.savedWanipv6State ?? false,
-            'alarm_wan_ipv6_state',
-          );
+          if (internetResponse?.result?.ipv6?.error_code === 0) {
+            if (!this.hasCapability('alarm_wan_ipv6_state')) {
+              await this.addCapability('alarm_wan_ipv6_state');
+            }
+            await this.handleWanStateChange(
+              'ipv6',
+              internetResponse?.result?.ipv6?.inet_status ?? '',
+              this.savedWanipv6State ?? false,
+              'alarm_wan_ipv6_state',
+            );
+          }
 
           // Fetch client list
           const request = {
