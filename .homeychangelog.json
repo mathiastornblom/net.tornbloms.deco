@@ -136,5 +136,8 @@
   },
   "1.2.26": {
     "en": "Missing translations"
+  },
+  "1.2.27": {
+    "en": "Updated some metrics lost in refactoring"
   }
 }
