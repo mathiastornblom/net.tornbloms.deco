@@ -343,6 +343,10 @@ class TplinkDecoDevice extends Device {
             role: device.role,
           });
 
+          await this.updateCapability(
+            'alarm_group_state',
+            device.group_status.toLowerCase() !== 'connected',
+          );
           await this.updateCapability('device_role', settings.role);
           await this.updateCapability('lan_ipv4_ipaddr', settings.hostname);
 
