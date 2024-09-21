@@ -142,5 +142,8 @@
   },
   "1.2.28": {
     "en": "Added mesh status"
+  },
+  "1.2.29": {
+    "en": "Minor fixes for slave and master devices"
   }
 }
