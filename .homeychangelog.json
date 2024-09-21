@@ -139,5 +139,8 @@
   },
   "1.2.27": {
     "en": "Updated some metrics lost in refactoring"
+  },
+  "1.2.28": {
+    "en": "Added mesh status"
   }
 }
