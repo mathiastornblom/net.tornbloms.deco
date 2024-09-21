@@ -277,129 +277,198 @@ class TplinkDecoDevice extends Device {
       const settings = this.getSettings();
       const devicedata = this.getData();
 
-      // Fetch performance metrics
-      const performance = await this.safeApiCall(
+      // Retrieve device list from the API
+      const deviceList = await this.safeApiCall(
         () =>
           this.api.custom(
-            '/admin/network',
-            { form: 'performance' },
-            this.readBody,
-          ),
-        {
-          error_code: 1,
-          result: { cpu_usage: 0, mem_usage: 0 },
-        },
-        'Performance Metrics',
-      );
-
-      // Calculate CPU and memory usage percentages
-      const resultCpuUsage = Math.round(
-        Number(performance?.result?.cpu_usage ?? 0) * 100,
-      );
-      const resultMemUsage = Math.round(
-        Number(performance?.result?.mem_usage ?? 0) * 100,
-      );
-
-      // Update device capabilities with retrieved performance information
-      await this.updateCapability('measure_cpu_usage', resultCpuUsage);
-      await this.updateCapability('measure_mem_usage', resultMemUsage);
-
-      // Fetch WAN IP address
-      const wanResponse = await this.safeApiCall(
-        () =>
-          this.api.custom(
-            '/admin/network',
-            { form: 'wan_ipv4' },
+            '/admin/device',
+            { form: 'device_list' },
             this.readBody,
           ),
         {
           error_code: 1,
           result: {
-            lan: {
-              ip_info: {
-                ip: '',
+            device_list: [
+              {
+                bssid_2g: '',
+                bssid_5g: '',
+                bssid_sta_2g: '',
+                bssid_sta_5g: '',
+                device_ip: '',
+                device_model: '',
+                device_type: '',
+                group_status: '',
+                hardware_ver: '',
+                hw_id: '',
+                inet_error_msg: '',
+                inet_status: '',
                 mac: '',
-                mask: '',
+                nand_flash: true,
+                nickname: '',
+                oem_id: '',
+                oversized_firmware: false,
+                product_level: 0,
+                role: '',
+                set_gateway_support: true,
+                signal_level: {
+                  band2_4: '',
+                  band5: '',
+                },
+                software_ver: '',
+                support_plc: false,
               },
-            },
-            wan: {
-              dial_type: '',
-              enable_auto_dns: '',
-              info: {},
-              ip_info: {
-                dns1: '',
-                dns2: '',
-                gateway: '',
-                ip: '',
-                mac: '',
-                mask: '',
-              },
-            },
+            ],
           },
         },
-        'WAN IPv4 Data',
+        'Device Data',
       );
+      this.debug(`${settings.hostname} onInit():deviceList: `, deviceList);
 
-      // Extract WAN IP address
-      const wanIpAddress = wanResponse?.result?.wan?.ip_info?.ip ?? '';
-      // Update capability with WAN IP address
-      await this.updateCapability('wan_ipv4_ipaddr', wanIpAddress);
+      if (
+        deviceList.error_code === 0 &&
+        deviceList.result.device_list.length > 0
+      ) {
+        // Filter the device list to find the current device
+        const device = deviceList.result.device_list.find(
+          (d) => d.mac === devicedata.id,
+        );
 
-      // Fetch Internet status
-      const internetResponse = await this.safeApiCall(
-        () =>
-          this.api.custom(
-            '/admin/network',
-            { form: 'internet' },
-            this.readBody,
-          ),
-        {
-          error_code: 1,
-          result: {
-            ipv4: {
-              auto_detect_type: '',
-              connect_type: '',
-              dial_status: '',
+        this.debug(`${settings.hostname} onInit():Filtered device: `, device);
+
+        if (device) {
+          // Update device settings with retrieved information
+          await this.setSettings({
+            hardware_ver: device.hardware_ver,
+            software_ver: device.software_ver,
+            role: device.role,
+          });
+
+          await this.updateCapability('device_role', settings.role);
+          await this.updateCapability('lan_ipv4_ipaddr', settings.hostname);
+
+          // Fetch performance metrics
+          const performance = await this.safeApiCall(
+            () =>
+              this.api.custom(
+                '/admin/network',
+                { form: 'performance' },
+                this.readBody,
+              ),
+            {
               error_code: 1,
-              inet_status: '',
+              result: { cpu_usage: 0, mem_usage: 0 },
             },
-            ipv6: {
-              auto_detect_type: '',
-              connect_type: '',
-              dial_status: '',
+            'Performance Metrics',
+          );
+
+          // Calculate CPU and memory usage percentages
+          const resultCpuUsage = Math.round(
+            Number(performance?.result?.cpu_usage ?? 0) * 100,
+          );
+          const resultMemUsage = Math.round(
+            Number(performance?.result?.mem_usage ?? 0) * 100,
+          );
+
+          // Update device capabilities with retrieved performance information
+          await this.updateCapability('measure_cpu_usage', resultCpuUsage);
+          await this.updateCapability('measure_mem_usage', resultMemUsage);
+
+          // Fetch WAN IP address
+          const wanResponse = await this.safeApiCall(
+            () =>
+              this.api.custom(
+                '/admin/network',
+                { form: 'wan_ipv4' },
+                this.readBody,
+              ),
+            {
               error_code: 1,
-              inet_status: '',
+              result: {
+                lan: {
+                  ip_info: {
+                    ip: '',
+                    mac: '',
+                    mask: '',
+                  },
+                },
+                wan: {
+                  dial_type: '',
+                  enable_auto_dns: '',
+                  info: {},
+                  ip_info: {
+                    dns1: '',
+                    dns2: '',
+                    gateway: '',
+                    ip: '',
+                    mac: '',
+                    mask: '',
+                  },
+                },
+              },
             },
-            link_status: '',
-          },
-        },
-        'Internet Status',
-      );
+            'WAN IPv4 Data',
+          );
 
-      // Handle WAN state changes for IPv4 and IPv6
-      await this.handleWanStateChange(
-        'ipv4',
-        internetResponse?.result?.ipv4?.inet_status ?? '',
-        this.savedWanipv4State ?? false,
-        'alarm_wan_ipv4_state',
-      );
+          // Extract WAN IP address
+          const wanIpAddress = wanResponse?.result?.wan?.ip_info?.ip ?? '';
+          // Update capability with WAN IP address
+          await this.updateCapability('wan_ipv4_ipaddr', wanIpAddress);
 
-      await this.handleWanStateChange(
-        'ipv6',
-        internetResponse?.result?.ipv6?.inet_status ?? '',
-        this.savedWanipv6State ?? false,
-        'alarm_wan_ipv6_state',
-      );
+          // Fetch Internet status
+          const internetResponse = await this.safeApiCall(
+            () =>
+              this.api.custom(
+                '/admin/network',
+                { form: 'internet' },
+                this.readBody,
+              ),
+            {
+              error_code: 1,
+              result: {
+                ipv4: {
+                  auto_detect_type: '',
+                  connect_type: '',
+                  dial_status: '',
+                  error_code: 1,
+                  inet_status: '',
+                },
+                ipv6: {
+                  auto_detect_type: '',
+                  connect_type: '',
+                  dial_status: '',
+                  error_code: 1,
+                  inet_status: '',
+                },
+                link_status: '',
+              },
+            },
+            'Internet Status',
+          );
 
-      // Fetch client list
-      const request = {
-        Operation: 'read',
-        Params: {
-          device_mac: 'default',
-        },
-      };
-      const jsonRequest = JSON.stringify(request);
-      /*       const clientListResponse = await this.safeApiCall(
+          // Handle WAN state changes for IPv4 and IPv6
+          await this.handleWanStateChange(
+            'ipv4',
+            internetResponse?.result?.ipv4?.inet_status ?? '',
+            this.savedWanipv4State ?? false,
+            'alarm_wan_ipv4_state',
+          );
+
+          await this.handleWanStateChange(
+            'ipv6',
+            internetResponse?.result?.ipv6?.inet_status ?? '',
+            this.savedWanipv6State ?? false,
+            'alarm_wan_ipv6_state',
+          );
+
+          // Fetch client list
+          const request = {
+            Operation: 'read',
+            Params: {
+              device_mac: 'default',
+            },
+          };
+          const jsonRequest = JSON.stringify(request);
+          /*       const clientListResponse = await this.safeApiCall(
         () =>
           this.api.custom(
             '/admin/client',
@@ -433,51 +502,53 @@ class TplinkDecoDevice extends Device {
         },
         'Client List',
       ); */
-      let clientListResponse = (await this.api.clientList().catch((e) => {
-        this.error('Failed to retrieve client list', e);
-        this.homey.app.error('Failed to retrieve client list', e);
-        return {
-          error_code: 1,
-          result: {
-            client_list: [],
-          },
-        }; // Return default values in case of error
-      })) as ClientListResponse;
+          let clientListResponse = (await this.api.clientList().catch((e) => {
+            this.error('Failed to retrieve client list', e);
+            this.homey.app.error('Failed to retrieve client list', e);
+            return {
+              error_code: 1,
+              result: {
+                client_list: [],
+              },
+            }; // Return default values in case of error
+          })) as ClientListResponse;
 
-      const clientList = clientListResponse?.result?.client_list ?? [];
-      // Update capability with the number of connected clients
-      await this.updateCapability('connected_clients', clientList.length);
+          const clientList = clientListResponse?.result?.client_list ?? [];
+          // Update capability with the number of connected clients
+          await this.updateCapability('connected_clients', clientList.length);
 
-      // Handle client state changes
-      await this.handleClientStateChanges(clientList);
+          // Handle client state changes
+          await this.handleClientStateChanges(clientList);
 
-      // Calculate total download and upload speeds
-      const { totalDownKiloBytesPerSecond, totalUpKiloBytesPerSecond } =
-        clientList.reduce(
-          (totals, client) => {
-            totals.totalDownKiloBytesPerSecond += client.down_speed ?? 0;
-            totals.totalUpKiloBytesPerSecond += client.up_speed ?? 0;
-            return totals;
-          },
-          { totalDownKiloBytesPerSecond: 0, totalUpKiloBytesPerSecond: 0 },
-        );
+          // Calculate total download and upload speeds
+          const { totalDownKiloBytesPerSecond, totalUpKiloBytesPerSecond } =
+            clientList.reduce(
+              (totals, client) => {
+                totals.totalDownKiloBytesPerSecond += client.down_speed ?? 0;
+                totals.totalUpKiloBytesPerSecond += client.up_speed ?? 0;
+                return totals;
+              },
+              { totalDownKiloBytesPerSecond: 0, totalUpKiloBytesPerSecond: 0 },
+            );
 
-      // Update capabilities with total download and upload speeds
-      await this.updateCapability(
-        'measure_down_kilo_bytes_per_second',
-        totalDownKiloBytesPerSecond,
-      );
-      await this.updateCapability(
-        'measure_up_kilo_bytes_per_second',
-        totalUpKiloBytesPerSecond,
-      );
+          // Update capabilities with total download and upload speeds
+          await this.updateCapability(
+            'measure_down_kilo_bytes_per_second',
+            totalDownKiloBytesPerSecond,
+          );
+          await this.updateCapability(
+            'measure_up_kilo_bytes_per_second',
+            totalUpKiloBytesPerSecond,
+          );
 
-      // Trigger flow cards if CPU or memory usage has changed
-      await this.triggerUsageFlowCards(
-        resultCpuUsage,
-        resultMemUsage,
-        settings.hostname,
-      );
+          // Trigger flow cards if CPU or memory usage has changed
+          await this.triggerUsageFlowCards(
+            resultCpuUsage,
+            resultMemUsage,
+            settings.hostname,
+          );
+        }
+      }
     } catch (error) {
       this.error('Failed to update device metrics', error);
     }
