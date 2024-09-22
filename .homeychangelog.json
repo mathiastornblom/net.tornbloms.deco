@@ -157,5 +157,8 @@
   },
   "1.2.33": {
     "en": "New settings'"
+  },
+  "1.2.34": {
+    "en": "Changed clients to default again"
   }
 }
