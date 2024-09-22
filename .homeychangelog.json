@@ -154,5 +154,8 @@
   },
   "1.2.32": {
     "en": "Base64 decode clients names"
+  },
+  "1.2.33": {
+    "en": "New settings'"
   }
 }
