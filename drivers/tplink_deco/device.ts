@@ -137,13 +137,16 @@ class TplinkDecoDevice extends Device {
 
               return (
                 client.mac.toLowerCase().includes(search) ||
-                client.name.toLowerCase().includes(search) ||
+                Buffer.from(client.name, 'base64')
+                  .toString()
+                  .toLowerCase()
+                  .includes(search) ||
                 client.ipaddr.toLowerCase().includes(search)
               );
             });
             const results = [
               ...filteredClients.map((client) => ({
-                name: client.name,
+                name: Buffer.from(client.name, 'base64').toString(),
                 mac: client.mac,
                 description: client.mac,
               })),
@@ -173,13 +176,16 @@ class TplinkDecoDevice extends Device {
 
               return (
                 client.mac.toLowerCase().includes(search) ||
-                client.name.toLowerCase().includes(search) ||
+                Buffer.from(client.name, 'base64')
+                  .toString()
+                  .toLowerCase()
+                  .includes(search) ||
                 client.ipaddr.toLowerCase().includes(search)
               );
             });
             const results = [
               ...filteredClients.map((client) => ({
-                name: client.name,
+                name: Buffer.from(client.name, 'base64').toString(),
                 mac: client.mac,
                 description: client.mac,
               })),
@@ -493,7 +499,7 @@ class TplinkDecoDevice extends Device {
           const request = {
             operation: 'read',
             params: {
-              device_mac: 'default',
+              device_mac: device.mac,
             },
           };
           const jsonRequest = JSON.stringify(request);
@@ -518,7 +524,7 @@ class TplinkDecoDevice extends Device {
                     interface: '',
                     ip: '',
                     mac: '',
-                    name: '=',
+                    name: '',
                     online: true,
                     owner_id: '',
                     remain_time: 0,
@@ -541,6 +547,11 @@ class TplinkDecoDevice extends Device {
           //     },
           //   }; // Return default values in case of error
           // })) as ClientListResponse;
+
+          const clientNames = clientListResponse.result.client_list
+            .map((client) => atob(client.name))
+            .join(', ');
+          await this.setSettings({ clients: clientNames });
 
           const clientList = clientListResponse?.result?.client_list ?? [];
           // Update capability with the number of connected clients
@@ -699,7 +710,7 @@ class TplinkDecoDevice extends Device {
       for (const [mac, client] of currentClientsMap) {
         if (!lastClientsMap.has(mac)) {
           const tokens = {
-            name: client.name,
+            name: Buffer.from(client.name, 'base64').toString(),
             ipaddr: client.ip,
             mac: client.mac,
             type: client.client_type,
@@ -715,7 +726,7 @@ class TplinkDecoDevice extends Device {
       for (const [mac, client] of lastClientsMap) {
         if (!currentClientsMap.has(mac)) {
           const tokens = {
-            name: client.name,
+            name: Buffer.from(client.name, 'base64').toString(),
             ipaddr: client.ip,
             mac: client.mac,
             type: client.client_type,

@@ -367,5 +367,24 @@
         }
       }
     ]
+  },
+  {
+    "type": "group",
+    "label": {
+      "en": "Connected Clients"
+    },
+    "children": [
+      {
+        "id": "clients",
+        "type": "textarea",
+        "label": {
+          "en": "Name"
+        },
+        "value": "Initial clients",
+        "hint": {
+          "en": "The name of the connected clients."
+        }
+      }
+    ]
   }
 ]
