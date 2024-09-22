@@ -145,5 +145,8 @@
   },
   "1.2.29": {
     "en": "Minor fixes for slave and master devices"
+  },
+  "1.2.30": {
+    "en": "Added reboot message"
   }
 }
