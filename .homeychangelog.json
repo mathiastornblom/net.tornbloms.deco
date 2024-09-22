@@ -151,5 +151,8 @@
   },
   "1.2.31": {
     "en": "Updated Client List fetching"
+  },
+  "1.2.32": {
+    "en": "Base64 decode clients names"
   }
 }
