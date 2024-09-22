@@ -148,5 +148,8 @@
   },
   "1.2.30": {
     "en": "Added reboot message"
+  },
+  "1.2.31": {
+    "en": "Updated Client List fetching"
   }
 }

@@ -491,56 +491,56 @@ class TplinkDecoDevice extends Device {
 
           // Fetch client list
           const request = {
-            Operation: 'read',
-            Params: {
+            operation: 'read',
+            params: {
               device_mac: 'default',
             },
           };
           const jsonRequest = JSON.stringify(request);
-          /*       const clientListResponse = await this.safeApiCall(
-        () =>
-          this.api.custom(
-            '/admin/client',
-            { form: 'client_list' },
-            Buffer.from(jsonRequest),
-          ),
-        {
-          error_code: 0,
-          result: {
-            client_list: [
-              {
-                access_host: '',
-                client_mesh: true,
-                client_type: '',
-                connection_type: '',
-                down_speed: 0,
-                enable_priority: false,
-                interface: '',
-                ip: '',
-                mac: '',
-                name: '=',
-                online: true,
-                owner_id: '',
-                remain_time: 0,
-                space_id: '',
-                up_speed: 0,
-                wire_type: '',
-              },
-            ],
-          },
-        },
-        'Client List',
-      ); */
-          let clientListResponse = (await this.api.clientList().catch((e) => {
-            this.error('Failed to retrieve client list', e);
-            this.homey.app.error('Failed to retrieve client list', e);
-            return {
-              error_code: 1,
+          const clientListResponse = await this.safeApiCall(
+            () =>
+              this.api.custom(
+                '/admin/client',
+                { form: 'client_list' },
+                Buffer.from(jsonRequest),
+              ),
+            {
+              error_code: 0,
               result: {
-                client_list: [],
+                client_list: [
+                  {
+                    access_host: '',
+                    client_mesh: true,
+                    client_type: '',
+                    connection_type: '',
+                    down_speed: 0,
+                    enable_priority: false,
+                    interface: '',
+                    ip: '',
+                    mac: '',
+                    name: '=',
+                    online: true,
+                    owner_id: '',
+                    remain_time: 0,
+                    space_id: '',
+                    up_speed: 0,
+                    wire_type: '',
+                  },
+                ],
               },
-            }; // Return default values in case of error
-          })) as ClientListResponse;
+            },
+            'Client List',
+          );
+          // let clientListResponse = (await this.api.clientList().catch((e) => {
+          //   this.error('Failed to retrieve client list', e);
+          //   this.homey.app.error('Failed to retrieve client list', e);
+          //   return {
+          //     error_code: 1,
+          //     result: {
+          //       client_list: [],
+          //     },
+          //   }; // Return default values in case of error
+          // })) as ClientListResponse;
 
           const clientList = clientListResponse?.result?.client_list ?? [];
           // Update capability with the number of connected clients
