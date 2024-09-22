@@ -499,7 +499,7 @@ class TplinkDecoDevice extends Device {
           const request = {
             operation: 'read',
             params: {
-              device_mac: device.mac,
+              device_mac: 'default',
             },
           };
           const jsonRequest = JSON.stringify(request);
