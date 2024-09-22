@@ -16,7 +16,8 @@
   "flow": {
     "reboot_deco": {
       "title": "Перезагрузить Deco",
-      "description": "Перезагрузить устройство TP-Link Deco."
+      "description": "Перезагрузить устройство TP-Link Deco.",
+      "message": "Устройство перезагружается."
     }
   },
   "errors": {

@@ -18,7 +18,8 @@
   "flow": {
     "reboot_deco": {
       "title": "Reboot Deco",
-      "description": "Reboot a TP-Link Deco device."
+      "description": "Reboot a TP-Link Deco device.",
+      "message": "Device is rebooting."
     }
   },
   "errors": {

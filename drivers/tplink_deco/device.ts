@@ -96,7 +96,11 @@ class TplinkDecoDevice extends Device {
               .reboot(devicedata.id)
               .catch(this.error);
             if (rebooted) {
+              await this.setUnavailable(
+                this.homey.__('flow.reboot_deco.message'),
+              );
               setTimeout(async () => {
+                await this.setAvailable();
                 await this.setCapabilityValue('reboot', false).catch(
                   this.error,
                 );

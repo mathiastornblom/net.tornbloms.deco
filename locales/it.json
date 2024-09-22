@@ -16,7 +16,8 @@
   "flow": {
     "reboot_deco": {
       "title": "Riavvio Deco",
-      "description": "Riavvia un dispositivo TP-Link Deco."
+      "description": "Riavvia un dispositivo TP-Link Deco.",
+      "message": "Il dispositivo si sta riavviando."
     }
   },
   "errors": {

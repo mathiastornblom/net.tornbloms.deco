@@ -16,7 +16,8 @@
   "flow": {
     "reboot_deco": {
       "title": "Redémarrer Deco",
-      "description": "Redémarrer un appareil TP-Link Deco."
+      "description": "Redémarrer un appareil TP-Link Deco.",
+      "message": "L'appareil redémarre."
     }
   },
   "errors": {

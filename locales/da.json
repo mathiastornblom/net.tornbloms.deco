@@ -16,7 +16,8 @@
   "flow": {
     "reboot_deco": {
       "title": "Genstart Deco",
-      "description": "Genstart en TP-Link Deco enhed."
+      "description": "Genstart en TP-Link Deco enhed.",
+      "message": "Enheden genstarter."
     }
   },
   "errors": {

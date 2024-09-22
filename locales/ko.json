@@ -16,7 +16,8 @@
   "flow": {
     "reboot_deco": {
       "title": "Deco 재부팅",
-      "description": "TP-Link Deco 장치를 재부팅합니다."
+      "description": "TP-Link Deco 장치를 재부팅합니다.",
+      "message": "장치가 재부팅 중입니다."
     }
   },
   "errors": {

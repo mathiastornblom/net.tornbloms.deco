@@ -16,7 +16,8 @@
   "flow": {
     "reboot_deco": {
       "title": "Deco neu starten",
-      "description": "Ein TP-Link Deco Gerät neu starten."
+      "description": "Ein TP-Link Deco Gerät neu starten.",
+      "message": "Das Gerät wird neu gestartet."
     }
   },
   "errors": {
