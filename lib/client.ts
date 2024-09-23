@@ -293,16 +293,13 @@ export default class DecoAPIWraper {
         this.sequence,
         this.c,
       );
-      console.log(
-        'client.ts: ' +
-          'Deco instance initialized with AES, RSA, and HTTP client.',
-      );
+      // console.log('client.ts: ' +'Deco instance initialized with AES, RSA, and HTTP client.',);
     }
   }
 
   // Public method to authenticate the client with the given password
   public async authenticate(password: string): Promise<boolean> {
-    console.log('client.ts: ' + 'Starting authentication process...');
+    // console.log('client.ts: ' + 'Starting authentication process...');
     let authenticated = false;
     const hostIsAlive = await this.pingHost(this.host);
     try {
@@ -312,59 +309,44 @@ export default class DecoAPIWraper {
 
       // Generate AES key for encryption
       this.aes = generateAESKey();
-      console.log(
-        'client.ts: ' + `AES Key generated: ${this.aes.key.toString('hex')}`,
-      );
-      console.log(
-        'client.ts: ' + `AES IV generated: ${this.aes.iv.toString('hex')}`,
-      );
+      // console.log('client.ts: ' + `AES Key generated: ${this.aes.key.toString('hex')}`,);
+      // console.log('client.ts: ' + `AES IV generated: ${this.aes.iv.toString('hex')}`,);
 
       // Generate MD5 hash using the username and password
       this.hash = crypto
         .createHash('md5')
         .update(`${userName}${password}`)
         .digest('hex');
-      console.log('client.ts: ' + `MD5 Hash generated: ${this.hash}`);
+      // console.log('client.ts: ' + `MD5 Hash generated: ${this.hash}`);
 
       this.ensureDecoInstance();
 
-      console.log('client.ts: ' + 'Attempting to retrieve password key...');
+      // console.log('client.ts: ' + 'Attempting to retrieve password key...');
       const passwordKey = await this.decoInstance!.getPasswordKey();
       if (!passwordKey) {
         throw new Error('client.ts: ' + 'Failed to retrieve password key.');
       }
-      console.log(
-        'client.ts: ' + 'Password key retrieved successfully:',
-        passwordKey,
-      );
+      // console.log('client.ts: ' + 'Password key retrieved successfully:',passwordKey,);
 
       // Encrypt the password using the retrieved password key
-      console.log('client.ts: ' + 'Encrypting password using password key...');
+      // console.log('client.ts: ' + 'Encrypting password using password key...');
       const encryptedPassword = encryptRsa(password, passwordKey!);
-      console.log('client.ts: ' + `Encrypted password: ${encryptedPassword}`);
+      // console.log('client.ts: ' + `Encrypted password: ${encryptedPassword}`);
 
-      console.log('client.ts: ' + 'Attempting to retrieve session key...');
+      // console.log('client.ts: ' + 'Attempting to retrieve session key...');
       const { key: sessionKey, seq: sequence } =
         await this.decoInstance!.getSessionKey();
       if (!sessionKey) {
         throw new Error('client.ts: ' + 'Failed to retrieve session key.');
       }
-      console.log(
-        'client.ts: ' +
-          `Session key retrieved successfully: ${printKey(
-            sessionKey,
-          )}), Sequence: ${sequence.toString()}`,
-      );
+      // console.log('client.ts: ' +`Session key retrieved successfully: ${printKey(sessionKey,)}), Sequence: ${sequence.toString()}`,);
 
       // Update RSA key and sequence
       this.rsa = sessionKey;
       this.sequence = sequence;
 
       // Additional Logging for Debugging
-      console.log(
-        'client.ts: ' + 'Checking RSA key after session key retrieval:',
-        this.rsa,
-      );
+      // console.log('client.ts: ' + 'Checking RSA key after session key retrieval:',this.rsa,);
 
       // Continue with the login process...
       const loginReq: LoginRequest = {
@@ -375,10 +357,10 @@ export default class DecoAPIWraper {
       };
 
       const loginJSON = JSON.stringify(loginReq);
-      console.log('client.ts: ' + `Login request JSON: ${loginJSON}`);
+      // console.log('client.ts: ' + `Login request JSON: ${loginJSON}`);
       const args = new EndpointArgs('login');
 
-      console.log('client.ts: ' + 'Sending login request...');
+      // console.log('client.ts: ' + 'Sending login request...');
       try {
         const result = await this.decoInstance!.doEncryptedPost(
           ';stok=/login',
@@ -393,11 +375,11 @@ export default class DecoAPIWraper {
         if (!this.stok) {
           throw new Error('client.ts: ' + 'Failed to retrieve STok.');
         } else {
-          console.log('client.ts: ' + `Login successful. STOK: ${this.stok}`);
+          // console.log('client.ts: ' + `Login successful. STOK: ${this.stok}`);
           authenticated = true;
         }
       } catch (e) {
-        console.log('client.ts: ' + e);
+        // console.log('client.ts: ' + e);
         return authenticated;
       }
       return authenticated;
@@ -408,7 +390,7 @@ export default class DecoAPIWraper {
 
   // Public method to retrieve Wan data
   async getAdvancedSettings(): Promise<AdvancedResponse | ErrorResponse> {
-    console.log('client.ts: ' + 'Requesting advanced data...');
+    // console.log('client.ts: ' + 'Requesting advanced data...');
     const args = new EndpointArgs('power');
     const decoInstance = new Deco(
       this.aes!,
@@ -435,14 +417,14 @@ export default class DecoAPIWraper {
         errorcode: response.errorcode,
         success: response.success,
       };
-      console.log('client.ts: ' + 'Advanced request failed:', errorResponse);
+      // console.log('client.ts: ' + 'Advanced request failed:', errorResponse);
       return errorResponse;
     }
     return response;
   }
   // Public method to retrieve Wan data
   async getWLAN(): Promise<WLANNetworkResponse | ErrorResponse> {
-    console.log('client.ts: ' + 'Requesting status data...');
+    // console.log('client.ts: ' + 'Requesting status data...');
     const args = new EndpointArgs('wlan');
     const decoInstance = new Deco(
       this.aes!,
@@ -469,7 +451,7 @@ export default class DecoAPIWraper {
         errorcode: response.errorcode,
         success: response.success,
       };
-      console.log('client.ts: ' + 'WLAN request failed:', errorResponse);
+      // console.log('client.ts: ' + 'WLAN request failed:', errorResponse);
       return errorResponse;
     }
 
@@ -478,10 +460,7 @@ export default class DecoAPIWraper {
       try {
         return Buffer.from(encoded, 'base64').toString('utf-8');
       } catch (e) {
-        console.log(
-          'client.ts: ' + `Failed to decode base64 string: ${encoded}`,
-          e,
-        );
+        // console.log('client.ts: ' + `Failed to decode base64 string: ${encoded}`,e,);
         return encoded; // Returnera den ursprungliga strängen om dekodning misslyckas
       }
     };
@@ -514,17 +493,14 @@ export default class DecoAPIWraper {
       response.result.band2_4.host.password,
     );
 
-    console.log(
-      'client.ts: ' + 'Processed WLAN network response: ',
-      JSON.stringify(response),
-    );
+    // console.log( 'client.ts: ' + 'Processed WLAN network response: ',JSON.stringify(response),);
 
     return response;
   }
 
   // Public method to retrieve LAN data
   async getLAN(): Promise<any> {
-    console.log('client.ts: ' + 'Requesting status data...');
+    // console.log('client.ts: ' + 'Requesting status data...');
     const args = new EndpointArgs('lan_ip');
     const decoInstance = new Deco(
       this.aes!,
@@ -551,7 +527,7 @@ export default class DecoAPIWraper {
         errorcode: result.errorcode,
         success: result.success,
       };
-      console.log('client.ts: ' + 'LAN request failed:', errorResponse);
+      // console.log('client.ts: ' + 'LAN request failed:', errorResponse);
       return errorResponse;
     }
 
@@ -561,7 +537,7 @@ export default class DecoAPIWraper {
 
   // Public method to retrieve Wan data
   async getWAN(): Promise<WANResponse | ErrorResponse> {
-    console.log('client.ts: ' + 'Requesting status data...');
+    // console.log('client.ts: ' + 'Requesting status data...');
     const args = new EndpointArgs('wan_ipv4');
     const decoInstance = new Deco(
       this.aes!,
@@ -588,7 +564,7 @@ export default class DecoAPIWraper {
         errorcode: result.errorcode,
         success: result.success,
       };
-      console.log('client.ts: ' + 'WAN request failed:', errorResponse);
+      // console.log('client.ts: ' + 'WAN request failed:', errorResponse);
       return errorResponse;
     }
 
@@ -597,7 +573,7 @@ export default class DecoAPIWraper {
   }
   // Public method to retrieve Internt data
   async getInternet(): Promise<InternetResponse | ErrorResponse> {
-    console.log('client.ts: ' + 'Requesting status data...');
+    // console.log('client.ts: ' + 'Requesting status data...');
     const args = new EndpointArgs('internet');
     const decoInstance = new Deco(
       this.aes!,
@@ -624,7 +600,7 @@ export default class DecoAPIWraper {
         errorcode: result.errorcode,
         success: result.success,
       };
-      console.log('client.ts: ' + 'Internet request failed:', errorResponse);
+      // console.log('client.ts: ' + 'Internet request failed:', errorResponse);
       return errorResponse;
     }
 
@@ -634,7 +610,7 @@ export default class DecoAPIWraper {
 
   // Public method to retrieve enviromet data
   async getModel(): Promise<any | ErrorResponse> {
-    console.log('client.ts: ' + 'Requesting status data...');
+    // console.log('client.ts: ' + 'Requesting status data...');
     const args = new EndpointArgs('model');
     const decoInstance = new Deco(
       this.aes!,
@@ -661,7 +637,7 @@ export default class DecoAPIWraper {
         errorcode: result.errorcode,
         success: result.success,
       };
-      console.log('client.ts: ' + 'Model request failed:', errorResponse);
+      // console.log('client.ts: ' + 'Model request failed:', errorResponse);
       return errorResponse;
     }
 
@@ -671,7 +647,7 @@ export default class DecoAPIWraper {
 
   // Public method to retrieve enviromet data
   async getEnviroment(): Promise<any | ErrorResponse> {
-    console.log('client.ts: ' + 'Requesting status data...');
+    // console.log('client.ts: ' + 'Requesting status data...');
     const args = new EndpointArgs('envar');
     const decoInstance = new Deco(
       this.aes!,
@@ -698,7 +674,7 @@ export default class DecoAPIWraper {
         errorcode: result.errorcode,
         success: result.success,
       };
-      console.log('client.ts: ' + 'Enviromet request failed:', errorResponse);
+      // console.log('client.ts: ' + 'Enviromet request failed:', errorResponse);
       return errorResponse;
     }
 
@@ -707,7 +683,7 @@ export default class DecoAPIWraper {
   }
   // Public method to retrieve status data
   async getStatus(): Promise<any | ErrorResponse> {
-    console.log('client.ts: ' + 'Requesting status data...');
+    // console.log('client.ts: ' + 'Requesting status data...');
     const args = new EndpointArgs('all');
     const decoInstance = new Deco(
       this.aes!,
@@ -734,7 +710,7 @@ export default class DecoAPIWraper {
         errorcode: result.errorcode,
         success: result.success,
       };
-      console.log('client.ts: ' + 'Status request failed:', errorResponse);
+      // console.log('client.ts: ' + 'Status request failed:', errorResponse);
       return errorResponse;
     }
 
@@ -744,7 +720,7 @@ export default class DecoAPIWraper {
 
   // Public method to retrieve firmware data
   async firmware(): Promise<any | ErrorResponse> {
-    console.log('client.ts: ' + 'Requesting firmware data...');
+    // console.log('client.ts: ' + 'Requesting firmware data...');
     const args = new EndpointArgs('upgrade');
     const decoInstance = new Deco(
       this.aes!,
@@ -771,7 +747,7 @@ export default class DecoAPIWraper {
         errorcode: result.errorcode,
         success: result.success,
       };
-      console.log('client.ts: ' + 'Firmware request failed:', errorResponse);
+      // console.log('client.ts: ' + 'Firmware request failed:', errorResponse);
       return errorResponse;
     }
 
@@ -781,7 +757,7 @@ export default class DecoAPIWraper {
 
   // Public method to retrieve performance data
   async performance(): Promise<PerformanceResponse | ErrorResponse> {
-    console.log('client.ts: ' + 'Requesting performance data...');
+    // console.log('client.ts: ' + 'Requesting performance data...');
     const args = new EndpointArgs('performance');
     const decoInstance = new Deco(
       this.aes!,
@@ -799,7 +775,7 @@ export default class DecoAPIWraper {
 
     // Check if result is an error
     if (isErrorResponse(result)) {
-      console.log('client.ts: ' + 'Performance request failed:', result);
+      // console.log('client.ts: ' + 'Performance request failed:', result);
       return result;
     }
 
@@ -809,7 +785,7 @@ export default class DecoAPIWraper {
 
   // Public method to retrieve the list of devices
   async deviceList(): Promise<DeviceListResponse | ErrorResponse> {
-    console.log('client.ts: ' + 'Requesting device list...');
+    // console.log('client.ts: ' + 'Requesting device list...');
     const args = new EndpointArgs('device_list');
     const decoInstance = new Deco(
       this.aes!,
@@ -827,7 +803,7 @@ export default class DecoAPIWraper {
 
     // Check if result is an error
     if (isErrorResponse(result)) {
-      console.log('client.ts: ' + 'device list request failed:', result);
+      // console.log('client.ts: ' + 'device list request failed:', result);
       return result;
     }
 
@@ -837,7 +813,7 @@ export default class DecoAPIWraper {
 
   // Public method to retrieve the list of clients
   async clientList(): Promise<ClientListResponse | ErrorResponse> {
-    console.log('client.ts: ' + 'Requesting client list...');
+    // console.log('client.ts: ' + 'Requesting client list...');
     const args = new EndpointArgs('client_list');
     const request: RequestParams = {
       operation: 'read',
@@ -845,7 +821,7 @@ export default class DecoAPIWraper {
     };
 
     const jsonRequest = JSON.stringify(request);
-    console.log('client.ts: ' + `Client list request JSON: ${jsonRequest}`);
+    // console.log('client.ts: ' + `Client list request JSON: ${jsonRequest}`);
     const decoInstance = new Deco(
       this.aes!,
       this.hash,
@@ -862,17 +838,17 @@ export default class DecoAPIWraper {
         false,
       )) as ClientListResponse;
     } catch (error) {
-      console.log('client.ts: ' + 'client list request failed:', error);
+      // console.log('client.ts: ' + 'client list request failed:', error);
       result = { error_code: 1, result: { client_list: [] } }; // Return default values in case of error
     }
 
     // Check if result is an error
     if (isErrorResponse(result)) {
-      console.log('client.ts: ' + 'client list request failed:', result);
+      // console.log('client.ts: ' + 'client list request failed:', result);
       return result;
     }
 
-    console.log('client.ts: ' + 'Processing client list response...');
+    // console.log('client.ts: ' + 'Processing client list response...');
     try {
       // Uppdatera client_list med dekodade namn
       result.result.client_list.forEach((client) => {
@@ -881,36 +857,27 @@ export default class DecoAPIWraper {
           const decodedName = Buffer.from(client.name, 'base64').toString(
             'utf-8',
           );
-          console.log('client.ts: ' + `Decoded client name: ${decodedName}`);
+          // console.log('client.ts: ' + `Decoded client name: ${decodedName}`);
 
           // Sätt det dekodade namnet till klienten
           client.name = decodedName;
         } catch (e) {
           // Logga fel om dekodningen misslyckas
-          console.log(
-            'client.ts: ' + `Failed to decode client name: ${client.name}`,
-            e,
-          );
+          // console.log('client.ts: ' + `Failed to decode client name: ${client.name}`,e,);
         }
       });
-      console.log(
-        'client.ts: ' + 'Processed client list response: ',
-        JSON.stringify(result),
-      );
+      // console.log('client.ts: ' + 'Processed client list response: ',JSON.stringify(result),);
       // Returnera det uppdaterade resultatet
       return result;
     } catch (e) {
-      console.log('client.ts: ' + 'client list request failed:', e);
+      // console.log('client.ts: ' + 'client list request failed:', e);
       return { error_code: 1, result: { client_list: [] } }; // Return default values in case of error
     }
   }
 
   // Public method to reboot devices based on their MAC addresses
   async reboot(...macAddrs: string[]): Promise<{ [key: string]: any }> {
-    console.log(
-      'client.ts: ' +
-        `Requesting reboot for MAC addresses: ${macAddrs.join(', ')}`,
-    );
+    // console.log('client.ts: ' +`Requesting reboot for MAC addresses: ${macAddrs.join(', ')}`,);
     const macList = macAddrs.map((mac) => ({ mac: mac.toUpperCase() }));
     const request: RequestParams = {
       operation: 'reboot',
@@ -920,7 +887,7 @@ export default class DecoAPIWraper {
     };
 
     const jsonRequest = JSON.stringify(request);
-    console.log('client.ts: ' + `Reboot request JSON: ${jsonRequest}`);
+    // console.log('client.ts: ' + `Reboot request JSON: ${jsonRequest}`);
     const decoInstance = new Deco(
       this.aes!,
       this.hash,
@@ -944,7 +911,7 @@ export default class DecoAPIWraper {
     params: EndpointArgs,
     body: Buffer,
   ): Promise<any | ErrorResponse> {
-    console.log('client.ts: ' + `Sending custom request to path: ${path}`);
+    // console.log('client.ts: ' + `Sending custom request to path: ${path}`);
     const decoInstance = new Deco(
       this.aes!,
       this.hash,
@@ -961,7 +928,7 @@ export default class DecoAPIWraper {
 
     // Check if result is an error
     if (isErrorResponse(result)) {
-      console.log('client.ts: ' + 'client list request failed:', result);
+      // console.log('client.ts: ' + 'client list request failed:', result);
       return result;
     }
     return result;

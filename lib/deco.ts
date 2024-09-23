@@ -61,37 +61,37 @@ export default class Deco {
     this.rsa = rsa;
     this.sequence = sequence;
     this.c = httpClient;
-    console.log('Deco instance initialized with AES, RSA, and HTTP client.');
+    // console.log('Deco instance initialized with AES, RSA, and HTTP client.');
   }
 
   // Static method to generate a new AES key
   public static generateAESKey(): AESKey {
-    console.log('Generating AES key...');
+    // console.log('Generating AES key...');
     return generateAESKey();
   }
 
   // Method to retrieve the password key from the server and generate an RSA key from it
   public async getPasswordKey(): Promise<KeyObject | null> {
     const args: EndpointArgs = { form: 'keys' };
-    console.log('getPasswordKey: Starting password key retrieval.');
+    // console.log('getPasswordKey: Starting password key retrieval.');
     try {
       const passKey: PasswordKeyResponse = await this.doPost(
         ';stok=/login',
         args,
         readBody,
       );
-      console.log('getPasswordKey: Received password key response:', passKey);
+      // console.log('getPasswordKey: Received password key response:', passKey);
 
       if (passKey.error_code !== 0) {
         throw new Error(`Error fetching password key: ${passKey.error_code}`);
       }
 
       const key = generateRsaKey(passKey.result.password);
-      console.log('getPasswordKey: Generated RSA public key:', key);
+      // console.log('getPasswordKey: Generated RSA public key:', key);
 
       return key;
     } catch (e) {
-      console.log('getPasswordKey: Error generating RSA key:', e);
+      // console.log('getPasswordKey: Error generating RSA key:', e);
       return null;
     }
   }
@@ -102,25 +102,25 @@ export default class Deco {
     seq: number;
   }> {
     const args: EndpointArgs = { form: 'auth' };
-    console.log('getSessionKey: Starting session key retrieval.');
+    // console.log('getSessionKey: Starting session key retrieval.');
     try {
       const passKey: SessionKeyResponse = await this.doPost(
         ';stok=/login',
         args,
         readBody,
       );
-      console.log('getSessionKey: Received session key response: ', passKey);
+      // console.log('getSessionKey: Received session key response: ', passKey);
 
       if (passKey.error_code !== 0) {
         throw new Error(`Error fetching session key: ${passKey.error_code}`);
       }
 
       const key = generateRsaKey(passKey.result.key);
-      console.log('getSessionKey: Error generating RSA key:', key);
+      // console.log('getSessionKey: Error generating RSA key:', key);
 
       return { key, seq: passKey.result.seq };
     } catch (e) {
-      console.log('getSessionKey: Failed to get session key:', e);
+      // console.log('getSessionKey: Failed to get session key:', e);
       return { key: null, seq: 0 };
     }
   }
@@ -134,20 +134,20 @@ export default class Deco {
     key: KeyObject = this.rsa,
     sequence: number = this.sequence,
   ): Promise<any> {
-    console.log('Starting encrypted POST request...');
+    // console.log('Starting encrypted POST request...');
 
     // Check and log the RSA key
-    console.log('Checking RSA key before encryption:', key);
+    // console.log('Checking RSA key before encryption:', key);
 
     if (!key) {
-      console.log('RSA key is missing or undefined before encryption.');
+      // console.log('RSA key is missing or undefined before encryption.');
       throw new Error('RSA key is missing or undefined.');
     }
 
     try {
       // Encrypt the data using AES
-      const encryptedData = AES128Encrypt(body.toString(), this.aes);
-      console.log('Data encrypted with AES:', encryptedData);
+      var encryptedData = AES128Encrypt(body.toString(), this.aes);
+      // console.log('Data encrypted with AES:', encryptedData);
 
       const length = Number(sequence) + encryptedData.length;
       let sign: string;
@@ -155,10 +155,10 @@ export default class Deco {
       // Generate sign data depending on whether it's a login request or not
       if (isLogin) {
         sign = `k=${this.aes.key}&i=${this.aes.iv}&h=${this.hash}&s=${length}`;
-        console.log('doEncryptedPost: Generated login sign data:', sign);
+        // console.log('doEncryptedPost: Generated login sign data:', sign);
       } else {
         sign = `h=${this.hash}&s=${length}`;
-        console.log('doEncryptedPost: Generated non-login sign data:', sign);
+        // console.log('doEncryptedPost: Generated non-login sign data:', sign);
       }
 
       // Encrypt the sign data with RSA, possibly splitting it into two parts
@@ -166,32 +166,32 @@ export default class Deco {
         const first = encryptRsa(sign.substring(0, 53), key);
         const second = encryptRsa(sign.substring(53), key);
         sign = `${first}${second}`;
-        console.log('Sign split into two encrypted parts.');
+        // console.log('Sign split into two encrypted parts.');
       } else {
         sign = encryptRsa(sign, key);
-        console.log('Sign encrypted as a single block.');
+        // console.log('Sign encrypted as a single block.');
       }
 
       // Prepare the final POST data
       const postData = `sign=${encodeURIComponent(
         sign,
       )}&data=${encodeURIComponent(encryptedData)}`;
-      console.log('doEncryptedPost: Final POST data:', postData);
+      // console.log('doEncryptedPost: Final POST data:', postData);
 
       // Convert postData to a Buffer and send it in the request
       const postDataBuffer = Buffer.from(postData);
 
       // Send the POST request with encrypted data
       const req: ResponseData = await this.doPost(path, params, postDataBuffer);
-      console.log('Encrypted POST request successful:', req);
+      // console.log('Encrypted POST request successful:', req);
 
       // Decrypt the response data
       const decoded = AES128Decrypt(req.data, this.aes);
-      console.log('doEncryptedPost: Decrypted response:', decoded);
+      // console.log('doEncryptedPost: Decrypted response:', decoded);
 
       return JSON.parse(decoded);
     } catch (e) {
-      console.log('Error in doEncryptedPost:', e);
+      // console.log('Error in doEncryptedPost:', e);
       throw e;
     }
   }
@@ -202,9 +202,7 @@ export default class Deco {
     params: EndpointArgs,
     body: Buffer,
   ): Promise<any> {
-    console.log(
-      `Sending POST request to ${path} with params: ${params} and body params ${body}`,
-    );
+    // console.log(`Sending POST request to ${path} with params: ${params} and body params ${body}`,);
 
     // Configure the POST request
     const config = {
@@ -225,19 +223,19 @@ export default class Deco {
     });
 
     // Debugging raw body data before sending the request
-    console.log('URL:', url);
-    console.log('Query params:', params);
-    console.log('POST body:', body.toString());
-    console.log('Headers:', config);
+    // console.log('URL:', url);
+    // console.log('Query params:', params);
+    // console.log('POST body:', body.toString());
+    // console.log('Headers:', config);
 
     try {
       // Send the request and return the response data
       const response = await this.c(config);
-      console.log('doPost: Response status:', response.status);
-      console.log('doPost: Decoded response:', response.data);
+      // console.log('doPost: Response status:', response.status);
+      // console.log('doPost: Decoded response:', response.data);
       return response.data;
     } catch (e) {
-      console.log('Error in doPost:', e);
+      // console.log('Error in doPost:', e);
       throw e;
     }
   }
