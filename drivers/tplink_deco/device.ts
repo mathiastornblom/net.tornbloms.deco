@@ -772,7 +772,10 @@ class TplinkDecoDevice extends Device {
    */
   private async updateCapability(capability: string, value: any) {
     try {
-      await this.setCapabilityValue(capability, value);
+      const currentValue = this.getCapabilityValue(capability);
+      if (currentValue !== value) {
+        await this.setCapabilityValue(capability, value);
+      }
     } catch (err) {
       this.error(`Failed to update capability ${capability}`, err);
     }
