@@ -160,5 +160,8 @@
   },
   "1.2.34": {
     "en": "Changed clients to default again"
+  },
+  "1.2.35": {
+    "en": "Removed som console logs to save memory"
   }
 }
