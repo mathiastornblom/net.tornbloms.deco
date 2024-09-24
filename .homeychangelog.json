@@ -169,5 +169,8 @@
   },
   "1.2.37": {
     "en": "Changed setting hostname to be ablt to be able to change it"
+  },
+  "1.2.38": {
+    "en": "Added the missing actioncard for reboot"
   }
 }
