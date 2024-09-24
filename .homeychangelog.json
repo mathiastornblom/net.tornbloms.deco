@@ -172,5 +172,8 @@
   },
   "1.2.38": {
     "en": "Added the missing actioncard for reboot"
+  },
+  "1.2.39": {
+    "en": "Removed faulty code"
   }
 }
