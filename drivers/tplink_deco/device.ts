@@ -87,6 +87,29 @@ class TplinkDecoDevice extends Device {
 
         this.log('Successfully connected to TP-Link Deco');
 
+        const rebootActionCard = this.homey.flow.getActionCard('reboot');
+        const rebootActionCardArg = rebootActionCard.getArgument('device');
+        rebootActionCardArg.registerAutocompleteListener(
+          async (query, args) => {
+            const results = [
+              {
+                name: settings.name,
+                mac: settings.mac,
+              },
+            ];
+            // filter based on the queryY
+            return results.filter((result) => {
+              return result.name.toLowerCase().includes(query.toLowerCase());
+            });
+          },
+        );
+        rebootActionCard.registerRunListener(async (args: any, state: any) => {
+          this.log(`Reboot action triggered:`);
+          const device = args.device;
+          await this.api.reboot(device).catch(this.error);
+          return true; // Return true if action succeeded
+        });
+
         // Register capability listeners for reboot, CPU usage, and memory usage
         this.registerCapabilityListener('reboot', async (value) => {
           if (Boolean(value)) {

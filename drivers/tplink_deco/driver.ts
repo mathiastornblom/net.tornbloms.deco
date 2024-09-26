@@ -6,7 +6,11 @@ import { DeviceListResponse } from '../../lib/client';
 
 class TplinkDecoDriver extends Driver {
   debugEnabled: boolean = this.homey.settings.get('debugenabled') || false;
-  private api: decoapiwrapper | null = null;
+  private api: decoapiwrapper | any;
+
+  // Buffer for read operations
+  readBody = Buffer.from('{"operation": "read"}');
+
   /**
    * Called when the driver is initialized.
    * Checks if API settings are available; if not, waits for user input.
@@ -64,7 +68,51 @@ class TplinkDecoDriver extends Driver {
         return [];
       }
       try {
-        const deviceList = (await this.api.deviceList()) as DeviceListResponse;
+        const deviceList = await this.safeApiCall(
+          () =>
+            this.api.custom(
+              '/admin/device',
+              { form: 'device_list' },
+              this.readBody,
+            ),
+          {
+            error_code: 1,
+            result: {
+              device_list: [
+                {
+                  bssid_2g: '',
+                  bssid_5g: '',
+                  bssid_sta_2g: '',
+                  bssid_sta_5g: '',
+                  device_ip: '',
+                  device_model: '',
+                  device_type: '',
+                  group_status: '',
+                  hardware_ver: '',
+                  hw_id: '',
+                  inet_error_msg: '',
+                  inet_status: '',
+                  mac: '',
+                  nand_flash: true,
+                  nickname: '',
+                  oem_id: '',
+                  oversized_firmware: false,
+                  product_level: 0,
+                  role: '',
+                  set_gateway_support: true,
+                  signal_level: {
+                    band2_4: '',
+                    band5: '',
+                  },
+                  software_ver: '',
+                  support_plc: false,
+                },
+              ],
+            },
+          },
+          'Device Data',
+        );
+        //const deviceList = (await this.api.deviceList()) as DeviceListResponse;
         if (
           deviceList.error_code === 0 &&
           deviceList.result.device_list.length > 0
@@ -181,6 +229,26 @@ class TplinkDecoDriver extends Driver {
 
     // Remove escape and control characters, and trim leading and trailing spaces in one step.
     return input.replace(escapeCharsRegex, '').trim();
+  }
+
+  /**
+   * Safely calls an API method and returns a default value if it fails.
+   * @param apiMethod - The API method to call.
+   * @param defaultValue - The default value to return in case of failure.
+   * @param methodName - The name of the API method for logging purposes.
+   * @returns The result of the API method or the default value.
+   */
+  private async safeApiCall<T>(
+    apiMethod: () => Promise<T>,
+    defaultValue: T,
+    methodName: string = 'API method',
+  ): Promise<T> {
+    try {
+      return await apiMethod();
+    } catch (e) {
+      this.error(`Failed to retrieve ${methodName}`, e);
+      return defaultValue;
+    }
   }
 }
 
