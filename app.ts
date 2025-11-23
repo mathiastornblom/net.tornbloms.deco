@@ -5,10 +5,7 @@ import decoapiwrapper from './lib/client';
 const { Log } = require('homey-log');
 const HomeyLog = require('homey-betterstack');
 
-// Start debuger
-if (process.env.DEBUG === '1') {
-  require('inspector').open(9229, '0.0.0.0');
-}
+
 
 class TplinkDecoApp extends HomeyLog {
   private api: decoapiwrapper | null = null;
