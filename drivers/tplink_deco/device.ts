@@ -52,7 +52,9 @@ class TplinkDecoDevice extends Device {
 
       // Retrieve device settings
       const settings = this.getSettings();
-      this.debug(`Settings:`, settings);
+      if (this.debugEnabled) {
+        this.debug(`Settings:`, settings);
+      }
 
       if (this.hasCapability('wan_ipv4_ipaddr') && settings.role === 'slave') {
         await this.removeCapability('wan_ipv4_ipaddr');
@@ -136,12 +138,18 @@ class TplinkDecoDevice extends Device {
 
         this.registerCapabilityListener('measure_cpu_usage', async (value) => {
           this.savedCpuUsage = value;
-          this.log(`CPU Usage: ${value}`);
+          // Only log if debug is enabled
+          if (this.debugEnabled) {
+            this.log(`CPU Usage: ${value}`);
+          }
         });
 
         this.registerCapabilityListener('measure_mem_usage', async (value) => {
           this.savedMemUsage = value;
-          this.log(`Memory Usage: ${value}`);
+          // Only log if debug is enabled
+          if (this.debugEnabled) {
+            this.log(`Memory Usage: ${value}`);
+          }
         });
 
         const clientIsConnected =
@@ -164,7 +172,7 @@ class TplinkDecoDevice extends Device {
                   .toString()
                   .toLowerCase()
                   .includes(search) ||
-                client.ipaddr.toLowerCase().includes(search)
+                (client.ip || '').toLowerCase().includes(search)
               );
             });
             const results = [
@@ -183,10 +191,12 @@ class TplinkDecoDevice extends Device {
           'client_state_changed',
         );
         clientStateFlow.registerRunListener(async (args, state) => {
-          this.log('clientStateFlow.registerRunListener', {
-            args,
-            state,
-          });
+          if (this.debugEnabled) {
+            this.log('clientStateFlow.registerRunListener', {
+              args,
+              state,
+            });
+          }
           return (
             args.status === state.status && args.client.mac === state.client.mac
           );
@@ -203,7 +213,7 @@ class TplinkDecoDevice extends Device {
                   .toString()
                   .toLowerCase()
                   .includes(search) ||
-                client.ipaddr.toLowerCase().includes(search)
+                (client.ip || '').toLowerCase().includes(search)
               );
             });
             const results = [
@@ -248,11 +258,7 @@ class TplinkDecoDevice extends Device {
     newSettings: { [key: string]: any };
     changedKeys: string[];
   }): Promise<void> {
-    this.log('Device settings updated:', {
-      oldSettings,
-      newSettings,
-      changedKeys,
-    });
+    this.log('Device settings updated');
 
     // Update debug mode if changed
     if (changedKeys.includes('debugenabled')) {
@@ -368,7 +374,10 @@ class TplinkDecoDevice extends Device {
         },
         'Device Data',
       );
-      this.debug(`${settings.hostname} onInit():deviceList: `, deviceList);
+
+      if (this.debugEnabled) {
+        this.debug(`${settings.hostname} onInit():deviceList: `, deviceList);
+      }
 
       if (
         deviceList.error_code === 0 &&
@@ -379,7 +388,9 @@ class TplinkDecoDevice extends Device {
           (d) => d.mac === devicedata.id,
         );
 
-        this.debug(`${settings.hostname} onInit():Filtered device: `, device);
+        if (this.debugEnabled) {
+          this.debug(`${settings.hostname} onInit():Filtered device: `, device);
+        }
 
         if (device) {
           // Update device settings with retrieved information
@@ -656,8 +667,7 @@ class TplinkDecoDevice extends Device {
       await this.updateCapability(capabilityName, currentWanStatus);
     } catch (err) {
       this.error(
-        `Failed to handle WAN ${ipVersion} state change for device: ${
-          this.getName() ?? 'Unknown Device'
+        `Failed to handle WAN ${ipVersion} state change for device: ${this.getName() ?? 'Unknown Device'
         }`,
         err,
       );
