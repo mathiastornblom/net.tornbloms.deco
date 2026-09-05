@@ -28,5 +28,13 @@
   },
   "abort": {
     "reauth_successful": "Opnieuw authenticeren succesvol"
+  },
+  "pair": {
+    "title": "Voeg je IP of hostnaam en wachtwoord toe",
+    "host_label": "Hostnaam / IP",
+    "host_hint": "Het IP-adres van je hoofd-Deco, bijv. 192.168.68.1",
+    "password_label": "Wachtwoord",
+    "password_hint": "Hetzelfde wachtwoord waarmee je inlogt op tplinkdeco.net in een browser.",
+    "login_button": "Inloggen"
   }
 }

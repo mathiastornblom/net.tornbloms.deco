@@ -288,6 +288,16 @@ class EndpointArgs {
   }
 }
 
+// Per-request HTTP timeout. This was a flat 10s, and two users reported the
+// resulting "Timeout after 10000ms" dialog — which is ours, not Homey's ~30s
+// pairing RPC timeout. Measured request times from diagnostic logs show why 10s
+// was too tight: device_list took 8.1s on a five-node mesh, and 4.2s on a
+// three-node one where the login POST alone took 2.8s.
+// A margin under two seconds on the largest mesh we have measured is not a
+// margin. 15s keeps roughly double the worst measured time while still leaving
+// room inside authenticate()'s own 25s budget for more than one request.
+const HTTP_TIMEOUT_MS = 15000;
+
 const consoleLogger: AppLogger = { log: console.log, error: console.error };
 
 // Main Client class to interact with the API
@@ -308,33 +318,12 @@ export default class DecoAPIWraper {
     const baseUrl = `http://${normalizedTarget}/cgi-bin/luci/`;
     this.host = normalizedTarget;
     this.logger = logger;
-    this.c = new HttpClient(baseUrl, 10000, logger);
+    this.c = new HttpClient(baseUrl, HTTP_TIMEOUT_MS, logger);
   }
 
-  // Method to ping the host — probes the actual API base path so routers that
-  // don't serve on the root still respond. Accepts any HTTP status as "alive";
-  // only network-level failures (ECONNREFUSED, ETIMEDOUT, …) return false.
-  // Also tries HTTPS (with cert verification disabled) if HTTP fails, since
-  // newer Deco firmware (BE-series, firmware 1.2.0+) enforces HTTPS-only.
-  private async pingHost(host: string): Promise<boolean> {
-    for (const scheme of ['http', 'https'] as const) {
-      try {
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 5000);
-        try {
-          await fetch(`${scheme}://${host}/cgi-bin/luci/`, {
-            signal: controller.signal,
-          } as RequestInit);
-        } finally {
-          clearTimeout(timer);
-        }
-        return true;
-      } catch (error: any) {
-        this.logger.log(`client.ts: pingHost: ${scheme}://${host} not reachable: ${error?.code ?? error?.message}`);
-      }
-    }
-    return false;
-  }
+  // pingHost() used to live here. It was removed in v1.4.70 — see the comment
+  // in authenticate() for why a pre-flight reachability probe cost ~10s per
+  // re-auth without ever changing what happened next.
 
   // Private method to ensure the Deco instance is initialized or updated
   private ensureDecoInstance() {
@@ -443,11 +432,15 @@ export default class DecoAPIWraper {
       passwordKey = await this.decoInstance!.getPasswordKey();
     } catch (e: any) {
       this.logger.error('client.ts: attemptLogin: network error fetching password key:', e);
-      throw Object.assign(new Error(`NETWORK: Cannot reach router at ${this.host}. Check the IP and that Homey is on the same network.`), { cause: e });
+      // Attach the trace here too. Every NETWORK: error in the diagnostic logs
+      // we have arrived with `loginTrace: []`, because these throws predate the
+      // caller's attach step — so the one field meant to tell us what had
+      // already been tried was empty in exactly the reports that needed it.
+      throw Object.assign(new Error(`NETWORK: Cannot reach router at ${this.host}. Check the IP and that Homey is on the same network.`), { cause: e, loginTrace: trace });
     }
     if (!passwordKey) {
       this.logger.error('client.ts: attemptLogin: failed to retrieve password key — check device IP and that the Deco web interface is reachable');
-      throw new Error(`NETWORK: Cannot reach router at ${this.host}. Check the IP and that Homey is on the same network.`);
+      throw Object.assign(new Error(`NETWORK: Cannot reach router at ${this.host}. Check the IP and that Homey is on the same network.`), { loginTrace: trace });
     }
 
     const encryptedPassword = encryptRsa(effectivePassword, passwordKey);
@@ -461,10 +454,10 @@ export default class DecoAPIWraper {
       ({ key: sessionKey, seq: sequence } = await this.decoInstance!.getSessionKey());
     } catch (e: any) {
       this.logger.error('client.ts: attemptLogin: network error fetching session key:', e);
-      throw Object.assign(new Error(`NETWORK: Cannot reach router at ${this.host}. Check the IP and that Homey is on the same network.`), { cause: e });
+      throw Object.assign(new Error(`NETWORK: Cannot reach router at ${this.host}. Check the IP and that Homey is on the same network.`), { cause: e, loginTrace: trace });
     }
     if (!sessionKey) {
-      throw new Error(`NETWORK: Cannot reach router at ${this.host}. Check the IP and that Homey is on the same network.`);
+      throw Object.assign(new Error(`NETWORK: Cannot reach router at ${this.host}. Check the IP and that Homey is on the same network.`), { loginTrace: trace });
     }
 
     this.rsa = sessionKey;
@@ -496,11 +489,15 @@ export default class DecoAPIWraper {
       attempt.msg = (e?.message ?? '').slice(0, 120) || null;
 
       if (e?.httpStatus === 403) {
-        // The router only allows one active admin session — this is not a
-        // format issue, and trying other combos would just burn more login
-        // attempts against an already session-limited router.
-        this.logger.error('client.ts: attemptLogin: login rejected with 403 — router may limit concurrent sessions.');
-        throw Object.assign(new Error('RETRY: Router rejected login (session limit). Will retry automatically.'), { cause: e, isBodyFormatError: false });
+        // A 403 on the login endpoint has two very different causes that look
+        // identical from here: a genuinely busy admin session, or an account
+        // the router has already locked (see the -5003 branch below — a locked
+        // account answers 403 to everything that follows). Either way this is
+        // not a format issue, so don't burn further combos on it; the caller
+        // retries with backoff, and if a -5003 shows up in the same run the
+        // LOCKED: path takes over and stops retrying altogether.
+        this.logger.error('client.ts: attemptLogin: login rejected with 403 — session in use, or the account is locked out.');
+        throw Object.assign(new Error('RETRY: Router rejected login (403). Will retry automatically.'), { cause: e, isBodyFormatError: false });
       }
       if (e?.isBodyFormatError) {
         // Firmware crashed parsing the request body (Lua exception) — this combo
@@ -540,6 +537,32 @@ export default class DecoAPIWraper {
       );
     }
 
+    // error_code -5003 means the router has temporarily locked the account after
+    // too many failed logins. The response carries the counters that prove it:
+    //   {"result":{"failureCount":10,"attemptsAllowed":0},"error_code":-5003}
+    // This is NOT a format problem and NOT a concurrent-session problem, and
+    // that distinction matters a lot in practice. Until now -5003 fell through
+    // to the generic "missing stok" branch, so authenticate() moved on to the
+    // next combo, spent the next login attempt, and eventually collected the
+    // router's 403 — which attemptLogin() reported as "session limit". Users
+    // were then told to close other Deco sessions or create a Manager account,
+    // which cannot possibly help, while the retry loop kept hammering an
+    // already-locked account and refreshed the lockout window on every pass.
+    // Bail out on the first -5003 so the lockout gets a chance to expire.
+    if (result?.error_code === -5003) {
+      const failureCount = result?.result?.failureCount;
+      const detail = failureCount !== undefined ? ` after ${failureCount} failed attempts` : '';
+      this.logger.error(
+        `client.ts: attemptLogin: router locked the account${detail} (error_code=-5003) — stopping all further attempts`,
+      );
+      throw Object.assign(
+        new Error(
+          `LOCKED: Your Deco has temporarily blocked new logins${detail}. This is the router's own protection and it clears by itself — wait about 15 minutes without trying again, then log in once. Trying repeatedly restarts the block.`,
+        ),
+        { loginTrace: trace },
+      );
+    }
+
     const newStok = result?.result?.stok;
     if (!newStok) {
       // Router understood the request (HTTP 200, valid response shape) but
@@ -565,20 +588,34 @@ export default class DecoAPIWraper {
       if (address !== this.host) {
         this.logger.log(`client.ts: authenticate: resolved ${this.host} → ${address} (IPv4 forced)`);
         this.host = address;
-        this.c = new HttpClient(`http://${address}/cgi-bin/luci/`, 10000, this.logger);
+        this.c = new HttpClient(`http://${address}/cgi-bin/luci/`, HTTP_TIMEOUT_MS, this.logger);
       }
     } catch (e: any) {
       this.logger.log(`client.ts: authenticate: IPv4 DNS lookup failed for ${this.host} — using hostname as-is: ${e.message}`);
     }
 
-    this.logger.log(`client.ts: authenticate: checking host reachability for ${this.host}`);
-    const hostIsAlive = await this.pingHost(this.host);
-    if (!hostIsAlive) {
-      this.logger.log(`client.ts: authenticate: ping failed for ${this.host} — proceeding with auth anyway (router may block HTTP GET)`);
-    } else {
-      this.logger.log(`client.ts: authenticate: host ${this.host} is reachable`);
-    }
+    // No reachability pre-check here any more. pingHost() tried http:// and
+    // then https:// with a 5s timeout each, and its result was never acted on:
+    // a failed ping logged "proceeding with auth anyway" and carried straight
+    // on to the login. On the meshes where this actually matters — where nodes
+    // are slow or unresponsive — every ping timed out, so each re-auth paid a
+    // flat ~10s for information nobody used. With several devices re-
+    // authenticating in a loop that alone kept the router saturated. The login
+    // request itself already reports unreachability, and does it faster.
 
+    // Deliberately NOT clearing this.stok or the cookie jar here.
+    //
+    // That was tried, to fix a report of a rebooted X20 never reconnecting. It
+    // reintroduces the bug the comment further down in attemptLogin() warns
+    // about: one DecoAPIWraper is shared by every device in a mesh, and polls
+    // are not serialised against authenticate(). Blanking the token mid-flight
+    // makes sibling devices send `;stok=/admin/...`, read the empty result as
+    // "session expired", and start re-authenticating themselves — an
+    // amplification loop against a router that allows one admin session, which
+    // is precisely the failure this release exists to stop. The reboot theory
+    // was also never verified: a rebooted router issues a fresh Set-Cookie on
+    // the next successful login anyway.
+    //
     // MD5(admin+rawPassword) — computed once; combos that need the hashed
     // password reuse this rather than re-hashing.
     this.hash = crypto.createHash('md5').update(`${userName}${password}`).digest('hex');
@@ -630,7 +667,41 @@ export default class DecoAPIWraper {
         return true;
       } catch (e: any) {
         const msg: string = e?.message ?? '';
-        if (msg.startsWith('NETWORK:') || msg.startsWith('RETRY:') || msg.startsWith('CREDENTIALS:')) {
+
+        // A 403 arriving *after* this router has already shown us it can't parse
+        // our requests is not a session limit, whatever it looks like in
+        // isolation. One reported XE75 Pro is the case: combos 1-2 crashed the
+        // firmware's Lua interpreter outright ("Failed to execute call dispatcher
+        // target for entry '/login'" behind an HTTP 500), combos 3-4 came back
+        // error_code 1 "no such callback", and only the fifth answered 403 — which
+        // we reported as "another session is already active". The user had already
+        // tried two accounts and confirmed the local web login worked, so that
+        // advice could not possibly help. When the trace holds that kind of
+        // evidence, treat the whole round as an unrecognised login protocol and
+        // fall through to the diagnostic view, which is where the trace is
+        // actually useful, instead of entering the session-limit retry loop.
+        if (msg.startsWith('RETRY:')) {
+          const firmwareRejectedOurFormats = _trace.some(
+            (a) => a.httpStatus === 500 || (a.msg ?? '').includes('no such callback'),
+          );
+          if (firmwareRejectedOurFormats) {
+            this.logger.error(
+              'client.ts: authenticate: 403 followed firmware-level format rejections — classifying as unrecognised login protocol, not a session limit.',
+            );
+            restoreBaseline();
+            throw Object.assign(new Error(`All login formats failed for ${this.host}.`), {
+              loginTrace: _trace,
+              cause: e,
+            });
+          }
+        }
+
+        if (
+          msg.startsWith('NETWORK:') ||
+          msg.startsWith('RETRY:') ||
+          msg.startsWith('CREDENTIALS:') ||
+          msg.startsWith('LOCKED:')
+        ) {
           // Not a format issue — bail immediately rather than burning more
           // login attempts against an unreachable, session-limited, or (per
           // error_code -5002 above) definitively wrong-password router.
@@ -663,8 +734,18 @@ export default class DecoAPIWraper {
     this.logger.error('client.ts: authenticate: all login combos exhausted.', JSON.stringify(_trace));
     restoreBaseline();
     if (anyFormatUnderstood) {
+      // We know the router parsed at least one request (some attempt got a clean
+      // HTTP 200) and that none returned a token. That is NOT enough to assert
+      // the password is wrong, and we used to say so outright. Two users with
+      // X50 fw 1.8.0 and one with an X55 were told "Wrong password" while the
+      // same password signed them in at tplinkdeco.net in a browser — and a
+      // definitely-wrong password has its own signal anyway (error_code -5002,
+      // handled above with the attempts-remaining count). Say what we actually
+      // observed and point at the check the user can perform themselves.
       throw Object.assign(
-        new Error('CREDENTIALS: Wrong password. Use the local admin password from the Deco app (not your TP-Link account password).'),
+        new Error(
+          `CREDENTIALS: The router turned down the login without saying why. Check the password by opening http://${this.host} in a browser and signing in there — if that works, this is a fault in the app rather than your password, and a diagnostic report would help.`,
+        ),
         { loginTrace: _trace, cause: lastError },
       );
     }

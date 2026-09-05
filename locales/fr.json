@@ -28,5 +28,13 @@
   },
   "abort": {
     "reauth_successful": "Réauthentification réussie"
+  },
+  "pair": {
+    "title": "Ajoutez votre adresse IP ou nom d'hôte et mot de passe",
+    "host_label": "Nom d'hôte / Adresse IP",
+    "host_hint": "L'adresse IP de votre Deco principal, par ex. 192.168.68.1",
+    "password_label": "Mot de passe",
+    "password_hint": "Le même mot de passe que celui utilisé pour vous connecter à tplinkdeco.net dans un navigateur.",
+    "login_button": "Se connecter"
   }
 }

@@ -150,9 +150,21 @@
     }
 
     async function init() {
+      // Call Homey.ready() before any awaited call, not after. A user reported
+      // this widget showing nothing but a spinning icon: if any of the awaits
+      // below never settles — which is the same failure the login_failed pairing
+      // view hit — ready() is never reached and Homey keeps its loading state
+      // forever. Signalling readiness first costs nothing; the content renders
+      // into the widget as it arrives, and a failure shows an error instead of a
+      // spinner that never stops.
+      try {
+        Homey.ready();
+      } catch (_) {
+        /* older clients may not expose ready() — nothing to do */
+      }
+
       Homey.setHeight(80);
       await refresh();
-      Homey.ready();
 
       // Poll every 15 s — speeds change fast
       clearInterval(pollTimer);

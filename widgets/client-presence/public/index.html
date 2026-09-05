@@ -219,6 +219,19 @@
     }
 
     async function init() {
+      // Call Homey.ready() before any awaited call, not after. A user reported
+      // this widget showing nothing but a spinning icon: if any of the awaits
+      // below never settles — which is the same failure the login_failed pairing
+      // view hit — ready() is never reached and Homey keeps its loading state
+      // forever. Signalling readiness first costs nothing; the content renders
+      // into the widget as it arrives, and a failure shows an error instead of a
+      // spinner that never stops.
+      try {
+        Homey.ready();
+      } catch (_) {
+        /* older clients may not expose ready() — nothing to do */
+      }
+
       try {
         const settings = await Homey.getSettings();
         const mac = (settings.client_mac || '').trim();
@@ -234,7 +247,6 @@
           }
           // Resize for the setup view (taller when showing client list)
           Homey.setHeight(160);
-          Homey.ready();
           return;
         }
 
@@ -248,8 +260,6 @@
       } catch (err) {
         renderError('Widget error');
       }
-
-      Homey.ready();
     }
 
     // Re-init when settings change

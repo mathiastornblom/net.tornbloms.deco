@@ -6,3 +6,10 @@
 .env
 .DS_Store
 .claude/
+# Working notes from user reports. Kept on disk, never committed: this is a
+# public repository, and docs/user-reports.md contains other people's personal
+# data — 30 named reporters, verbatim forum and email quotes, two email
+# addresses, 20 diagnostic log IDs and six private LAN subnets. They were shared
+# to get a bug fixed, not to be published. The same material was separately
+# found inside a built app package; see docs/plan-v1.4.70.md.
+/docs/

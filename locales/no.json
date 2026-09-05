@@ -28,5 +28,13 @@
   },
   "abort": {
     "reauth_successful": "Reautentisering vellykket"
+  },
+  "pair": {
+    "title": "Legg til IP-adresse eller vertsnavn og passord",
+    "host_label": "Vertsnavn / IP-adresse",
+    "host_hint": "IP-adressen til hoved-Decoen din, f.eks. 192.168.68.1",
+    "password_label": "Passord",
+    "password_hint": "Det samme passordet som du bruker for å logge inn på tplinkdeco.net i en nettleser.",
+    "login_button": "Logg inn"
   }
 }

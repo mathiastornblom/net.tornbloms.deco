@@ -118,14 +118,37 @@
       function onHomeyReady(Homey) {
         Homey.ready();
 
+        // A user's screenshot (M4R, firmware 1.6.1) showed this view sitting on
+        // "Loading…" indefinitely: the emit neither resolved nor rejected, so
+        // neither branch below ever ran. That matters more than it looks — this
+        // view is the only way we ever see what an unknown firmware answered, so
+        // a silent hang here costs us the diagnosis entirely, and the user copies
+        // a debug report with the one section we need missing. Race the emit
+        // against a timeout so the view always reaches a final state.
+        var settled = false;
+        function showTrace(html) {
+          if (settled) return;
+          settled = true;
+          document.getElementById('trace-container').innerHTML = html;
+        }
+
+        setTimeout(function () {
+          showTrace(
+            '<div class="attempt-row">Attempt details could not be loaded. ' +
+              'Please still fill in the model and firmware below and copy the report — ' +
+              'that alone is useful.</div>',
+          );
+        }, 5000);
+
         emit('get_diagnostic', null)
           .then(function (data) {
+            if (settled) return;
+            settled = true;
             traceData = data && data.trace ? data.trace : [];
             renderTrace(traceData);
           })
-          .catch(function (err) {
-            document.getElementById('trace-container').innerHTML =
-              '<div class="attempt-row">Could not load attempt details.</div>';
+          .catch(function () {
+            showTrace('<div class="attempt-row">Could not load attempt details.</div>');
           });
 
         document.getElementById('copy-btn').addEventListener('click', function () {
