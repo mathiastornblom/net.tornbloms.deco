@@ -370,5 +370,8 @@
   },
   "1.4.70": {
     "en": "A large fix release built from your reports. Pairing no longer bounces back to the add-device screen with no error — there were two separate causes. Repeated failed logins no longer lock you out of your own router, and the login screen now says which address and password to enter. Decos that stop responding are retried gently instead of continuously, devices show as unavailable rather than displaying stale values, presence no longer flickers on and off, and polling is spread out and slowed down so the app puts far less load on your router. Also: the diagnostic screen and widgets no longer get stuck loading, and your router password no longer appears in diagnostic logs."
+  },
+  "1.4.71": {
+    "en": "Various changes from the community feedback"
   }
 }
