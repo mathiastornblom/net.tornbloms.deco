@@ -373,5 +373,8 @@
   },
   "1.4.71": {
     "en": "Various changes from the community feedback"
+  },
+  "1.4.72": {
+    "en": "Fixed a case where pressing Log in on the pairing screen did nothing at all, with no error shown — a JS error while the screen was loading could leave the button with no click handler. This is now caught and shown on screen, and reported so it appears in your diagnostic report if it happens again."
   }
 }

@@ -376,6 +376,20 @@ class TplinkDecoDriver extends Driver {
       hostname,
     }));
 
+    // Last-resort sink for a JS exception during login_credentials.html's
+    // onHomeyReady() setup (e.g. attaching the Log-in button's click
+    // listener). Without this, such an exception left the button with no
+    // handler at all — clicking it did literally nothing, since diagnostic
+    // reports only ever capture backend stdout/stderr, never the pairing
+    // webview's own JS console (see the "log in does nothing, no error" report
+    // on v1.4.71 whose backend log showed the view loading but never this
+    // handler's own 'pair: login' line). Logging it here is what makes that
+    // class of failure show up in a diagnostic report at all going forward.
+    session.setHandler('report_frontend_error', async (data: { message?: string; stack?: string; phase?: string }) => {
+      this.error(`pair: frontend error during ${data?.phase ?? 'unknown phase'}: ${data?.message ?? '(no message)'}`, data?.stack ?? '');
+      return true;
+    });
+
     // Backend fallback for frontend navigation: the pairing view calls
     // Homey.showView() when that method exists on the client and falls back to
     // emitting 'goto_view' when it doesn't. Never let a navigation failure
