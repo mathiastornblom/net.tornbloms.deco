@@ -28,5 +28,13 @@
   },
   "abort": {
     "reauth_successful": "Ominloggning lyckades"
+  },
+  "pair": {
+    "title": "Ange hostnamn eller IP samt lösenord",
+    "host_label": "Hostnamn / IP",
+    "host_hint": "IP-adressen till din huvud-Deco, t.ex. 192.168.68.1",
+    "password_label": "Lösenord",
+    "password_hint": "Samma lösenord som du använder för att logga in på tplinkdeco.net i en webbläsare.",
+    "login_button": "Logga in"
   }
 }

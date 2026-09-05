@@ -53,6 +53,22 @@ class TplinkDecoDriver extends Driver {
   private nodeClientLists = new Map<string, Map<string, any[]>>();
 
   /**
+   * Drops every piece of driver-level state that outlives a single device:
+   * the shared API clients (each holding a router session and cookie jar), the
+   * in-flight auth promises, the per-hostname diagnostics flags and the merged
+   * per-node client lists. Called from the app's onUninit — see the comment
+   * there for the crash report that prompted it.
+   */
+  public releaseResources(): void {
+    this.sharedApis.clear();
+    this.authQueue.clear();
+    this.diagRan.clear();
+    this.nodeClientLists.clear();
+    this.api = undefined;
+    this.log('Driver resources released');
+  }
+
+  /**
    * Returns (or lazily creates) the shared API instance for a given hostname.
    * Devices should always call this instead of `new decoapiwrapper(...)`.
    */
@@ -170,16 +186,21 @@ class TplinkDecoDriver extends Driver {
       this.log(`[diag] Subnet: MISMATCH — Homey [${homeyList}] cannot reach router ${resolvedIP}. Check VLANs / guest network isolation.`);
     }
 
-    // TCP port 80 reachability
-    const tcpOk = await this.checkTcpPort(resolvedIP, 80);
+    // TCP reachability on both ports the Deco web interface may use. Run them
+    // concurrently: they are independent, and this runs inside the pairing
+    // 'login' RPC whose ~30s budget is shared with the login itself. Sequential
+    // 3s timeouts spent up to 6s here before a single login request went out —
+    // on a large mesh that is a meaningful slice of the budget, and a user with
+    // six nodes did report hitting Homey's 30s timeout.
+    const [tcpOk, tcpOk443] = await Promise.all([
+      this.checkTcpPort(resolvedIP, 80),
+      this.checkTcpPort(resolvedIP, 443),
+    ]);
     this.log(`[diag] TCP port 80 → ${resolvedIP}: ${tcpOk ? 'reachable' : 'UNREACHABLE'}`);
-
-    // Also try port 443 in case the Deco uses HTTPS
-    const tcpOk443 = await this.checkTcpPort(resolvedIP, 443);
     this.log(`[diag] TCP port 443 → ${resolvedIP}: ${tcpOk443 ? 'reachable' : 'UNREACHABLE'}`);
   }
 
-  private checkTcpPort(host: string, port: number, timeoutMs = 3000): Promise<boolean> {
+  private checkTcpPort(host: string, port: number, timeoutMs = 2000): Promise<boolean> {
     return new Promise((resolve) => {
       const socket = new net.Socket();
       socket.setTimeout(timeoutMs);
@@ -334,7 +355,40 @@ class TplinkDecoDriver extends Driver {
 
     // Received when a view has changed
     session.setHandler('showView', async (viewId: string) => {
-      console.log('View: ' + viewId);
+      this.log('pair: view shown:', viewId);
+    });
+
+    // Serves the localized strings for our own login_credentials view. We no
+    // longer use Homey's built-in login_credentials template (its script calls
+    // Homey.getCurrentView()/Homey.error(), which don't exist on every pairing
+    // client and crash the view — see pair/login_credentials.html), so the
+    // translations the template used to render have to be handed over here.
+    session.setHandler('get_login_texts', async () => ({
+      texts: {
+        title: this.homey.__('pair.title'),
+        hostLabel: this.homey.__('pair.host_label'),
+        hostPlaceholder: 'tplinkdeco.net',
+        hostHint: this.homey.__('pair.host_hint'),
+        passwordLabel: this.homey.__('pair.password_label'),
+        passwordHint: this.homey.__('pair.password_hint'),
+        loginButton: this.homey.__('pair.login_button'),
+      },
+      hostname,
+    }));
+
+    // Backend fallback for frontend navigation: the pairing view calls
+    // Homey.showView() when that method exists on the client and falls back to
+    // emitting 'goto_view' when it doesn't. Never let a navigation failure
+    // reject — the frontend treats navigation as best-effort and keeps its own
+    // status message on screen if it doesn't land.
+    session.setHandler('goto_view', async (viewId: string) => {
+      try {
+        await session.showView(viewId);
+        return true;
+      } catch (navError: any) {
+        this.error(`pair: session.showView(${viewId}) failed`, navError);
+        return false;
+      }
     });
 
     session.setHandler(
@@ -382,12 +436,11 @@ class TplinkDecoDriver extends Driver {
             // swallows the resulting error, so nothing showed up anywhere).
             // Login already succeeded at this point, so a navigation hiccup
             // is logged and ignored rather than failing the whole pairing.
-            try {
-              await session.showView('list_devices');
-            } catch (navError: any) {
-              this.error('pair: session.showView(list_devices) failed (login already succeeded, ignoring)', navError);
-            }
-            return true;
+            // Navigation is the frontend's job now (see pair/login_credentials.html):
+            // it decides where to go from this return value. The backend no longer
+            // calls session.showView() on the success path at all, so a navigation
+            // hiccup can't be mistaken for an auth failure the way it used to be.
+            return { ok: true, view: 'list_devices' };
           } catch (error: any) {
             const msg: string = error?.message ?? '';
             lastLoginTrace = (error as any)?.loginTrace ?? [];
@@ -399,6 +452,15 @@ class TplinkDecoDriver extends Driver {
             if (msg.startsWith('CREDENTIALS:')) {
               this.error('pair: credentials error:', msg);
               throw new Error(msg.replace('CREDENTIALS: ', ''));
+            }
+            // The router has temporarily locked the account after too many failed
+            // logins (error_code -5003, attemptsAllowed: 0). Retrying is actively
+            // harmful here: every further attempt refreshes the lockout window, so
+            // a user who keeps pressing Log in can never get back in. Stop
+            // immediately and tell them to wait instead.
+            if (msg.startsWith('LOCKED:')) {
+              this.error('pair: router has locked the account after repeated failed logins:', msg);
+              throw new Error(msg.replace('LOCKED: ', ''));
             }
             if (msg.startsWith('RETRY:')) {
               const delayMs = SESSION_LIMIT_RETRY_BACKOFF_MS[attempt - 1];
@@ -413,23 +475,19 @@ class TplinkDecoDriver extends Driver {
                 `Pairing: router session limit not released after ${maxAttempts} retries (hostname=${hostname})`,
                 { hostname, loginTrace: lastLoginTrace },
               );
-              throw new Error('The router rejected the login because another session is already active — most often the TP-Link Deco app or its web admin page logged in on a phone or browser somewhere. Close those and try again. (This can also happen briefly right after deleting and re-adding devices.) If this keeps happening, the TP-Link Deco app supports a separate "Manager" account (App → More → Managers) — use that for everyday phone access and reserve your main owner login for Homey, so the two stop kicking each other out.');
+              throw new Error('The router turned the login down. This usually clears on its own: wait about 15 minutes without pressing Log in, then try once more. If the Deco app or its web admin page is open on a phone or browser, close it first — the Deco only allows one admin session at a time.');
             }
-            // Unknown protocol — all formats tried. Navigate to diagnostic view.
-            this.error('pair: login failed — all formats exhausted. Navigating to diagnostic view. Trace:', JSON.stringify(lastLoginTrace));
+            // Unknown protocol — all formats tried. The frontend navigates to the
+            // diagnostic view based on this return value.
+            this.error('pair: login failed — all formats exhausted. Trace:', JSON.stringify(lastLoginTrace));
             (this.homey.app as any).reportIssue?.(
               `Pairing: unrecognised login protocol (hostname=${hostname})`,
               { hostname, loginTrace: lastLoginTrace },
             );
-            try {
-              await session.showView('login_failed');
-            } catch (navError: any) {
-              this.error('pair: session.showView(login_failed) failed (session likely already gone)', navError);
-            }
-            return false;
+            return { ok: false, view: 'login_failed' };
           }
         }
-        return false;
+        return { ok: false, view: 'login_failed' };
       },
     );
 
@@ -519,34 +577,72 @@ class TplinkDecoDriver extends Driver {
           const apiHostname = masterDevice?.device_ip || hostname;
           this.log('pair: using API hostname:', apiHostname);
 
-          const devices = deviceList.result.device_list.map((device) => {
+          const devices = deviceList.result.device_list
+            // A node with no MAC cannot be added at all: `data.id` is the key
+            // Homey stores the device under, so an undefined one fails
+            // add_devices and two of them would collide with each other. The
+            // settings coercion below does not help with that, because it is
+            // `data`, not `settings`, that must be valid. Drop such nodes and
+            // pair the rest rather than failing the whole mesh.
+            .filter((device) => {
+              if (device.mac) return true;
+              this.error('pair: skipping a node the router reported without a MAC address');
+              return false;
+            })
+            .map((device) => {
             const nickname = this.cleanString(this.resolveNickname(device));
-            const deviceName = device.device_model + (nickname ? ' - ' + nickname : '');
+            // Guard the model too. The report that prompted all this had a node
+            // missing four fields; concatenating an absent device_model would
+            // put the literal text "undefined" in the device's name.
+            const model = device.device_model ?? 'Deco';
+            const deviceName = model + (nickname ? ' - ' + nickname : '');
             return {
             name: deviceName,
             data: {
               id: device.mac,
             },
+            // Every value here must be a defined string. A diagnostic log
+            // (2026-09-01, BE85 mesh) showed the router returning a slave node
+            // with device_ip/hardware_ver/software_ver/hw_id all absent, which
+            // put literal `undefined` into these settings. Homey's add_devices
+            // step cannot store an undefined setting value: the pairing session
+            // died there and the whole app process restarted a moment later —
+            // visible in that log as a fresh "App … started" line right after
+            // `View: add_devices`, and in several other reports as two separate
+            // node PIDs in one diagnostic. That is a second, independent cause
+            // of "pairing bounces back with no error", unrelated to the login
+            // template crash, and it only shows up on meshes where at least one
+            // node reports incomplete data. Coerce everything to a safe string;
+            // the real values get filled in by the device's first poll anyway.
             settings: {
               name: deviceName,
-              mac: device.mac,
+              mac: device.mac ?? '',
               hostname: apiHostname,
               password: password,
-              model: device.device_model,
-              ip: device.device_ip,
-              role: device.role,
-              hardware_ver: device.hardware_ver,
-              software_ver: device.software_ver,
-              hw_id: device.hw_id,
+              model: model,
+              ip: device.device_ip ?? '',
+              role: device.role ?? '',
+              hardware_ver: device.hardware_ver ?? '',
+              software_ver: device.software_ver ?? '',
+              hw_id: device.hw_id ?? '',
               timeoutSeconds: 30,
             },
           };
           });
-          this.log(devices.map((d) => ({ ...d, settings: { ...d.settings, password: '[redacted]' } })));
+          // Never log `devices` directly — settings.password holds the user's
+          // real router password, and app logs end up verbatim in the
+          // diagnostic reports users send us. Two such reports arrived with
+          // the password in clear text before this was caught. Redact once and
+          // use the redacted copy for every log line below.
+          const redactedDevices = devices.map((d) => ({
+            ...d,
+            settings: { ...d.settings, password: '[redacted]' },
+          }));
+          this.log(redactedDevices);
           if (this.debugEnabled) {
             this.homey.app.log(
-              `driver.ts:onInit() driver: `,
-              JSON.stringify(devices, null, 2),
+              `driver.ts: pair list_devices: `,
+              JSON.stringify(redactedDevices, null, 2),
             );
           }
           return devices;
@@ -577,14 +673,22 @@ class TplinkDecoDriver extends Driver {
     }
 
     this.log('Setting up session handler for repair');
-    // Logga session för att verifiera dess innehåll
-    this.log('Session data before setHandler:', JSON.stringify(session));
+    // The whole PairSession object used to be serialised here. It told us
+    // nothing useful, and app logs are copied verbatim into the diagnostic
+    // reports users send in, so dumping an arbitrary SDK object into them is a
+    // standing risk for no benefit.
 
     session.setHandler(
       'repair',
       async (data: { username: string; password: string }) => {
         this.log('pair: repairing');
-        hostname = this.normalizeHostname(data.username);
+        try {
+          hostname = this.normalizeHostname(data.username);
+        } catch (e: any) {
+          // Every other failure in this handler answers with {success, error};
+          // a throw would reach the repair view as a different shape entirely.
+          return { success: false, error: e?.message ?? 'Invalid address.' };
+        }
         this.log('hostname: ', hostname);
         password = data.password;
         this.log('password: [redacted]');
@@ -606,6 +710,12 @@ class TplinkDecoDriver extends Driver {
             if (msg.startsWith('NETWORK:') || msg.startsWith('CREDENTIALS:')) {
               return { success: false, error: msg.replace(/^(NETWORK|CREDENTIALS): /, '') };
             }
+            // Same as onPair: a locked account must not be retried, and must not
+            // be reported as a wrong password — that invites the retry that
+            // extends the lockout.
+            if (msg.startsWith('LOCKED:')) {
+              return { success: false, error: msg.replace('LOCKED: ', '') };
+            }
             if (msg.startsWith('RETRY:')) {
               const delayMs = SESSION_LIMIT_RETRY_BACKOFF_MS[attempt - 1];
               const elapsed = Date.now() - repairRetryStart;
@@ -614,7 +724,7 @@ class TplinkDecoDriver extends Driver {
                 await new Promise((resolve) => setTimeout(resolve, delayMs));
                 continue;
               }
-              return { success: false, error: 'The router rejected the login because another session is already active — most often the TP-Link Deco app or its web admin page logged in on a phone or browser somewhere. Close those and try again. If this keeps happening, the TP-Link Deco app supports a separate "Manager" account (App → More → Managers) — use that for everyday phone access and reserve your main owner login for Homey.' };
+              return { success: false, error: 'The router turned the login down. This usually clears on its own: wait about 15 minutes without trying again, then try once more. If the Deco app or its web admin page is open somewhere, close it first — the Deco only allows one admin session at a time.' };
             }
             return { success: false, error: 'Connection failed. Check the IP address and password.' };
           }
@@ -663,7 +773,47 @@ class TplinkDecoDriver extends Driver {
   }
 
   private normalizeHostname(input: string): string {
-    return input.trim().replace(/^https?:\/\//i, '').split('/')[0].trim();
+    const host = input.trim().replace(/^https?:\/\//i, '').split('/')[0].trim();
+
+    // An "@" makes this unusable as a host, and undici rejects it outright with
+    // "Request cannot be constructed from a URL that includes credentials"
+    // rather than anything a user could act on. A diagnostic log (2026-08-29)
+    // showed exactly that: the user had typed their TP-Link account email into
+    // the hostname field, and the app answered "Cannot reach router at
+    // <their email>" — technically true, entirely unhelpful. The field asks for
+    // a hostname or IP, but users arriving from the Deco app reasonably read
+    // the login screen as asking for their account, so say plainly what is
+    // wanted instead of letting the request fail deeper down.
+    if (host.includes('@')) {
+      throw new Error(
+        'That looks like an email address. This field needs the address of your main Deco on your own network — usually 192.168.68.1, or tplinkdeco.net. You can check it by opening that address in a browser.',
+      );
+    }
+
+    if (!host) {
+      throw new Error(
+        'Enter the address of your main Deco — usually 192.168.68.1, or tplinkdeco.net.',
+      );
+    }
+
+    // Reject anything that cannot be a host before we spend a login attempt on
+    // it. Users have typed an email address, their Wi-Fi network name (which
+    // came back as the punycode failure "getaddrinfo ENOTFOUND xn--sjveian-r1a")
+    // and Homey's own IP into this field — three different people reading a
+    // box that wants an address plus a password as a request to sign in to
+    // something. Each wrong guess used to travel all the way to a login POST,
+    // and the router only allows ten failed logins before it locks the account,
+    // so catching the obvious cases here protects the user's remaining
+    // attempts. Deliberately permissive: only clearly-impossible hostnames are
+    // refused, since a valid one may be an IP, a bare name, or an FQDN.
+    const looksLikeHostOrIp = /^[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?)*$/.test(host);
+    if (!looksLikeHostOrIp) {
+      throw new Error(
+        `"${host}" is not an address this app can reach. Enter your main Deco's IP address (usually 192.168.68.1) or tplinkdeco.net — not your Wi-Fi network name or your TP-Link account.`,
+      );
+    }
+
+    return host;
   }
 
   /**

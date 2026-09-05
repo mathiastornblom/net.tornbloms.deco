@@ -30,5 +30,13 @@
   },
   "abort": {
     "reauth_successful": "Reauth successful"
+  },
+  "pair": {
+    "title": "Add your IP or hostname and password",
+    "host_label": "Hostname / IP",
+    "host_hint": "The IP address of your main Deco, e.g. 192.168.68.1",
+    "password_label": "Password",
+    "password_hint": "The same password you use to sign in at tplinkdeco.net in a browser.",
+    "login_button": "Log in"
   }
 }

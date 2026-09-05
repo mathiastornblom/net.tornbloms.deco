@@ -28,5 +28,13 @@
   },
   "abort": {
     "reauth_successful": "재인증 성공"
+  },
+  "pair": {
+    "title": "IP 또는 호스트 이름과 비밀번호를 입력하세요",
+    "host_label": "호스트 이름 / IP",
+    "host_hint": "메인 Deco의 IP 주소입니다. 예: 192.168.68.1",
+    "password_label": "비밀번호",
+    "password_hint": "브라우저에서 tplinkdeco.net에 로그인할 때 사용하는 것과 같은 비밀번호입니다.",
+    "login_button": "로그인"
   }
 }

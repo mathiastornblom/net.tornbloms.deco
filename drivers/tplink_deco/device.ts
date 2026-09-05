@@ -22,6 +22,44 @@ const TRACKED_CLIENT_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 // client re-associates with a different node during normal roaming.
 const MESH_LEFT_GRACE_POLLS = 2;
 
+// Per-node "offline" is debounced by this many consecutive polls without the
+// client, for the same reason as MESH_LEFT_GRACE_POLLS above — see
+// handleClientStateChanges().
+const NODE_OFFLINE_GRACE_POLLS = 2;
+
+// Lowest poll interval the app will use, matching the setting's minimum.
+// Applied on load as well, so devices paired under the old 1s floor are raised.
+const MIN_POLL_SECONDS = 15;
+
+// Re-authentication backoff after a failed login: 30s doubling to a 10 minute
+// ceiling. See reAuthenticate()/scheduleReAuthBackoff() for why an unbounded
+// retry loop is worse than being slow to recover.
+const REAUTH_BACKOFF_BASE_MS = 30 * 1000;
+const REAUTH_BACKOFF_MAX_MS = 10 * 60 * 1000;
+
+/**
+ * Returns a deep copy of `value` with anything password-shaped replaced.
+ *
+ * This is deliberately central rather than per-call-site. Two diagnostic
+ * reports users sent in contained their router password in clear text, from a
+ * log line that serialised a settings object — and `debug('Settings:', ...)`
+ * did exactly the same thing. App logs are copied verbatim into the diagnostic
+ * reports users send us, so a single unredacted line anywhere is enough to leak
+ * a credential. Making the debug helper itself incapable of printing one is a
+ * stronger guarantee than remembering to redact at each call.
+ */
+function redactSecrets(value: any): any {
+  if (Array.isArray(value)) return value.map(redactSecrets);
+  if (value && typeof value === 'object') {
+    const out: Record<string, any> = {};
+    for (const [key, v] of Object.entries(value)) {
+      out[key] = /password|passwd|secret|token/i.test(key) ? '[redacted]' : redactSecrets(v);
+    }
+    return out;
+  }
+  return value;
+}
+
 export interface TrackedClient {
   mac: string;
   name: string;       // decoded (human-readable)
@@ -57,10 +95,29 @@ class TplinkDecoDevice extends Device {
   // One-shot timer IDs — cancelled in onDeleted to avoid post-deletion callbacks
   private rebootTimerId: ReturnType<typeof setTimeout> | null = null;
   private startupDelayTimerId: ReturnType<typeof setTimeout> | null = null;
+  // Offsets this device's first poll so mesh nodes don't all fire together.
+  // Separate from startupDelayTimerId, which the init path owns.
+  private pollStartTimerId: ReturnType<typeof setTimeout> | null = null;
   private api: decoapiwrapper | any;
 
   connected = false; // Connection status
   clients: any[] = []; // Currently online clients (raw, for state comparison)
+
+  // Re-authentication backoff state — consecutive failures, and the timestamp
+  // before which reAuthenticate() refuses to try again.
+  // Consecutive polls in which a client was missing from this node's client
+  // list, keyed by MAC. Cleared as soon as the client shows up again.
+  private nodeOfflineMisses = new Map<string, number>();
+
+  // The role whose capability set has actually been applied. Kept in memory,
+  // not in settings, so a failed apply is retried rather than recorded as done.
+  private appliedRole = '';
+
+  // Guards against overlapping poll cycles — see updateDeviceMetrics().
+  private pollInFlight = false;
+
+  private reAuthFailures = 0;
+  private reAuthBlockedUntil = 0;
 
   // Persistent client history — all clients seen in the last 30 days.
   // Keyed by MAC address. Public so driver.ts can use it for autocomplete.
@@ -122,23 +179,19 @@ class TplinkDecoDevice extends Device {
 
       // Slave-only capabilities: only meaningful on satellite nodes.
       // Add for slaves, remove for master (avoids showing redundant "–" / "master" values).
-      const initIsMaster = (settings.role ?? '').toLowerCase() === 'master';
-      for (const cap of ['signal_strength_2g', 'signal_strength_5g', 'backhaul_connection']) {
-        if (initIsMaster && this.hasCapability(cap)) {
-          await this.removeCapability(cap);
-        } else if (!initIsMaster && !this.hasCapability(cap)) {
-          await this.addCapability(cap);
-        }
-      }
-      // Master-only capabilities: CPU, RAM, and WAN status are only reported by the
-      // master node. Remove from slaves to avoid stale or never-set values in the UI.
-      for (const cap of ['measure_cpu_usage', 'measure_mem_usage', 'alarm_wan_ipv4_state', 'wan_ipv4_ipaddr']) {
-        if (!initIsMaster && this.hasCapability(cap)) {
-          await this.removeCapability(cap);
-        }
-      }
-      if (initIsMaster && !this.hasCapability('wan_ipv4_ipaddr')) {
-        await this.addCapability('wan_ipv4_ipaddr');
+      await this.applyRoleCapabilities(settings.role ?? '');
+      this.appliedRole = (settings.role ?? '').trim();
+
+      // Raising the setting's minimum only constrains what the UI will accept;
+      // devices paired earlier keep whatever they stored. The users whose
+      // networks this destabilised are on the old 10s default, so they would
+      // have seen no change at all from the new floor. Clamp on load instead.
+      if ((settings.timeoutSeconds ?? 0) < MIN_POLL_SECONDS) {
+        this.log(`Poll interval ${settings.timeoutSeconds}s is below the ${MIN_POLL_SECONDS}s minimum — raising it`);
+        await this.setSettings({ timeoutSeconds: MIN_POLL_SECONDS }).catch((e) =>
+          this.error('Failed to raise poll interval to the minimum', e),
+        );
+        settings.timeoutSeconds = MIN_POLL_SECONDS;
       }
 
       // Check if hostname and password are provided
@@ -159,7 +212,15 @@ class TplinkDecoDevice extends Device {
         // once the default flipped to `true` (see http.ts).
         const savedForceJson = (this.getStoreValue('forceJsonContentType') as boolean) ?? this.api.c.forceJsonContentType;
         this.api.c.forceJsonContentType = savedForceJson;
-        this.log(`Restored content-type preference: ${savedForceJson ? 'application/json' : 'application/x-www-form-urlencoded'} (from store)`);
+        // Restore the body format alongside the content type. Only half the
+        // combo was ever persisted, so on every restart the other half fell back
+        // to the class default and the login had to re-detect it — spending real
+        // login attempts against a router that only allows ten before it locks
+        // the account. Both halves are cached now, so a known-good combo is
+        // tried first and usually succeeds on attempt one.
+        const savedForceJsonBody = (this.getStoreValue('forceJsonBody') as boolean) ?? this.api.c.forceJsonBody;
+        this.api.c.forceJsonBody = savedForceJsonBody;
+        this.log(`Restored login format: ${savedForceJson ? 'application/json' : 'application/x-www-form-urlencoded'} / body ${savedForceJsonBody ? 'json' : 'form'} (from store)`);
 
         // Authentication is deliberately NOT awaited here — it happens inside the
         // staggered startup timer below, right before the first poll. onInit()
@@ -217,6 +278,14 @@ class TplinkDecoDevice extends Device {
             if (this.startupDelayTimerId) {
               clearTimeout(this.startupDelayTimerId);
               this.startupDelayTimerId = null;
+            }
+            // Also cancel a pending first-poll offset. That window is now up to
+            // a full interval, so pausing during it used to leave a timer that
+            // went on to poll once and then install a fresh interval — the
+            // toggle said "paused" while the router kept being polled.
+            if (this.pollStartTimerId) {
+              clearTimeout(this.pollStartTimerId);
+              this.pollStartTimerId = null;
             }
             if (this.timeoutSecondsIntervalId) {
               clearInterval(this.timeoutSecondsIntervalId);
@@ -325,9 +394,11 @@ class TplinkDecoDevice extends Device {
         // forceJsonContentType currently sits, so there's no "common case" to bias
         // toward here; just drop the stale preference and let it re-detect.
         await this.unsetStoreValue('forceJsonContentType');
+        await this.unsetStoreValue('forceJsonBody');
         this.connected = await driver.sharedAuthenticate(newSettings.hostname, newSettings.password, this.makeLogger());
         if (this.connected) {
           await this.setStoreValue('forceJsonContentType', this.api.c.forceJsonContentType);
+          await this.setStoreValue('forceJsonBody', this.api.c.forceJsonBody);
         }
         this.log('API reinitialized with updated settings');
       } catch (error) {
@@ -347,6 +418,35 @@ class TplinkDecoDevice extends Device {
   }
 
   /**
+   * Called when the app shuts down.
+   *
+   * onDeleted only fires when the user removes a device, so before this every
+   * poll interval and pending timer survived app shutdown and kept firing
+   * against a destroyed app instance. That is the "not cleaning up all
+   * resources in onUninit()" the SDK names in the crash report we received from
+   * a Homey (Early 2019).
+   */
+  async onUninit(): Promise<void> {
+    this.log('TplinkDecoDevice unloading — clearing timers');
+    if (this.rebootTimerId) {
+      clearTimeout(this.rebootTimerId);
+      this.rebootTimerId = null;
+    }
+    if (this.startupDelayTimerId) {
+      clearTimeout(this.startupDelayTimerId);
+      this.startupDelayTimerId = null;
+    }
+    if (this.pollStartTimerId) {
+      clearTimeout(this.pollStartTimerId);
+      this.pollStartTimerId = null;
+    }
+    if (this.timeoutSecondsIntervalId) {
+      clearInterval(this.timeoutSecondsIntervalId);
+      this.timeoutSecondsIntervalId = null;
+    }
+  }
+
+  /**
    * Called when the device is deleted.
    * Ensures that any active intervals are cleared to prevent continued operations.
    */
@@ -361,6 +461,10 @@ class TplinkDecoDevice extends Device {
       clearTimeout(this.startupDelayTimerId);
       this.startupDelayTimerId = null;
     }
+    if (this.pollStartTimerId) {
+      clearTimeout(this.pollStartTimerId);
+      this.pollStartTimerId = null;
+    }
     if (this.timeoutSecondsIntervalId) {
       clearInterval(this.timeoutSecondsIntervalId);
       this.log('Cleared interval for device metrics update');
@@ -373,19 +477,40 @@ class TplinkDecoDevice extends Device {
    * @param interval - The interval in milliseconds.
    */
   private setUpdateInterval(interval: number) {
-    // Clear any existing interval
+    // Clear any existing interval and any pending first-poll offset
     if (this.timeoutSecondsIntervalId) {
       clearInterval(this.timeoutSecondsIntervalId);
       this.timeoutSecondsIntervalId = null;
     }
+    if (this.pollStartTimerId) {
+      clearTimeout(this.pollStartTimerId);
+      this.pollStartTimerId = null;
+    }
 
-    // Set up a new interval with a small jitter (0–5 s) to prevent
-    // devices that started at the same offset from drifting back in sync.
-    this.timeoutSecondsIntervalId = setInterval(
-      this.updateDeviceMetrics.bind(this),
-      interval + Math.random() * 5000,
-    );
-    this.log(`Set update interval to ${interval / 1000} seconds`);
+    // Spread each node's polls across the whole interval rather than nudging
+    // them a few seconds apart.
+    //
+    // Three users have reported the app destabilising their network — one
+    // A/B-tested it over several days on a three-node XE75 Pro mesh (internet
+    // solid with the app off, down within half an hour of switching it back on),
+    // another saw an X60 mesh drop for ~5 minutes at a time and fixed it by
+    // raising the interval from 10s to 30s. Both were running every node's poll
+    // within a 5-second window of each other, so the router took the whole
+    // mesh's worth of API calls in one burst each cycle. A jitter window equal
+    // to the interval turns that burst into a steady trickle at the same total
+    // rate. The first poll is offset too, so a restart doesn't line every device
+    // up again.
+    const jitter = Math.random() * interval;
+    if (this.pollStartTimerId) clearTimeout(this.pollStartTimerId);
+    this.pollStartTimerId = setTimeout(() => {
+      this.pollStartTimerId = null;
+      this.updateDeviceMetrics();
+      this.timeoutSecondsIntervalId = setInterval(
+        this.updateDeviceMetrics.bind(this),
+        interval,
+      );
+    }, jitter);
+    this.log(`Set update interval to ${interval / 1000}s (first poll in ${Math.round(jitter / 1000)}s)`);
   }
 
   /**
@@ -393,29 +518,209 @@ class TplinkDecoDevice extends Device {
    * Returns true if re-authentication succeeded.
    */
   private async reAuthenticate(): Promise<boolean> {
+    // Back off after repeated failures instead of re-authenticating on every
+    // single poll. Diagnostic reports showed what the old unconditional retry
+    // did on a mesh whose nodes had stopped answering: five devices each ran
+    // "session expired → authenticate → timeout → RSA key is missing → session
+    // expired" continuously, with no pause anywhere in the loop. The router was
+    // then permanently busy refusing logins, so nothing ever recovered, and the
+    // app reported "Cannot reach router" for a network that was in fact fine.
+    // The backoff caps at ~10 minutes; any success resets it immediately.
+    const now = Date.now();
+    if (now < this.reAuthBlockedUntil) {
+      const waitSeconds = Math.ceil((this.reAuthBlockedUntil - now) / 1000);
+      this.log(`Skipping re-authentication — backing off for another ${waitSeconds}s after ${this.reAuthFailures} failed attempt(s)`);
+      return false;
+    }
+
     try {
       const settings = this.getSettings();
+
+      // Guard against an empty/missing hostname. A diagnostic log showed the app
+      // trying to reach the literal host "null" and telling the user "Cannot
+      // reach router at null" — a message that can only confuse. Without a
+      // hostname there is nothing to retry, so fail visibly instead.
+      const host = (settings.hostname ?? '').trim();
+      if (!host) {
+        this.error('Cannot re-authenticate: no hostname is set on this device');
+        await this.markUnavailable('This device has no router address set. Remove it and add it again.');
+        this.scheduleReAuthBackoff();
+        return false;
+      }
+
       this.log('Session expired, re-authenticating...');
       const driver = this.driver as TplinkDecoDriver;
       // Use the shared serialised auth — if another device is already
       // authenticating, we wait for the same result instead of racing.
       this.connected = await driver.sharedAuthenticate(
-        settings.hostname,
+        host,
         settings.password,
         this.makeLogger(),
       );
       if (this.connected) {
         // Persist the content-type preference that worked so restarts skip re-detection.
         await this.setStoreValue('forceJsonContentType', this.api.c.forceJsonContentType);
+        await this.setStoreValue('forceJsonBody', this.api.c.forceJsonBody);
         this.log('Re-authentication successful');
+        this.reAuthFailures = 0;
+        this.reAuthBlockedUntil = 0;
+        await this.markAvailable();
       } else {
         this.error('Re-authentication failed');
+        this.scheduleReAuthBackoff();
       }
       return this.connected;
     } catch (e) {
       this.error('Re-authentication error', e);
+      // authenticate() signals failure by throwing, never by returning false, so
+      // without this the flag kept its previous value. On the common case — a
+      // device that was working and whose router then stopped answering —
+      // `connected` stayed true, which made the "skip the poll while backing
+      // off" guard in updateDeviceMetrics() never fire, and the full failing
+      // cycle ran every interval anyway.
+      this.connected = false;
+      this.scheduleReAuthBackoff();
       return false;
     }
+  }
+
+  /**
+   * Brings the capability set in line with this node's role.
+   *
+   * Slave-only capabilities (signal strength, backhaul) are meaningless on the
+   * master; master-only ones (CPU, RAM, WAN) are never reported by satellites
+   * and would otherwise sit there showing a stale or never-set value. This used
+   * to live inline in onInit, which meant a node that changed role kept the
+   * wrong capability set until the app was restarted.
+   */
+  private async applyRoleCapabilities(role: string): Promise<void> {
+    const isMaster = role.toLowerCase() === 'master';
+    for (const cap of ['signal_strength_2g', 'signal_strength_5g', 'backhaul_connection']) {
+      if (isMaster && this.hasCapability(cap)) {
+        await this.removeCapability(cap);
+      } else if (!isMaster && !this.hasCapability(cap)) {
+        await this.addCapability(cap);
+      }
+    }
+    // Master-only capabilities. This has to be symmetric: the removal branch
+    // alone existed before, and only `wan_ipv4_ipaddr` was ever added back, so a
+    // node promoted from satellite to master lost CPU, RAM and the WAN alarm
+    // permanently — nothing else in the app adds them, and a restart did not
+    // help because onInit runs this same function. It went unnoticed while this
+    // logic only ran at init; making it react to a role change at runtime is
+    // exactly what would have exposed it.
+    for (const cap of ['measure_cpu_usage', 'measure_mem_usage', 'alarm_wan_ipv4_state', 'wan_ipv4_ipaddr']) {
+      if (isMaster && !this.hasCapability(cap)) {
+        await this.addCapability(cap);
+      } else if (!isMaster && this.hasCapability(cap)) {
+        await this.removeCapability(cap);
+      }
+    }
+  }
+
+  /**
+   * Adopts the mesh's current master address and this node's current role from a
+   * freshly fetched device list. See the call site for why this matters.
+   *
+   * Only writes when something actually changed, so the normal path costs one
+   * comparison per poll and no settings write.
+   */
+  private async followMeshMaster(
+    // Structurally typed rather than DeviceListResponse: the value the caller
+    // has in hand comes back through safeApiCall's fallback shape, which is a
+    // subset of the full response type. Only these fields are read.
+    deviceList: { result?: { device_list?: Array<{ mac?: string; role?: string; device_ip?: string }> } },
+  ): Promise<void> {
+    try {
+      const nodes = deviceList.result?.device_list ?? [];
+      const self = nodes.find((d) => d.mac === this.getData().id);
+
+      // Deliberately NOT rewriting `hostname` here.
+      //
+      // An earlier version of this adopted the master's IP whenever it differed
+      // from the configured hostname. That is wrong for the majority of
+      // installs: the pairing field's placeholder is `tplinkdeco.net`, so every
+      // user who accepted it would have had their DNS name silently replaced by
+      // a DHCP-assigned IP on the first poll after upgrading — with no way back
+      // if that lease later changed, since this function only runs *after* a
+      // successful device_list. It would also have created a second shared API
+      // instance while the first kept an unclosed session, and different nodes
+      // would have switched at different times, putting two logins on a router
+      // that allows one. And for at least one reported mesh, login works on the
+      // satellites but fails on the master, so "follow the master" would move
+      // that user onto the address that does not work.
+      //
+      // Keeping the hostname the user chose is the safe behaviour. The stale
+      // master/role display this was meant to fix is handled by the role and ip
+      // updates below, which are display-only and carry none of that risk.
+      const role = (self?.role ?? '').trim();
+      if (!role) return;
+
+      // Settings are deliberately not written here. The block further down this
+      // same poll cycle already persists role/ip/hardware_ver/software_ver
+      // unconditionally, so writing them here as well was redundant — and worse,
+      // it made failure unrecoverable: if applyRoleCapabilities threw, the catch
+      // below swallowed it while that later write still persisted the new role,
+      // so the next poll saw no difference and the capability change was never
+      // retried.
+      //
+      // Tracking the applied role in memory instead means a failure is retried
+      // on the next poll, and a restart re-applies from onInit regardless.
+      if (role === this.appliedRole) return;
+      this.log(`Node role is now "${role}" — updating capabilities`);
+      await this.applyRoleCapabilities(role);
+      this.appliedRole = role;
+    } catch (e) {
+      // Never let bookkeeping break a poll cycle.
+      this.error('followMeshMaster failed', e);
+    }
+  }
+
+  /**
+   * Marks the device unavailable in Homey with a reason the user can read.
+   *
+   * Without this, a device whose polling has failed keeps displaying whatever
+   * it last managed to read. One user reported a Deco showing "WAN disconnected"
+   * in Homey while the network was working perfectly — the app had simply stopped
+   * being able to ask, and the last value it had happened to be an alarm. Stale
+   * values that look authoritative are worse than an explicit "unavailable".
+   */
+  private async markUnavailable(reason: string): Promise<void> {
+    try {
+      if (this.getAvailable()) await this.setUnavailable(reason);
+    } catch (e) {
+      this.error('Failed to mark device unavailable', e);
+    }
+  }
+
+  /** Clears the unavailable state set by markUnavailable(). */
+  private async markAvailable(): Promise<void> {
+    try {
+      if (!this.getAvailable()) await this.setAvailable();
+    } catch (e) {
+      this.error('Failed to mark device available', e);
+    }
+  }
+
+  /**
+   * Grows the re-authentication backoff after a failure: 30s, 60s, 2m, 4m, 8m,
+   * then a 10m ceiling. Deliberately generous — a Deco that is refusing logins
+   * needs to be left alone to recover, and an idle app that retries a minute
+   * late is far better than one that keeps a struggling router pinned.
+   */
+  private scheduleReAuthBackoff(): void {
+    this.reAuthFailures += 1;
+    // After a couple of consecutive failures this is no longer a blip. Say so,
+    // rather than letting the last-known values stand in for live data.
+    if (this.reAuthFailures >= 2) {
+      void this.markUnavailable('Cannot reach the Deco. Retrying in the background.');
+    }
+    const delayMs = Math.min(
+      REAUTH_BACKOFF_BASE_MS * 2 ** (this.reAuthFailures - 1),
+      REAUTH_BACKOFF_MAX_MS,
+    );
+    this.reAuthBlockedUntil = Date.now() + delayMs;
+    this.log(`Re-authentication failed ${this.reAuthFailures} time(s) — next attempt in ${Math.round(delayMs / 1000)}s`);
   }
 
   /**
@@ -423,7 +728,29 @@ class TplinkDecoDevice extends Device {
    * Handles performance metrics, WAN IP address, internet status, client list, and client state changes.
    */
   private async updateDeviceMetrics() {
+    // A poll can take longer than the interval on a slow mesh — the per-request
+    // timeout alone is 15s against a 15s minimum interval — and nothing stopped
+    // a second cycle starting while the first was still in flight. Overlapping
+    // cycles double the load on a router this release is trying to relieve, and
+    // two of them inside followMeshMaster can both pass hasCapability() before
+    // either addCapability() resolves, which raises `capability_already_exists`
+    // — the very error a user reported as making the app unable to start.
+    if (this.pollInFlight) {
+      this.log('Skipping poll — the previous one has not finished yet');
+      return;
+    }
+    this.pollInFlight = true;
     try {
+      // While the re-auth backoff is running there is no valid session, so every
+      // API call in this method would fail the same way — most visibly as
+      // "RSA key is missing or undefined", thrown by doEncryptedPost() because
+      // the poll timer kept firing at full rate against a client that had no
+      // key. Skip the whole cycle instead of generating a round of guaranteed
+      // failures (and load on a router that is already struggling) every tick.
+      if (!this.connected && Date.now() < this.reAuthBlockedUntil) {
+        return;
+      }
+
       const settings = this.getSettings();
       const devicedata = this.getData();
 
@@ -482,6 +809,26 @@ class TplinkDecoDevice extends Device {
       }
 
       if (deviceList.result.device_list.length > 0) {
+        // Keep this device pointed at whichever node is currently master, and
+        // keep its own recorded role honest.
+        //
+        // Three separate reports come back to this. One user swapped their main
+        // Deco and Homey went on showing a satellite as master, with the wrong
+        // client count and two nodes missing entirely — and asked, reasonably,
+        // whether the existing devices could follow the new main unit without
+        // being deleted and re-added, since that would cost them their Flows.
+        // Another had every node authenticating against its own IP rather than
+        // the master's, which defeats the shared session entirely and produced a
+        // continuous re-auth storm. A third saw mesh-wide presence only ever
+        // report clients on the master, which is what happens when satellites
+        // file their client lists under a different hostname key than the one
+        // the master reads back.
+        //
+        // The device list we just fetched already names the master, so adopt it.
+        // The device's identity is its MAC, so following the master costs
+        // nothing and no Flow is disturbed.
+        await this.followMeshMaster(deviceList);
+
         // Filter the device list to find the current device
         const device = deviceList.result.device_list.find(
           (d) => d.mac === devicedata.id,
@@ -840,6 +1187,8 @@ class TplinkDecoDevice extends Device {
       }
     } catch (error) {
       this.error('Failed to update device metrics', error);
+    } finally {
+      this.pollInFlight = false;
     }
   }
 
@@ -963,6 +1312,7 @@ class TplinkDecoDevice extends Device {
 
       // Clients that have come online
       for (const [mac, client] of currentClientsMap) {
+        this.nodeOfflineMisses.delete(mac);
         const decodedName = (this.driver as TplinkDecoDriver).decodeNickname(client.name);
         const isFirstSeen = !this.trackedClients[mac];
         const previousAccessHost = this.trackedClients[mac]?.access_host;
@@ -1030,9 +1380,25 @@ class TplinkDecoDevice extends Device {
         }
       }
 
-      // Clients that have gone offline
+      // Clients that have gone offline.
+      //
+      // Debounced by NODE_OFFLINE_GRACE_POLLS, the same way the mesh-wide cards
+      // already are. A user reported getting an offline *and* an online message
+      // every single minute while at home, with the phone sitting on one and the
+      // same Deco the whole time — the router's per-node client list simply drops
+      // an idle client now and then. Firing a Flow on the first miss turns that
+      // into a presence automation that runs continuously. One confirming miss
+      // costs a poll interval of latency and removes the flapping.
       for (const [mac, client] of lastClientsMap) {
         if (!currentClientsMap.has(mac)) {
+          const misses = (this.nodeOfflineMisses.get(mac) ?? 0) + 1;
+          if (misses < NODE_OFFLINE_GRACE_POLLS) {
+            this.nodeOfflineMisses.set(mac, misses);
+            // Keep it in this.clients so the next poll still compares against it.
+            currentClientsMap.set(mac, client);
+            continue;
+          }
+          this.nodeOfflineMisses.delete(mac);
           const decodedName = (this.driver as TplinkDecoDriver).decodeNickname(client.name);
           const tokens = {
             name: decodedName,
@@ -1058,6 +1424,12 @@ class TplinkDecoDevice extends Device {
         }
       }
 
+      // Drop miss counters for clients we are no longer tracking at all, so the
+      // map can't grow without bound on a network with churn.
+      for (const mac of this.nodeOfflineMisses.keys()) {
+        if (!currentClientsMap.has(mac)) this.nodeOfflineMisses.delete(mac);
+      }
+
       // Prune clients not seen for more than 30 days
       for (const [mac, tracked] of Object.entries(this.trackedClients)) {
         if (!tracked.online && now - tracked.lastSeen > TRACKED_CLIENT_TTL_MS) {
@@ -1069,7 +1441,15 @@ class TplinkDecoDevice extends Device {
       await this.setStoreValue('trackedClients', this.trackedClients);
 
       // Update the current online list for the next comparison
-      this.clients = clientList;
+      // Carry the debounced-but-still-missing clients forward, rather than
+      // overwriting with the raw API list. Assigning clientList here discarded
+      // the entries the offline debounce had just re-inserted into
+      // currentClientsMap: on the next poll the client was no longer in
+      // lastClientsMap at all, so the offline branch never ran and the trigger
+      // was suppressed permanently instead of delayed — while the "online"
+      // trigger still fired when it came back, i.e. exactly half of the
+      // flapping this was meant to fix.
+      this.clients = Array.from(currentClientsMap.values());
     } catch (err) {
       this.error('Failed to handle client state changes', err);
     }
@@ -1351,7 +1731,7 @@ class TplinkDecoDevice extends Device {
   private debug(message: string, data?: any) {
     if (this.debugEnabled) {
       if (data !== undefined) {
-        this.log(`DEBUG: ${message}`, JSON.stringify(data, null, 2));
+        this.log(`DEBUG: ${message}`, JSON.stringify(redactSecrets(data), null, 2));
       } else {
         this.log(`DEBUG: ${message}`);
       }

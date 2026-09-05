@@ -28,5 +28,13 @@
   },
   "abort": {
     "reauth_successful": "Genautentifikation lykkedes"
+  },
+  "pair": {
+    "title": "Tilføj din IP-adresse eller værtsnavn og adgangskode",
+    "host_label": "Værtsnavn / IP-adresse",
+    "host_hint": "IP-adressen på din primære Deco, f.eks. 192.168.68.1",
+    "password_label": "Adgangskode",
+    "password_hint": "Den samme adgangskode, som du bruger til at logge ind på tplinkdeco.net i en browser.",
+    "login_button": "Log ind"
   }
 }

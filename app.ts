@@ -50,6 +50,29 @@ class TplinkDecoApp extends HomeyLog {
     this.log(
       `${this.homey.manifest.id} - ${this.homey.manifest.version} has been uninitialised`,
     );
+
+    // A crash report from a Homey (Early 2019) ended with:
+    //   "Cannot access `this.homey.app` because the app instance has been
+    //    destroyed. This may indicate that your app is not cleaning up all
+    //    resources in `onUninit()`."
+    // Devices clear their own poll intervals and one-shot timers in their own
+    // onUninit (added in the same release — there was none before, so those
+    // timers used to survive shutdown). Nothing released the driver-level state: the
+    // shared API clients (each holding an open session and cookie jar), the
+    // in-flight auth promises, and the merged per-node client lists all
+    // survived shutdown. Release them here so a restart starts clean rather
+    // than on top of the previous process's leftovers.
+    // Guarded: this runs while the app is being torn down, which is exactly when
+    // a stray call — including the log line inside releaseResources() — can
+    // throw. An onUninit that rejects is the failure mode being fixed here, not
+    // an acceptable way to report one.
+    try {
+      for (const driver of Object.values(this.homey.drivers.getDrivers())) {
+        (driver as any).releaseResources?.();
+      }
+    } catch (e) {
+      this.error('onUninit: releasing driver resources failed', e);
+    }
   }
 }
 

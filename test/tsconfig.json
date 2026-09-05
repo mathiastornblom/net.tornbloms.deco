@@ -4,7 +4,14 @@
     "moduleResolution": "node16",
     "outDir": "dist",
     "noImplicitAny": false,
-    "typeRoots": ["../node_modules/@types", "../types"]
+    "typeRoots": [
+      "../node_modules/@types",
+      "../types"
+    ]
   },
-  "include": ["regression-login-combo-state.ts", "../lib/**/*.ts"]
+  "include": [
+    "regression-login-combo-state.ts",
+    "regression-lockout-5003.ts",
+    "../lib/**/*.ts"
+  ]
 }

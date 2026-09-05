@@ -2,3 +2,14 @@ env.json
 .vscode
 .env
 .DS_Store
+
+# Never ship the user-report material. docs/user-reports.md holds other people's
+# personal data — names, GitHub handles, verbatim forum and email quotes,
+# diagnostic log IDs, LAN subnets and per-household firmware inventories. It was
+# found inside a built package (172 KB of it) before release. Internal working
+# notes have no business in an App Store artifact at all, and this kind least of
+# all.
+docs
+
+# Regression tests and their compiled output are development-only.
+test
