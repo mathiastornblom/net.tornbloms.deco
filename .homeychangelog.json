@@ -376,5 +376,8 @@
   },
   "1.4.72": {
     "en": "Fixed a case where pressing Log in on the pairing screen did nothing at all, with no error shown — a JS error while the screen was loading could leave the button with no click handler. This is now caught and shown on screen, and reported so it appears in your diagnostic report if it happens again."
+  },
+  "1.4.73": {
+    "en": "Multiple reports since v1.4.70 of pairing being completely unresponsive (can't type, Log in does nothing) on various Homey Pro models and firmware versions pointed to a problem with the app's custom pairing screen that couldn't be fixed by changing that screen's own code. Pairing now uses Homey's standard, built-in login screen instead of a custom one, which should be far more broadly compatible. All login logic (trying every known format, handling router lockouts and session limits) is unchanged."
   }
 }

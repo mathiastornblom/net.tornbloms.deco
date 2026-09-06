@@ -353,61 +353,31 @@ class TplinkDecoDriver extends Driver {
     let password = '';
     let lastLoginTrace: LoginAttempt[] = [];
 
-    // Received when a view has changed
+    // Received when a view has changed — purely diagnostic, standard documented
+    // pattern (apps.developer.homey.app/the-basics/devices/pairing).
     session.setHandler('showView', async (viewId: string) => {
       this.log('pair: view shown:', viewId);
     });
 
-    // Serves the localized strings for our own login_credentials view. We no
-    // longer use Homey's built-in login_credentials template (its script calls
-    // Homey.getCurrentView()/Homey.error(), which don't exist on every pairing
-    // client and crash the view — see pair/login_credentials.html), so the
-    // translations the template used to render have to be handed over here.
-    session.setHandler('get_login_texts', async () => ({
-      texts: {
-        title: this.homey.__('pair.title'),
-        hostLabel: this.homey.__('pair.host_label'),
-        hostPlaceholder: 'tplinkdeco.net',
-        hostHint: this.homey.__('pair.host_hint'),
-        passwordLabel: this.homey.__('pair.password_label'),
-        passwordHint: this.homey.__('pair.password_hint'),
-        loginButton: this.homey.__('pair.login_button'),
-      },
-      hostname,
-    }));
-
-    // Last-resort sink for a JS exception during login_credentials.html's
-    // onHomeyReady() setup (e.g. attaching the Log-in button's click
-    // listener). Without this, such an exception left the button with no
-    // handler at all — clicking it did literally nothing, since diagnostic
-    // reports only ever capture backend stdout/stderr, never the pairing
-    // webview's own JS console (see the "log in does nothing, no error" report
-    // on v1.4.71 whose backend log showed the view loading but never this
-    // handler's own 'pair: login' line). Logging it here is what makes that
-    // class of failure show up in a diagnostic report at all going forward.
-    session.setHandler('report_frontend_error', async (data: { message?: string; stack?: string; phase?: string }) => {
-      this.error(`pair: frontend error during ${data?.phase ?? 'unknown phase'}: ${data?.message ?? '(no message)'}`, data?.stack ?? '');
-      return true;
-    });
-
-    // Backend fallback for frontend navigation: the pairing view calls
-    // Homey.showView() when that method exists on the client and falls back to
-    // emitting 'goto_view' when it doesn't. Never let a navigation failure
-    // reject — the frontend treats navigation as best-effort and keeps its own
-    // status message on screen if it doesn't land.
-    session.setHandler('goto_view', async (viewId: string) => {
-      try {
-        await session.showView(viewId);
-        return true;
-      } catch (navError: any) {
-        this.error(`pair: session.showView(${viewId}) failed`, navError);
-        return false;
-      }
-    });
-
+    // Standard login_credentials contract: return true/false, or throw an
+    // Error whose message is shown to the user by Homey's own built-in
+    // template. Custom pairing HTML (v1.4.70–1.4.72) was removed after
+    // multiple independent reports across different Homey Pro generations
+    // and firmware versions of pairing going completely dead — no click
+    // response, no typing, no backend log line — with a *verified-correct*
+    // custom template (tested end-to-end in a real browser against a
+    // spec-compliant homey.js stub). That, plus apps.developer.homey.app
+    // confirming Homey.getCurrentView() is a real, documented method (the
+    // opposite of what the original v1.4.70 diagnosis assumed about the
+    // built-in template being broken), points at a webview/homey.js
+    // problem on those specific clients — not something any amount of
+    // custom frontend code can route around. Athom's own built-in template
+    // is used across virtually every Homey app and gets the benefit of
+    // fixes at the platform level; ours was a bespoke, untested surface
+    // solving a problem it turned out not to be the cause of.
     session.setHandler(
       'login',
-      async (data: { username: string; password: string }) => {
+      async (data: { username: string; password: string }): Promise<boolean> => {
         this.log('pair: login');
         hostname = this.normalizeHostname(data.username);
         this.log('hostname: ', hostname);
@@ -438,23 +408,11 @@ class TplinkDecoDriver extends Driver {
           try {
             await this.sharedAuthenticate(hostname, password, this.makeLogger());
             this.log('Successfully connected to TP-Link Deco');
-            // Navigate explicitly rather than relying on a declarative
-            // navigation.next on this step (see v1.4.51) — but kept OUTSIDE
-            // the error-handling logic below: a PairSession.showView() failure
-            // (e.g. the pairing UI already moved on) is not an auth error and
-            // must never be miscategorised as one. Mis-categorising it here
-            // previously fell into the "unknown protocol" branch below, which
-            // tried session.showView('login_failed') on the same broken
-            // session — an unhandled rejection that crashed the app silently
-            // (homey-log's own crash-report path has an unrelated bug that
-            // swallows the resulting error, so nothing showed up anywhere).
-            // Login already succeeded at this point, so a navigation hiccup
-            // is logged and ignored rather than failing the whole pairing.
-            // Navigation is the frontend's job now (see pair/login_credentials.html):
-            // it decides where to go from this return value. The backend no longer
-            // calls session.showView() on the success path at all, so a navigation
-            // hiccup can't be mistaken for an auth failure the way it used to be.
-            return { ok: true, view: 'list_devices' };
+            // Navigation to list_devices is handled declaratively by this
+            // step's "navigation": { "next": "list_devices" } in
+            // driver.compose.json — the standard template advances there
+            // automatically on a truthy return, no explicit showView() needed.
+            return true;
           } catch (error: any) {
             const msg: string = error?.message ?? '';
             lastLoginTrace = (error as any)?.loginTrace ?? [];
@@ -491,39 +449,20 @@ class TplinkDecoDriver extends Driver {
               );
               throw new Error('The router turned the login down. This usually clears on its own: wait about 15 minutes without pressing Log in, then try once more. If the Deco app or its web admin page is open on a phone or browser, close it first — the Deco only allows one admin session at a time.');
             }
-            // Unknown protocol — all formats tried. The frontend navigates to the
-            // diagnostic view based on this return value.
+            // Unknown protocol — all formats tried.
             this.error('pair: login failed — all formats exhausted. Trace:', JSON.stringify(lastLoginTrace));
             (this.homey.app as any).reportIssue?.(
               `Pairing: unrecognised login protocol (hostname=${hostname})`,
               { hostname, loginTrace: lastLoginTrace },
             );
-            return { ok: false, view: 'login_failed' };
+            throw new Error(
+              "This Deco's firmware uses a login format this app hasn't seen before. Please open a GitHub issue at github.com/mathiastornblom/net.tornbloms.deco/issues with your Deco model and firmware version (Deco app → More → About) — a diagnostic report (Homey Settings → Apps → TP-Link Deco → ⋮) helps too.",
+            );
           }
         }
-        return { ok: false, view: 'login_failed' };
+        throw new Error('Login timed out.');
       },
     );
-
-    session.setHandler('get_diagnostic', async () => {
-      return { trace: lastLoginTrace };
-    });
-
-    // Fired when the user fills in model/firmware on the login_failed view and copies
-    // the debug report — forwards the same details to Sentry so unsupported firmware
-    // is visible even when the user doesn't get around to opening a GitHub issue.
-    session.setHandler('report_diagnostic', async (data: { model: string; firmware: string }) => {
-      (this.homey.app as any).reportIssue?.(
-        `Pairing: unrecognised login protocol — ${data?.model || 'unknown model'} fw ${data?.firmware || 'unknown'} (hostname=${hostname})`,
-        { hostname, model: data?.model, firmware: data?.firmware, loginTrace: lastLoginTrace },
-      );
-      return true;
-    });
-
-    session.setHandler('goto_login', async () => {
-      await session.showView('login_credentials');
-      return true;
-    });
 
     session.setHandler('list_devices', async () => {
       this.log('pair: list_devices');
