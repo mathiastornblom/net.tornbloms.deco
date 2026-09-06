@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "net.tornbloms.deco",
-  "version": "1.4.72",
+  "version": "1.4.73",
   "compatibility": ">=12.3.0",
   "sdk": 3,
   "platforms": [
@@ -2062,6 +2062,10 @@
       "pair": [
         {
           "id": "login_credentials",
+          "template": "login_credentials",
+          "navigation": {
+            "next": "list_devices"
+          },
           "options": {
             "logo": "../../../assets/logo.png",
             "title": {
@@ -2125,12 +2129,6 @@
               "ko": "비밀번호",
               "ar": "كلمة المرور"
             }
-          }
-        },
-        {
-          "id": "login_failed",
-          "navigation": {
-            "prev": "login_credentials"
           }
         },
         {

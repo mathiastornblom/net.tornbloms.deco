@@ -23,6 +23,10 @@
   "pair": [
     {
       "id": "login_credentials",
+      "template": "login_credentials",
+      "navigation": {
+        "next": "list_devices"
+      },
       "options": {
         "logo": "../../../assets/logo.png",
         "title": {
@@ -86,12 +90,6 @@
           "ko": "비밀번호",
           "ar": "كلمة المرور"
         }
-      }
-    },
-    {
-      "id": "login_failed",
-      "navigation": {
-        "prev": "login_credentials"
       }
     },
     {
