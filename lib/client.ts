@@ -676,23 +676,32 @@ export default class DecoAPIWraper {
         // error_code 1 "no such callback", and only the fifth answered 403 — which
         // we reported as "another session is already active". The user had already
         // tried two accounts and confirmed the local web login worked, so that
-        // advice could not possibly help. When the trace holds that kind of
-        // evidence, treat the whole round as an unrecognised login protocol and
-        // fall through to the diagnostic view, which is where the trace is
-        // actually useful, instead of entering the session-limit retry loop.
+        // advice could not possibly help.
+        //
+        // This used to abort the whole round immediately and report an
+        // unrecognised protocol — but four more reports since (X55, 4×BE65 Pro,
+        // XE75 Pro again) showed that 403 landing at combo 5 of 6, one combo
+        // short of the untried contentType=json/bodyFormat=json/passwordMode=
+        // hashed combination every single time. Aborting there means the one
+        // combo most likely to actually be this firmware's correct format never
+        // gets a chance. Treat this 403 like any other format failure instead —
+        // try the remaining combo(s) before giving up — since a 403 immediately
+        // following firmware-level parse failures is at least as likely to be
+        // more of the same rejection (or the account being rate-limited by the
+        // burst of failed attempts) as it is a genuine concurrent-session lock.
         if (msg.startsWith('RETRY:')) {
           const firmwareRejectedOurFormats = _trace.some(
             (a) => a.httpStatus === 500 || (a.msg ?? '').includes('no such callback'),
           );
           if (firmwareRejectedOurFormats) {
-            this.logger.error(
-              'client.ts: authenticate: 403 followed firmware-level format rejections — classifying as unrecognised login protocol, not a session limit.',
+            this.logger.log(
+              'client.ts: authenticate: 403 after firmware-level format rejections — treating as a format failure, trying remaining combos instead of aborting.',
             );
-            restoreBaseline();
-            throw Object.assign(new Error(`All login formats failed for ${this.host}.`), {
-              loginTrace: _trace,
-              cause: e,
-            });
+            lastError = e;
+            if (combo !== combos[combos.length - 1]) {
+              await new Promise((resolve) => setTimeout(resolve, 800));
+            }
+            continue;
           }
         }
 

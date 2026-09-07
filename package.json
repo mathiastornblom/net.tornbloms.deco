@@ -4,7 +4,7 @@
   "main": "app.ts",
   "scripts": {
     "build": "tsc",
-    "test": "tsc -p test/tsconfig.json && node test/dist/test/regression-login-combo-state.js && node test/dist/test/regression-lockout-5003.js"
+    "test": "tsc -p test/tsconfig.json && node test/dist/test/regression-login-combo-state.js && node test/dist/test/regression-lockout-5003.js && node test/dist/test/regression-403-after-format-rejection.js"
   },
   "devDependencies": {
     "@tsconfig/node16": "^16.1.3",

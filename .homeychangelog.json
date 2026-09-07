@@ -379,5 +379,8 @@
   },
   "1.4.73": {
     "en": "Multiple reports since v1.4.70 of pairing being completely unresponsive (can't type, Log in does nothing) on various Homey Pro models and firmware versions pointed to a problem with the app's custom pairing screen that couldn't be fixed by changing that screen's own code. Pairing now uses Homey's standard, built-in login screen instead of a custom one, which should be far more broadly compatible. All login logic (trying every known format, handling router lockouts and session limits) is unchanged."
+  },
+  "1.4.74": {
+    "en": "Fixed \"this Deco's firmware uses a login format this app hasn't seen before\" appearing for several models (X55, BE65 Pro, XE75 Pro) even though a working format existed. A safeguard added for an earlier report was stopping the app one format short of trying every possibility whenever the router answered with an unclear rejection after a couple of failed attempts. It now keeps going until every known format has had a fair try."
   }
 }
