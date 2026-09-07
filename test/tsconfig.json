@@ -12,6 +12,7 @@
   "include": [
     "regression-login-combo-state.ts",
     "regression-lockout-5003.ts",
+    "regression-403-after-format-rejection.ts",
     "../lib/**/*.ts"
   ]
 }
