@@ -382,5 +382,8 @@
   },
   "1.4.74": {
     "en": "Fixed \"this Deco's firmware uses a login format this app hasn't seen before\" appearing for several models (X55, BE65 Pro, XE75 Pro) even though a working format existed. A safeguard added for an earlier report was stopping the app one format short of trying every possibility whenever the router answered with an unclear rejection after a couple of failed attempts. It now keeps going until every known format has had a fair try."
+  },
+  "1.4.75": {
+    "en": "Fixed newly added Deco devices sometimes ending up non-functional straight after pairing — reported when many nodes were added in one go. Right after being created, a device could read its own settings back before Homey had finished saving them, conclude it had no address or password, and give up for good. It now waits a few seconds and checks again before doing so."
   }
 }
