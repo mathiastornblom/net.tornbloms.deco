@@ -37,6 +37,14 @@ const MIN_POLL_SECONDS = 15;
 const REAUTH_BACKOFF_BASE_MS = 30 * 1000;
 const REAUTH_BACKOFF_MAX_MS = 10 * 60 * 1000;
 
+// How many times onInit() re-reads settings when hostname/password come back
+// empty, and how long it waits between reads. Bounded so a device that really
+// has no credentials still fails within seconds — see onInit() for the bulk-
+// pairing timing race this covers. Only ever paid on the empty-read path;
+// a normal init reads once and moves on.
+const SETTINGS_READ_RETRIES = 3;
+const SETTINGS_READ_RETRY_MS = 2000;
+
 /**
  * Returns a deep copy of `value` with anything password-shaped replaced.
  *
@@ -169,8 +177,27 @@ class TplinkDecoDevice extends Device {
       // Mesh-wide history is only ever written by the master node, but harmless to load on all
       this.meshTrackedClients = (this.getStoreValue('meshTrackedClients') as Record<string, MeshTrackedClient>) ?? {};
 
-      // Retrieve device settings
-      const settings = this.getSettings();
+      // Retrieve device settings — retrying briefly if hostname/password
+      // read back empty. list_devices always sets both on every device it
+      // returns, so an empty read here is a timing problem, not a real
+      // absence: a diagnostic report (2026-09-07, 11 nodes bulk-paired in one
+      // add_devices step on Homey v13.5.0) showed every one of them logging
+      // "Missing API configuration settings" in a tight cluster ~5–7s after
+      // pairing — well after each device's own onInit() log line, and
+      // regardless of when each was initialised. That is the signature of
+      // onInit() running before Homey had durably persisted the settings
+      // passed at creation, or of a re-init landing while they were still
+      // being written. Giving up on the first empty read left all 11 devices
+      // permanently non-functional (no API instance, no polling) until the
+      // user re-saved settings by hand. A device that genuinely has neither
+      // value fails the same way after these retries, just a few seconds
+      // later.
+      let settings = this.getSettings();
+      for (let attempt = 1; attempt <= SETTINGS_READ_RETRIES && (!settings.hostname || !settings.password); attempt++) {
+        this.log(`Settings not yet available (attempt ${attempt}/${SETTINGS_READ_RETRIES}) — retrying in ${SETTINGS_READ_RETRY_MS / 1000}s`);
+        await new Promise((resolve) => setTimeout(resolve, SETTINGS_READ_RETRY_MS));
+        settings = this.getSettings();
+      }
       this.debug(`Settings:`, settings);
 
       if (this.hasCapability('alarm_wan_ipv6_state')) {
