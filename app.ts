@@ -5,6 +5,15 @@
 // verification is intentionally disabled for the entire process.
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
+// See lib/utils/memoryUsageGuard.ts for why: in short, a throw inside
+// process.memoryUsage() on some constrained Homey models otherwise crashes
+// winston's uncaughtException handler (registered by homey-betterstack below)
+// uncatchably, masking the app's real error and preventing it from ever
+// reaching Sentry. Must run before that handler is ever installed, i.e. before
+// anything below has a chance to construct the app.
+import { installMemoryUsageGuard } from './lib/utils/memoryUsageGuard';
+installMemoryUsageGuard();
+
 import Homey from 'homey';
 import decoapiwrapper from './lib/client';
 const { Log } = require('homey-log');

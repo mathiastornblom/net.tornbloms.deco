@@ -385,5 +385,8 @@
   },
   "1.4.75": {
     "en": "Fixed newly added Deco devices sometimes ending up non-functional straight after pairing — reported when many nodes were added in one go. Right after being created, a device could read its own settings back before Homey had finished saving them, conclude it had no address or password, and give up for good. It now waits a few seconds and checks again before doing so."
+  },
+  "1.4.76": {
+    "en": "Fixed a startup crash on some older/constrained Homey models where a real app error could get replaced by an unrelated \"ENOENT: uv_resident_set_memory\" crash and never reach us for diagnosis. That happened inside the app's own crash-reporting code, which was reading memory usage in a way that isn't supported on all Homey hardware — it now degrades gracefully instead, so real errors on those Homeys are reported properly going forward."
   }
 }
