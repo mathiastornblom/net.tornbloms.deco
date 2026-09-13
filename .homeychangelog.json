@@ -385,5 +385,8 @@
   },
   "1.4.75": {
     "en": "Fixed newly added Deco devices sometimes ending up non-functional straight after pairing — reported when many nodes were added in one go. Right after being created, a device could read its own settings back before Homey had finished saving them, conclude it had no address or password, and give up for good. It now waits a few seconds and checks again before doing so."
+  },
+  "1.4.77": {
+    "en": "Fixed devices sometimes staying non-functional (no clients, no polling) on every restart, not just right after pairing, on some setups — the fix in the previous release only waited 6 seconds before giving up, which wasn't always enough. It now waits up to 30 seconds, and does so without blocking the app's own startup — a device that's slow to read back its settings can no longer risk the whole app failing to start in time."
   }
 }
