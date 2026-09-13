@@ -1,4 +1,7 @@
 {
+  "1.4.78": {
+    "en": "Added extra diagnostic logging for devices that still show 'Missing API configuration settings' on restart even after the previous release's longer wait — it now records whether the hostname and password were actually found, without exposing the password itself, so this can be pinned down precisely from a diagnostic report."
+  },
   "1.0.0": {
     "en": "First relese, work in progress"
   },
