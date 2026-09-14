@@ -1,4 +1,7 @@
 {
+  "1.4.79": {
+    "en": "Fixed the router password sometimes not being saved for a device right after pairing, which showed up as 'no clients ever appear' and 'Missing API configuration settings' errors that only went away after manually reopening the device's settings and re-entering the password. It's now saved in a second, more reliable place during pairing and automatically restored if needed — no more manual fix required."
+  },
   "1.4.78": {
     "en": "Added extra diagnostic logging for devices that still show 'Missing API configuration settings' on restart even after the previous release's longer wait — it now records whether the hostname and password were actually found, without exposing the password itself, so this can be pinned down precisely from a diagnostic report."
   },
