@@ -226,6 +226,18 @@ class TplinkDecoDevice extends Device {
         settings = this.getSettings();
       }
       this.debug(`Settings:`, settings);
+      // redactSecrets() replaces the password value with '[redacted]' regardless
+      // of whether it is actually set, so the debug line above can't tell us
+      // which of hostname/password (if either) is still missing once the
+      // retries above are exhausted. A field report (2026-09-13) showed the
+      // "Missing API configuration settings" error firing right after this
+      // point even though the device's other settings — including hostname —
+      // were clearly present and correct, which only leaves password as the
+      // explanation. Log presence/length instead of the value itself so the
+      // next report can confirm that without exposing the router password.
+      this.log(
+        `Settings check: hostname=${settings.hostname ? 'present' : 'MISSING'} password=${settings.password ? `present (len ${settings.password.length})` : 'MISSING'}`,
+      );
 
       if (this.hasCapability('alarm_wan_ipv6_state')) {
         await this.removeCapability('alarm_wan_ipv6_state');
