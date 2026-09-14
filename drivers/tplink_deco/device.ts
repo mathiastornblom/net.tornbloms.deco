@@ -239,6 +239,27 @@ class TplinkDecoDevice extends Device {
         `Settings check: hostname=${settings.hostname ? 'present' : 'MISSING'} password=${settings.password ? `present (len ${settings.password.length})` : 'MISSING'}`,
       );
 
+      // A field report (Tobias_Larsson, 2026-09-13/14) confirmed password
+      // specifically — not hostname, not any other field set the same way at
+      // pairing — was the one missing from settings on every restart, and
+      // that manually re-opening the device's settings and re-saving the same
+      // password immediately fixed it. That means add_devices' initial
+      // settings payload doesn't reliably persist a `"type": "password"`
+      // field, even though setSettings() does. list_devices (driver.ts) now
+      // also puts the password in the device's store, which isn't subject to
+      // whatever this is; recover it from there and do, automatically, the
+      // same re-save that fixed it for Tobias by hand.
+      if (!settings.password) {
+        const storedPassword = this.getStoreValue('password') as string | undefined;
+        if (storedPassword) {
+          this.log('Password missing from settings — recovered from store, re-saving to settings');
+          await this.setSettings({ password: storedPassword }).catch((e) =>
+            this.error('Failed to re-save recovered password to settings', e),
+          );
+          settings.password = storedPassword;
+        }
+      }
+
       if (this.hasCapability('alarm_wan_ipv6_state')) {
         await this.removeCapability('alarm_wan_ipv6_state');
       }

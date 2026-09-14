@@ -580,6 +580,26 @@ class TplinkDecoDriver extends Driver {
               hw_id: device.hw_id ?? '',
               timeoutSeconds: 30,
             },
+            // Belt-and-braces copy of the password in the device's store, not
+            // just its settings. A field report (Tobias_Larsson, 2026-09-13/14)
+            // showed every newly-paired device's `password` setting reading back
+            // empty on every restart — while every other field set the exact
+            // same way here (hostname, model, hw_id, ...) came back correctly —
+            // and the router had definitely accepted that password, since this
+            // very pairing session's device_list call above only succeeds after
+            // a working login. The one thing different about `password` is that
+            // it is the only field here declared `"type": "password"` in
+            // driver.settings.compose.json; add_devices evidently does not
+            // reliably persist that type from its initial `settings` payload,
+            // even though Homey's own settings screen persists it fine when a
+            // user re-enters and saves it by hand (which is what fixed this for
+            // Tobias — manually opening each device and re-saving the
+            // password). The store isn't subject to whatever this is, so
+            // initializeDevice() below uses it to recover and re-persist the
+            // password into settings itself, without the user having to.
+            store: {
+              password: password,
+            },
           };
           });
           // Never log `devices` directly — settings.password holds the user's
