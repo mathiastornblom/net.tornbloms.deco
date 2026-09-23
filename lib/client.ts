@@ -298,6 +298,25 @@ class EndpointArgs {
 // room inside authenticate()'s own 25s budget for more than one request.
 const HTTP_TIMEOUT_MS = 15000;
 
+// EXPERIMENTAL (v1.4.80): a short pause between fetching the session key and
+// submitting the encrypted login POST. Added after two independent field
+// reports (Borssie/XE75 Pro, then a second homey6q user, 2026-09-14/22)
+// showed the exact same firmware rejecting all 6 known login combos — two
+// HTTP 500 Lua crashes, two "no such callback", two HTTP 403 — despite a HAR
+// capture confirming our request shape (headers, Content-Type, body
+// encoding) already matches a real browser's successful login byte-for-byte.
+// The one thing the HAR couldn't confirm or rule out (its response bodies for
+// the crypto handshake weren't captured) is the crypto content itself, but it
+// did show a real browser naturally takes several seconds between the two
+// requests — a person typing their password — while this app fires them
+// within ~100ms. If this firmware's Lua backend needs a moment after issuing
+// a session key before it's ready to accept a login against it, that gap
+// would explain a crash that looks identical to a body-format mismatch. This
+// is unverified — a plausible next thing to try given the evidence, not a
+// confirmed fix — kept short enough not to meaningfully slow pairing down for
+// everyone else while we find out whether it helps.
+const LOGIN_POST_DELAY_MS = 700;
+
 const consoleLogger: AppLogger = { log: console.log, error: console.error };
 
 // Main Client class to interact with the API
@@ -480,6 +499,9 @@ export default class DecoAPIWraper {
     this.logger.log(
       `client.ts: attemptLogin: trying contentType=${attempt.contentType} bodyFormat=${attempt.bodyFormat} passwordMode=${attempt.passwordMode}`,
     );
+
+    // See LOGIN_POST_DELAY_MS above.
+    await new Promise((resolve) => setTimeout(resolve, LOGIN_POST_DELAY_MS));
 
     let result;
     try {
