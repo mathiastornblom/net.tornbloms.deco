@@ -1,6 +1,9 @@
 {
-  "1.4.80": {
+  "1.4.82": {
     "en": "Experimental: added a short pause before submitting the login on some Deco firmware that has been rejecting every login format this app knows (seen on some X75/BE-series units). This is a trial fix based on how a real browser login differs in timing, not a confirmed one — please let us know if it does or doesn't help if you were affected."
+  },
+  "1.4.81": {
+    "en": "Fixed devices that never connect and keep failing with a network error, on Deco firmware that doesn't answer at all on the old unencrypted web address and only works on the secure one. The app now tries the secure address right away instead of only switching to it after getting a response it never receives."
   },
   "1.4.79": {
     "en": "Fixed the router password sometimes not being saved for a device right after pairing, which showed up as 'no clients ever appear' and 'Missing API configuration settings' errors that only went away after manually reopening the device's settings and re-entering the password. It's now saved in a second, more reliable place during pairing and automatically restored if needed — no more manual fix required."
