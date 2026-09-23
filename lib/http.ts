@@ -119,8 +119,24 @@ export class HttpClient {
       } catch (e: any) {
         clearTimeout(timer);
         clearTimeout(hardTimer!);
-        const label = e?.name === 'AbortError' ? 'ETIMEDOUT' : (e?.code ?? e?.message);
+        const causeCode = e?.cause?.code ?? e?.code;
+        const label = e?.name === 'AbortError' ? 'ETIMEDOUT' : (causeCode ?? e?.message);
         this.logger.error(`http.ts: network error for "${config.url}?form=${config.params.form}": ${label}`);
+        // Most firmware that requires HTTPS answers a plain-http request with
+        // a 307 redirect, which the block above upgrades baseURL from. Some
+        // newer firmware instead doesn't listen on port 80 at all — a field
+        // report (2026-09-23, homey5q) showed every login attempt failing
+        // instantly with ECONNREFUSED on port 80, forever, since there's no
+        // redirect response to upgrade from and the device never recovers on
+        // its own. A refused connection fails fast, unlike a timeout (which
+        // already pays the full budget — retrying that over https too would
+        // double the wait for a router that's genuinely offline), so retry
+        // immediately over https instead of throwing.
+        if (attempt === 0 && this.baseURL.startsWith('http://') && causeCode === 'ECONNREFUSED') {
+          this.logger.log('http.ts: connection refused on http:// — retrying immediately over https://');
+          this.baseURL = this.baseURL.replace(/^http:\/\//, 'https://');
+          continue;
+        }
         throw e;
       }
 
