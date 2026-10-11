@@ -342,6 +342,8 @@ class TplinkDecoDevice extends Device {
               }, 60000); // 60 seconds
             } else {
               this.error('Failed to reboot');
+              // Surface the failure so a Flow (or the button) does not report success.
+              throw new Error('The Deco did not accept the reboot request');
             }
           }
         });
