@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { Device } from 'homey';
 import decoapiwrapper, { AppLogger } from '../../lib/client';
+import { ENDPOINT_NOT_SUPPORTED_CODE } from '../../lib/deco';
 // Type-only import to access the driver's shared-auth methods without a circular dep
 type TplinkDecoDriver = import('./driver').TplinkDecoDriver;
 import {
@@ -887,6 +888,19 @@ class TplinkDecoDevice extends Device {
         'Device Data',
       );
       this.debug(`${settings.hostname} onInit():deviceList: `, deviceList);
+
+      // If this node doesn't support device_list (satellite queried on its own IP),
+      // skip re-auth entirely — this is a misconfiguration, not an expired session.
+      // Triggering re-auth here would cause all such satellites to hammer the router
+      // simultaneously, burning through the lockout budget (auth storm → -5002 cascade).
+      if (deviceList.error_code === ENDPOINT_NOT_SUPPORTED_CODE) {
+        this.error(
+          `device_list returned "endpoint not supported" for ${settings.hostname} — ` +
+          `this device may be configured with a satellite IP instead of the master IP. ` +
+          `Check the hostname in device settings.`,
+        );
+        return;
+      }
 
       // If the API returns an error or device_list is missing (empty stok returns { error_code:0, result:{} }),
       // the session has expired or was never established — re-auth and wait for next poll

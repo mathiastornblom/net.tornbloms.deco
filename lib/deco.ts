@@ -11,6 +11,14 @@ import { KeyObject } from 'crypto';
 // Buffer for the default body used in read operations
 const readBody = Buffer.from(JSON.stringify({ operation: 'read' }));
 
+// Sentinel error_code returned when a Deco node responds with an empty
+// (zero-byte) decrypted body — meaning the endpoint is not supported by that
+// node (typically a satellite being queried for master-only endpoints like
+// device_list). Callers that check for session expiry must NOT treat this as
+// an expired session; it means the device is on the wrong IP, not that auth
+// failed.
+export const ENDPOINT_NOT_SUPPORTED_CODE = -9001;
+
 const consoleLogger: AppLogger = { log: console.log, error: console.error };
 
 // Interface for the structure of the password key response
@@ -229,7 +237,7 @@ export default class Deco {
 
       if (decoded.length === 0) {
         this.logger.log(`deco.ts: doEncryptedPost: empty decrypt for path=${path} form=${params.form} (endpoint not supported by this node)`);
-        return { error_code: 0, result: {} };
+        return { error_code: ENDPOINT_NOT_SUPPORTED_CODE, result: {} };
       }
 
       const parsed = JSON.parse(decoded);

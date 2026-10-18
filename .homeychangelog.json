@@ -1,4 +1,7 @@
 {
+  "1.4.80": {
+    "en": "Fixed an auth storm where satellite nodes configured with their own IP (instead of the master's) would all simultaneously re-authenticate on every poll cycle, burning through the router's lockout budget and causing -5002 wrong-password lockouts across the entire mesh."
+  },
   "1.4.79": {
     "en": "Fixed the router password sometimes not being saved for a device right after pairing, which showed up as 'no clients ever appear' and 'Missing API configuration settings' errors that only went away after manually reopening the device's settings and re-entering the password. It's now saved in a second, more reliable place during pairing and automatically restored if needed — no more manual fix required."
   },
