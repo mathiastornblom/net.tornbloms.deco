@@ -225,6 +225,17 @@ class TplinkDecoDriver extends Driver {
   async onInit() {
     this.log('TP-Link Deco Driver has been initialized');
 
+    // Register action: reboot. The card is declared in .homeycompose/flow/actions
+    // but had no run listener, so Flows failed with "Flow Card not registered".
+    // Route it through the device's reboot capability listener so the Flow and
+    // the device-tile button share one code path.
+    this.homey.flow.getActionCard('reboot').registerRunListener(async (args) => {
+      const device = args.device as any;
+      if (!device) throw new Error('No Deco selected');
+      await device.triggerCapabilityListener('reboot', true);
+      return true;
+    });
+
     // Register condition: client is online
     // Registered once here so multiple device instances don't overwrite each other.
     // Uses the persistent trackedClients store so the condition works even for clients
